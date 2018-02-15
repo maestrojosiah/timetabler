@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+{% block stylesheets %}
+
+ <link href="{{ asset('bootstrap-colorpicker/dist/css/bootstrap-colorpicker.css') }}" rel="stylesheet">
+{% endblock %}
+{% block pagewrapper %}
+    {% set action_title = "Add Teacher" %}
+    {% embed "templates/pagewrapper.html.twig" %}
+        {% block toplinks %}
+        {% endblock %}
+        {% block charts %}
+        {% endblock %}
+            {% block otherstuff_lg12 %}
+              {# {{ dump(data) }} #}
+
+            {{ form_start(form, {'method': 'post', 'attr': {'class': '' }} ) }}
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                    {% if not form.vars.valid %}
+                      <div class="alert alert-warning">
+                      {{ form_errors(form) }}
+                      </div>        
+                    {% endif %}
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                 <div class="form-group">
+                                    <label>First Name</label>
+                                      {{ form_widget(form.f_name, {'attr': {'class': 'form-control', 'placeholder': 'First name', 'id': 'first_name' }} ) }}
+                                    </div>
+                                    <div class="form-group">
+                                    <label>Last Name</label>
+                                      {{ form_widget(form.l_name, {'attr': {'class': 'form-control', 'placeholder': 'Last name', 'id': 'second_name' }} ) }}
+                                    </div>
+                                    <div class="form-group">
+                                    <label>Color</label>
+                                      {{ form_widget(form.color, {'attr': {'class': 'form-control' }} ) }}
+                                    </div>
+                              {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary' }} ) }}
+                              {{ form_widget(form.saveAndAdd, {'attr': {'class': 'btn btn-info' }} ) }}                               
+                                <!-- /.col-lg-6 (nested) -->
+              `             {{ form_end(form) }}
+                            </div>
+
+                            <div class="col-lg-6">
+                              {% for teacher in data.teachers %}                              
+                                <div class="list-group">
+                                    <a href="#" class="list-group-item">
+                                        <i class="fa fa-comment fa-fw"></i> {{teacher.fName}} {{teacher.lName}}
+                                        <span style="background-color:{{teacher.color}}" class="pull-right text-muted small"><em>{{teacher.color}}</em>
+                                        </span>
+                                    </a>
+                                </div>
+                              {% endfor %}
+                            </div>
+
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            </div>
+
+        {% endblock %}
+    {% endembed %}
+{% endblock %}
+{% block javascripts %}
+    <script src="{{ asset('bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js') }}"></script>
+  <script>
+    $(function () {
+      $('#teacher_color').colorpicker(
+        {
+          'format': 'hex'
+        });
+    });
+  </script>
+{% endblock %}
+

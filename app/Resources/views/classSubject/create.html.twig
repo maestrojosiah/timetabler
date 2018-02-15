@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+{% block pagewrapper %}
+    {% set action_title = "Assign Subject to Tr. " ~ teacher.fName ~ " " ~ teacher.lName %}
+    {% embed "templates/pagewrapper.html.twig" %}
+        {% block toplinks %}
+        {% endblock %}
+        {% block charts %}
+        {% endblock %}
+        {% block otherstuff_lg8 %}
+        <form action="" method="post">
+			  <div class="form-group">
+			    <label for="class" class="col-sm-2 control-label">Subject</label>
+			    <div class="col-sm-10">
+					<select name="form[subject]" id="class_subject_subject" class="form-control">
+						{% for subject in app.user.subjects %}
+					    	<option value="{{subject.id}}">{{subject}}</option>
+						{% endfor %}
+					</select>	
+			    </div>
+			  </div>
+			  <div class="form-group">
+			    <label for="class" class="col-sm-2 control-label">Class</label>
+			    <div class="col-sm-10">
+					<select name="form[class]" id="class_subject_class" class="form-control">
+						{% for class in classes %}
+					    	<option value="{{class}}">{{class}}</option>
+						{% endfor %}
+					</select>	
+		    	</div>
+			  </div>
+			  <div class="form-group">
+			  	<input type="submit" class="btn btn-primary" value="SAVE">
+			  	<a href="{{ path('list_classSubjects') }}" class="btn btn-success" >LIST</a>
+			  	<a href="{{ path('list_teachers') }}" class="btn btn-danger" >EXIT</a>
+			  </div>
+			</form>
+		{% endblock %}
+	{% endembed %}
+{% endblock %}
