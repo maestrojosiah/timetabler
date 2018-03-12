@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use AppBundle\Entity\Timetable;
 use AppBundle\Entity\Attendance;
 use AppBundle\Form\TimetableType;
@@ -35,7 +36,7 @@ class TimetableController extends Controller
             $em = $this->getDoctrine()->getManager();
             $em->persist($Timetable);
             $em->flush();
-            return $this->redirectToRoute('add_teacher', ['tbl' => $Timetable->getId()]);
+            return $this->redirectToRoute('add_classs', ['tbl' => $Timetable->getId()]);
         } 
 
         return $this->render('timetable/create.html.twig',['form' => $form->createView(), 'data' => $data] );
@@ -162,16 +163,21 @@ class TimetableController extends Controller
     {
         $data = [];
         $em = $this->getDoctrine()->getManager();
+        $user = $this->container->get('security.token_storage')->getToken()->getUser();
         $tableId = $request->query->get('tbl');
         $timetable = $em->getRepository('AppBundle:Timetable')
             ->find($tableId);
 
-        $recordedRange = $timetable->getClassRange();
-        $separate = explode('-', $recordedRange);
-
-        $classes = range($separate[0], $separate[1]);
+        $classes = $em->getRepository('AppBundle:Classs')
+            ->findBy(
+                array('user'=>$user, 'timetable'=>$timetable),
+                array('id' => 'ASC')
+            );
 
         $tableformats = $em->getRepository('AppBundle:TableFormat')
+            ->findByTimetable($timetable);
+
+        $lessons = $em->getRepository('AppBundle:Timetabler')
             ->findByTimetable($timetable);
 
         $lesson_series = [];
@@ -184,13 +190,159 @@ class TimetableController extends Controller
 
         }
 
+        $items = [];
+        foreach($lessons as $lesson){
+            $subjectEntity = $em->getRepository('AppBundle:Subject')
+                ->find($lesson->getSubject());
+            $teacherEntity = $em->getRepository('AppBundle:Teacher')
+                ->find($lesson->getTeacher());
+            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor();
+        }
+
         $data['classes'] = $classes;
         $data['timetable'] = $timetable;
         $data['tableformats'] = $tableformats;
         $data['lesson_series'] = $lesson_series;
+        $data['actual_lessons'] = $lessons;
+        $data['items'] = $items;
 
         return $this->render('timetable/tableformat.html.twig', $data);
 
+    }
+
+    /**
+     * @Route("/timetable/pdf", name="pdf_timetable")
+     */
+    public function pdfAction(Request $request)
+    {
+        $data = [];
+        $em = $this->getDoctrine()->getManager();
+        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $tableId = $request->query->get('tbl');
+        $timetable = $em->getRepository('AppBundle:Timetable')
+            ->find($tableId);
+
+        $classes = $em->getRepository('AppBundle:Classs')
+            ->findBy(
+                array('user'=>$user, 'timetable'=>$timetable),
+                array('id' => 'ASC')
+            );
+
+        $tableformats = $em->getRepository('AppBundle:TableFormat')
+            ->findByTimetable($timetable);
+
+        $lessons = $em->getRepository('AppBundle:Timetabler')
+            ->findByTimetable($timetable);
+
+        $lesson_series = [];
+        $start_time = $timetable->getTime()->format('H:i');
+        $current_time = $timetable->getTime()->format('H:i');
+        foreach ($tableformats as $key => $value) {
+            $first_part = $current_time;
+            $current_time = $this->add_minutes($value->getDuration(), $current_time);
+            $lesson_series[] = $first_part .'-'.$current_time.'|'.$value->getId();
+
+        }
+
+        $items = [];
+        foreach($lessons as $lesson){
+            $subjectEntity = $em->getRepository('AppBundle:Subject')
+                ->find($lesson->getSubject());
+            $teacherEntity = $em->getRepository('AppBundle:Teacher')
+                ->find($lesson->getTeacher());
+            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor();
+        }
+
+        $data['classes'] = $classes;
+        $data['timetable'] = $timetable;
+        $data['tableformats'] = $tableformats;
+        $data['lesson_series'] = $lesson_series;
+        $data['actual_lessons'] = $lessons;
+        $data['items'] = $items;
+
+        // return $this->render('timetable/tableformat.html.twig', $data);
+        $appPath = $this->container->getParameter('kernel.root_dir');
+
+        $html = $this->renderView('pdf/timetable.html.twig', $data);
+
+        $filename = sprintf("timetable-%s.pdf", date('Ymd~his'));
+
+        return new Response(
+            $this->get('knp_snappy.pdf')->getOutputFromHtml($html, array('orientation'=>'Landscape')),
+            200,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+            ]
+        );
+    }
+
+    /**
+     * @Route("/timetable/image", name="image_timetable")
+     */
+    public function imageAction(Request $request)
+    {
+        $data = [];
+        $em = $this->getDoctrine()->getManager();
+        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $tableId = $request->query->get('tbl');
+        $timetable = $em->getRepository('AppBundle:Timetable')
+            ->find($tableId);
+
+        $classes = $em->getRepository('AppBundle:Classs')
+            ->findBy(
+                array('user'=>$user, 'timetable'=>$timetable),
+                array('id' => 'ASC')
+            );
+
+
+        $tableformats = $em->getRepository('AppBundle:TableFormat')
+            ->findByTimetable($timetable);
+
+        $lessons = $em->getRepository('AppBundle:Timetabler')
+            ->findByTimetable($timetable);
+
+        $lesson_series = [];
+        $start_time = $timetable->getTime()->format('H:i');
+        $current_time = $timetable->getTime()->format('H:i');
+        foreach ($tableformats as $key => $value) {
+            $first_part = $current_time;
+            $current_time = $this->add_minutes($value->getDuration(), $current_time);
+            $lesson_series[] = $first_part .'-'.$current_time.'|'.$value->getId();
+
+        }
+
+        $items = [];
+        foreach($lessons as $lesson){
+            $subjectEntity = $em->getRepository('AppBundle:Subject')
+                ->find($lesson->getSubject());
+            $teacherEntity = $em->getRepository('AppBundle:Teacher')
+                ->find($lesson->getTeacher());
+            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor();
+        }
+
+        $data['classes'] = $classes;
+        $data['timetable'] = $timetable;
+        $data['tableformats'] = $tableformats;
+        $data['lesson_series'] = $lesson_series;
+        $data['actual_lessons'] = $lessons;
+        $data['items'] = $items;
+
+        // return $this->render('timetable/tableformat.html.twig', $data);
+        $appPath = $this->container->getParameter('kernel.root_dir');
+
+        $html = $this->renderView('pdf/timetable_img.html.twig', $data);
+
+        $filename = sprintf("timetable-%s.jpg", date('Ymd~his'));
+
+        return new Response(
+            $this->get('knp_snappy.image')->getOutputFromHtml($html),
+            200,
+            [
+                'Content-Type'        => 'image/jpg',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+            ]
+        );
     }
 
     /**

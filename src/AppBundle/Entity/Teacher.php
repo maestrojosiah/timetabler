@@ -59,6 +59,10 @@ class Teacher
 	 */
 	private $classSubjects;
     
+    public function __toString() {
+        return $this->fName . ' ' . $this->lName;
+    }
+
     /**
      * Get id
      *

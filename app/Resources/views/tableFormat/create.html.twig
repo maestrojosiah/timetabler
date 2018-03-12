@@ -6,37 +6,75 @@
         {% endblock %}
         {% block charts %}
         {% endblock %}
-        {% block otherstuff_lg8 %}
-        <form action="" method="post">
-			  <div class="form-group">
-			    <label for="class" class=" control-label">Title</label>
-			    <div class="col-sm-10">
-			    	<input type="text" name="form[title]" class="form-control" placeholder="e.g First"> 
-			    </div>
-			  </div>
-			  <div class="form-group">
-			    <label for="class_subject_class" class=" control-label">Activity Type</label>
-			    <div class="col-sm-10">
-					<select name="form[activity]" id="class_subject_class" class="form-control">
-					    <option value="lesson">Lesson</option>
-					    <option value="break">Break/Lunch/Games</option>
-					</select>	
-		    	</div>
-			  </div>
-			  <div class="form-group">
-			    <label for="form-control" class=" control-label">Duration (Minutes)</label>
-			    <div class="col-sm-10">
-			    	<input type="text" name="form[duration]" class="form-control" placeholder="e.g 45"> 
-			    </div>
-			  </div>
-			  <div class="form-group">
-			    <div class="col-sm-10">
-				  	<input type="submit" class="btn btn-primary" value="SAVE">
-				  	<a href="{{ path('list_tableFormats', {'tbl': timetable.id }) }}" class="btn btn-success" >LIST</a>
-				  	<a href="{{ path('homepage') }}" class="btn btn-danger" >EXIT</a>
-			    </div>
-			  </div>
-			</form>
+        {% block otherstuff_lg12 %}
+	      <div class="col-md-6">
+	          <!-- general form elements -->
+	          <div class="box box-primary">
+	            <div class="box-header with-border">
+	              <h3 class="box-title">Order of Activities For Timetable</h3>
+	            </div>
+	            <!-- /.box-header -->
+	            <!-- form start -->
+	              <div class="box-body">
+			        <form action="" method="post">
+						  <div class="form-group">
+						    <label>Title (Only for Non Lesson Activities)</label><br />
+						    <div class="col-sm-10">
+						    	<input type="text" name="form[title]" class="form-control" placeholder="eg. Break, Lunch or Games"> 
+						    </div>
+						  </div>
+						  <div class="form-group">
+						    <label for="class_subject_class" class=" control-label">Activity Type</label>
+						    <div class="col-sm-10">
+								<select name="form[activity]" id="class_subject_class" class="form-control">
+								    <option value="lesson">Lesson</option>
+								    <option value="break">Break/Lunch/Games</option>
+								</select>	
+					    	</div>
+						  </div>
+						  <div class="form-group">
+						    <label for="form-control" class=" control-label">Duration (Minutes)</label>
+						    <div class="col-sm-10">
+						    	<input type="text" name="form[duration]" class="form-control" placeholder="e.g 45"> 
+						    </div>
+						  </div><br /><br/>
+						
+		              </div>
+		              <!-- /.box-body -->
+
+		              <div class="box-footer">
+						  	<input type="submit" class="btn btn-primary" value="SAVE">
+						  	<a href="{{ path('list_tableFormats', {'tbl': timetable.id }) }}" class="btn btn-success" >PREVIEW ORDER</a>
+						  	<a href="{{ path('homepage') }}" class="btn btn-danger" >EXIT</a>
+		              </div>
+		          </div>
+		              </form>
+		          <!-- /.box -->
+		        </div>
+		      <div class="col-md-6">
+		          <!-- general form elements -->
+		          <div class="box box-primary">
+		            <div class="box-header with-border">
+		              <h3 class="box-title">Order of Events For Each Day</h3>
+		            </div>
+		            <!-- /.box-header -->
+		            <!-- form start -->
+		              <div class="box-body">
+		                <ol>
+		                	{% for tableFormat in tableFormats %}
+		                    	<li>{{tableFormat.title}} - {{tableFormat.activity}} - {{tableFormat.duration}}</li>
+		                  	{% endfor %}
+		                </ol>
+		              </div>
+		              <!-- /.box-body -->
+
+		              <div class="box-footer">
+		                *************************
+		              </div>
+		          </div>
+		          <!-- /.box -->
+		        </div>
+
 		{% endblock %}
 	{% endembed %}
 {% endblock %}

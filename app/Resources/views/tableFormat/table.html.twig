@@ -34,7 +34,7 @@
                             </div>
                             <div class="modal-footer">
                               <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                              <a href="{{ path('delete_tableFormat', { 'tableFormatId': tableFormat.id } ) }}" class="btn btn-danger">Go Ahead</a>
+                              <a href="{{ path('delete_tableFormat', { 'tableFormatId': tableFormat.id, 'tbl': timetable.id } ) }}" class="btn btn-danger">Go Ahead</a>
                             </div>
                           </div>
                         </div>

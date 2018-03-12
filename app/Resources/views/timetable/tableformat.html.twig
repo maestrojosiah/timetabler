@@ -1,19 +1,49 @@
-{{ dump(lesson_series) }}
-{{ dump(tableformats) }}
+{% extends 'base_collapse.html.twig' %}
+{% block stylesheets %}
+
+    <!-- DataTables CSS -->
+    <link href="{{ asset('vendor/datatables-plugins/dataTables.bootstrap.css') }}" rel="stylesheet">
+
+    <!-- DataTables Responsive CSS -->
+    <link href="{{ asset('vendor/datatables-responsive/dataTables.responsive.css') }}" rel="stylesheet">
+
+{% endblock %}
+
+{% block pagewrapper %}
+	{# {{dump(lesson_series)}} #}
+{# 	{{dump(items)}}
+	{{dump(tableformats)}}
+	{{dump(lesson_series)}}
+ #}	{% set action_title = "Full timetable" %}
+    {% embed "templates/pagewrapper.html.twig" %}
+        {% block toplinks %}
+        {% endblock %}
+
+        {% block charts %}
+{# grade 1 - Rhoda 2 - Esther 3 - Moses PP1 - Lilian PP2 - Mercy #}
+
 <style>
  	th, td {
     	border: 1px solid black;
      	border-collapse: collapse;
    	} 
-   	th {
-   		font-size: .7em;
+   	td, th{
+   		padding:0px;
+   		text-align: center;
+   		text-transform: uppercase;
    	}
+
+   	#page-wrapper{
+   		margin:0px;
+   	}
+
 	.rotate {
 	  text-align: center;
 	  white-space: nowrap;
 	  vertical-align: middle;
 	  width: 1.5em;
 	}
+
 	.rotate div {
 	     -moz-transform: rotate(-90.0deg);  /* FF3.5+ */
 	       -o-transform: rotate(-90.0deg);  /* Opera 10.5 */
@@ -33,15 +63,33 @@
 {# table starts here #}
 <div class="panel panel-default">
     <div class="panel-heading">
-        Context Classes
+       	Classes 
+       	{% set counter = 0 %}
+       	{% for class in classes %}
+       		{% set counter = counter + 1 %}
+       		{{class}}
+       		{% if counter < classes|length %}
+       			,
+       		{% endif %}
+       	{% endfor %}
+       	| <a href="{{path('list_teachers', {'tbl':timetable.id})}}" >Teachers: </a>
+       	{% if tableformats|first %}
+       	{% for teacher in tableformats[0].timetable.teachers %}
+       		<a type="button" id="teacher-details-{{teacher.id}}" class="btn btn-success" data-toggle="modal" data-target="#teacherModal_{{teacher.id}}" style="background-color:{{teacher.color}}">{{teacher.fName}} {{teacher.lName}}[]</a>
+       	{% endfor %}
+       	| <a href="{{path('pdf_timetable', {'tbl':tableformats[0].timetable.id })}}" class="btn btn-primary"> Download PDF </a>
+       	| <a href="{{path('image_timetable', {'tbl':tableformats[0].timetable.id})}}" class="btn btn-primary">Download as Image </a>
+       	{% endif %}
+       	| <a href="{{path('homepage')}}" class="btn btn-default">Home Page</a>
+    	<span id="info"></span>
     </div>
     <!-- /.panel-heading -->
     <div class="panel-body">
-        <div class="table-responsive">
+        <div class="">
 
         	{% set days_per_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
 
-            <table  style="width:100%">
+            <table  style="width:100%;">
 
                 <thead>
                     <tr>
@@ -55,32 +103,88 @@
 
         		{% for day in days_per_week %}
                 <tbody>
-                    <tr style="height:150px;" class="success">
-                        <td class="rotate"><div>{{day}}</div></td>
+                	{% set height = classes|length * 30 %}
+                    {% if height < 150 %}
+                        {% set height = 150 %}
+                    {% endif %}
+                    <tr style="height:{{height}}px;" class="success">
+                        <td class="rotate"><div>{{day|slice(0,3)}}</div></td>
                         <td>
-                        	<table class="table table-striped table-bordered table-hover">
+                        	<table style="margin-bottom:0px;" class="table table-striped table-bordered table-hover">
                         		{% for class in classes %}
 	                        		<tr id="class-{{class}}_day-{{day}}">
-	                        			<td id="subject_">{{class}}</td>
+	                        			<td style="padding:2px;" id="class_">{{class}}</td>
 	                        		</tr>
 	                        	{% endfor %}
                         	</table>
                         </td>
+                        {% set counterz = 0 %}
                         {% for tableformat in tableformats %}
                         	{% if tableformat.activity == 'lesson' %}
-		                        <td>
-		                        	<table class="full_width table table-striped table-bordered table-hover">
+		                        <td id="with_children">
+		                        	<table style="margin-bottom:0px;" class="full_width table table-bordered table-hover">
+		                        		{% set counter = 0 %}
 		                        		{% for class in classes %}
-			                        		<tr id="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}">
-			                        			<td>Kisw{{class}}</td>
+			                        		<tr style=" " id="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" data-toggle="modal" data-target="#timetableModal_{{class}}_{{day}}_{{tableformat.id}}">
+			                        				{% set key = tableformat.id ~ "." ~ class ~ "." ~ day %}
+			                        				{% if items[key] is defined %}
+			                        					{% set subject = items[key]|split("|")[0] %}
+			                        					{% set color = items[key]|split("|")[1] %}
+			                        				{% else %}
+			                        					{% set subject = 'No Subject' %}
+			                        					{% set color = '' %}
+			                        				{% endif %}
+			                        				
+			                        			<td class="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" style="padding:2px; cursor:pointer; background-color:{{color}}; font-size:15px; font-weight:bold;">
+			                        				{{ subject }}
+			                        			</td>
+			                        			{# Modal for every tr #}
+
+													<div class="modal fade" id="timetableModal_{{class}}_{{day}}_{{tableformat.id}}" tabindex="-1" role="dialog" aria-labelledby="timetableModalLabel" aria-hidden="true" style="display: none;">
+													    <div class="modal-dialog">
+													        <div class="modal-content">
+													            <div class="modal-header">
+													                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+													                <h4 class="modal-title" id="timetableModalLabel">Place Subject</h4>
+													            </div>
+													            <div class="modal-body text-center">
+													                <div class="list-group">
+													                	{% for classSubj in tableformat.timetable.classSubjects %}
+													                		{# {{dump(classSubj)}} #}
+													                		{% if classSubj.cClass == class %}
+													                			<a href="#" id="classSubj_{{classSubj.id}}|subj_{{classSubj.subject.id}}|time_{{lesson_series[counterz]|split('|')[0]}}|tbl_{{timetable.id}}|day_{{day}}|frmtcol_{{tableformat.id}}" 
+													                				style="background-color:{{classSubj.teacher.color}}" 
+													                				class="list-group-item list-group-item-action" 
+													                				data-dismiss="modal">
+													                				<span style="text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; font-weight:bold;">{{classSubj.subject.sTitle}} ({{classSubj.teacher.fName}}{{classSubj.teacher.lName}}) </span>
+													                			</a>
+													                		{% endif %}
+													                	{% endfor %}
+													                  
+													                  <a href="{{ path('list_teachers', {'tbl':timetable.id }) }}" class="list-group-item list-group-item-action">Add Lessons for Timetable</a>
+													                </div>
+													            </div>
+													            <div class="modal-footer">
+													                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+													            </div>
+													        </div>
+													        <!-- /.modal-content -->
+													    </div>
+													    <!-- /.modal-dialog -->
+													</div>
+
 			                        		</tr>
+		                        			{% set counter = counter + 1 %}
 			                        	{% endfor %}
 		                        	</table>
 		                        </td>
 		                    {% else %}
-		                        <td class="rotate" rowspan="5">
+		                        <td class="rotate" rowspan="1">
 		                        	<div>{{tableformat.title}}</div>
 		                        </td>
+	                    	{% endif %}
+	                    	{% if counterz <= lesson_series|length %}
+	                    		{% set counterz = counterz + 1 %}
 	                    	{% endif %}
                         {% endfor %}
                     </tr>
@@ -95,3 +199,123 @@
     <!-- /.panel-body -->
 </div>
 {# table ends here #}
+{% for teacher in tableformats[0].timetable.teachers %}
+<div class="modal modal-success fade" id="teacherModal_{{teacher.id}}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color:{{teacher.color}}!important">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span></button>
+        <h4 class="modal-title">{{teacher}}</h4>
+      </div>
+      <div class="modal-body-{{teacher.id}}">
+		
+      </div>
+      <div class="modal-footer" style="background-color:{{teacher.color}}!important">
+        <button type="button" class="btn btn-outline pull-right" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+{% endfor %}
+        {% endblock %}
+    {% endembed %}
+{% endblock %}
+{% block javascripts %}
+    <!-- DataTables JavaScript -->
+    <script src="{{ asset('vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables-plugins/dataTables.bootstrap.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables-responsive/dataTables.responsive.js') }}"></script>
+
+    <script>
+    $(document).ready(function() {
+        $('#dataTables-example').DataTable({
+            responsive: true
+        });
+    });
+    </script>
+
+  	<script>
+  	    $(document).on('click', '[id^="classSubj_"]', function(){
+  	    	var id = jQuery(this).attr("id");
+	      	$.ajax({
+	          	url:'{{ (path('save_timetable_entry')) }}',
+	          	type: "POST",
+	          	dataType: "json",
+	          	data: {
+	              	"info": id,
+	          	},
+	          	async: true,
+	          	success: function (data)
+	          	{
+	              	console.log(data.output['string']);
+	              	$("."+data.output['string']).css(
+	              		{
+	              			"background-color" : data.output['color'],
+	              			"font-size" : "15px",
+	              			"font-weight" : "bold",
+	              			"padding" : "2px",
+	              			"border" : "1px solid fff"
+	              		}).text(data.output['subject']);
+	              	$("#info").html(data.message);
+	          	},	
+	         	error: function () {
+	              	$("#warning").html("<b>something's wrong</b>");
+	       	 	}
+	      	});
+
+	  	});
+  	</script>
+
+  	<script>
+  	    $(document).on('click', '[id^="teacher-details-"]', function(){
+  	    	var id = jQuery(this).attr("id");
+	      	$.ajax({
+	          	url:'{{ (path('show_teacher_details')) }}',
+	          	type: "POST",
+	          	dataType: "json",
+	          	data: {
+	              	"info": id,
+	          	},
+	          	async: true,
+	          	success: function (data)
+	          	{
+	              	$(".modal-body-"+data[0]).html(
+	              		data[1]
+	              	);
+	          	},	
+	         	error: function () {
+	              	$("#warning").html("<b>something's wrong</b>");
+	       	 	}
+	      	});
+
+	  	});
+  	</script>
+
+{% endblock %}
+
+{# purchase / 0.55 = reporting price //what I heard
+purchase / 0.755 = reporting price //what I think is the case
+
+
+reporting price = 6000
+
+
+tithe = 6000 X .045 (270)
+5% = 6000 X .05 (300)
+tax = 6000 X .16 (960)
+
+kimomi 
+
+6000 X .755 = purchasing price  no savings (4530)
+6000 X .805 = purchasing price with savings (4830) #}
+{# settings:
+
+entries per page
+collapsed sidebar
+title of school
+address of school
+footer message
+ #}

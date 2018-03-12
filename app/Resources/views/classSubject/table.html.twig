@@ -12,7 +12,7 @@
                 <tbody>
                 {% for classSubject in classSubjects %}
                     <tr class="odd gradeX">
-                        <td>{{ classSubject.teacher.fName }}</td>
+                        <td>{{ classSubject.teacher.fName }}{{ classSubject.teacher.lName }}</td>
                         <td>{{ classSubject.cClass }}</td>
                         <td>{{ classSubject.subject.sTitle }}</td>
                         <td class="center">
@@ -33,7 +33,7 @@
                             </div>
                             <div class="modal-footer">
                               <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                              <a href="{{ path('delete_classSubject', { 'classSubjectId': classSubject.id } ) }}" class="btn btn-danger">Go Ahead</a>
+                              <a href="{{ path('delete_classSubject', { 'classSubjectId': classSubject.id, 'tbl': timetable.id } ) }}" class="btn btn-danger">Go Ahead</a>
                             </div>
                           </div>
                         </div>

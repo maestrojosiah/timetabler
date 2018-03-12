@@ -1,5 +1,7 @@
 <div class="panel panel-default">
         <div class="panel-body">
+            <a href="{{ path('add_subject', {'tbl': timetable.id} ) }}" class="btn btn-info">Add Subject</a>
+            <a href="{{ path('list_teachers', {'tbl': timetable.id} ) }}" class="btn btn-info">Teachers List</a>
             <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-example">
                 <thead>
                     <tr>
@@ -14,7 +16,7 @@
                         <td><a href="">{{ subject.sTitle }}</a></td>
                         {# <td>{{ subject.subjectCode }}</td> #}
                         <td class="center">
-                            <a class="btn btn-primary" href="{{ path('edit_subject', { 'subjectId': subject.id } ) }}">Edit</a>
+                            <a class="btn btn-primary" href="{{ path('edit_subject', { 'subjectId': subject.id, 'tbl': timetable.id } ) }}">Edit</a>
                             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal{{ subject.id }}">Delete</button>
                         </td>
                     </tr>
@@ -31,7 +33,7 @@
                             </div>
                             <div class="modal-footer">
                               <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                              <a href="{{ path('delete_subject', { 'subjectId': subject.id } ) }}" class="btn btn-danger">Go Ahead</a>
+                              <a href="{{ path('delete_subject', { 'subjectId': subject.id, 'tbl': timetable.id } ) }}" class="btn btn-danger">Go Ahead</a>
                             </div>
                           </div>
                         </div>

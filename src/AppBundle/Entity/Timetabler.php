@@ -26,7 +26,48 @@ class Timetabler
      *
      * @ORM\Column(name="time", type="string", length=255)
      */
+
     private $time;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="class", type="string", length=20)
+     */
+
+    private $class;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="teacher", type="string", length=200)
+     */
+
+    private $teacher;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="subject", type="string", length=100)
+     */
+
+    private $subject;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="table_format_column", type="string", length=100)
+     */
+
+    private $tableFormatColumn;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="day", type="string", length=20)
+     */
+
+    private $day;
 
     /**
      * @ORM\ManyToOne(targetEntity="Timetable", inversedBy="timetablers")
@@ -150,5 +191,125 @@ class Timetabler
     public function getClassSubject()
     {
         return $this->classSubject;
+    }
+
+    /**
+     * Set day
+     *
+     * @param string $day
+     *
+     * @return Timetabler
+     */
+    public function setDay($day)
+    {
+        $this->day = $day;
+
+        return $this;
+    }
+
+    /**
+     * Get day
+     *
+     * @return string
+     */
+    public function getDay()
+    {
+        return $this->day;
+    }
+
+    /**
+     * Set class
+     *
+     * @param string $class
+     *
+     * @return Timetabler
+     */
+    public function setClass($class)
+    {
+        $this->class = $class;
+
+        return $this;
+    }
+
+    /**
+     * Get class
+     *
+     * @return string
+     */
+    public function getClass()
+    {
+        return $this->class;
+    }
+
+    /**
+     * Set teacher
+     *
+     * @param string $teacher
+     *
+     * @return Timetabler
+     */
+    public function setTeacher($teacher)
+    {
+        $this->teacher = $teacher;
+
+        return $this;
+    }
+
+    /**
+     * Get teacher
+     *
+     * @return string
+     */
+    public function getTeacher()
+    {
+        return $this->teacher;
+    }
+
+    /**
+     * Set subject
+     *
+     * @param string $subject
+     *
+     * @return Timetabler
+     */
+    public function setSubject($subject)
+    {
+        $this->subject = $subject;
+
+        return $this;
+    }
+
+    /**
+     * Get subject
+     *
+     * @return string
+     */
+    public function getSubject()
+    {
+        return $this->subject;
+    }
+
+    /**
+     * Set tableFormatColumn
+     *
+     * @param string $tableFormatColumn
+     *
+     * @return Timetabler
+     */
+    public function setTableFormatColumn($tableFormatColumn)
+    {
+        $this->tableFormatColumn = $tableFormatColumn;
+
+        return $this;
+    }
+
+    /**
+     * Get tableFormatColumn
+     *
+     * @return string
+     */
+    public function getTableFormatColumn()
+    {
+        return $this->tableFormatColumn;
     }
 }

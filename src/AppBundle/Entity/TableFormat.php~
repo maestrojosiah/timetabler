@@ -53,7 +53,7 @@ class TableFormat
      * @ORM\JoinColumn(name="table_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $timetable;
-    
+
     /**
      * Get id
      *
@@ -182,5 +182,29 @@ class TableFormat
     public function getTitle()
     {
         return $this->title;
+    }
+
+    /**
+     * Set activity
+     *
+     * @param string $activity
+     *
+     * @return TableFormat
+     */
+    public function setActivity($activity)
+    {
+        $this->activity = $activity;
+
+        return $this;
+    }
+
+    /**
+     * Get activity
+     *
+     * @return string
+     */
+    public function getActivity()
+    {
+        return $this->activity;
     }
 }

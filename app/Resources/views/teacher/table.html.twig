@@ -14,7 +14,7 @@
                         <td><a href="{{ path('teacher_profile', { teacherId: teacher.id } ) }}">{{ teacher.fName }} {{ teacher.lName }}</a></td>
                         <td style="background-color:{{teacher.color}}">{{ teacher.color }}</td>
                         <td class="center">
-                            <a class="btn btn-primary" href="{{ path('edit_teacher', { 'teacherId': teacher.id } ) }}">Edit</a>
+                            <a class="btn btn-primary" href="{{ path('edit_teacher', { 'teacherId': teacher.id, 'tbl': timetable.id } ) }}">Edit</a>
                             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal{{ teacher.id }}">Delete</button>
                             <a href="{{ path('assign_subjects', { teacherId: teacher.id } ) }}" class="btn btn-info">Assign Subjects</a>
                         </td>
@@ -32,7 +32,7 @@
                             </div>
                             <div class="modal-footer">
                               <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                              <a href="{{ path('delete_teacher', { 'teacherId': teacher.id } ) }}" class="btn btn-danger">Go Ahead</a>
+                              <a href="{{ path('delete_teacher', { 'teacherId': teacher.id, 'tbl': timetable.id } ) }}" class="btn btn-danger">Go Ahead</a>
                             </div>
                           </div>
                         </div>
@@ -45,4 +45,3 @@
         </div>
         <!-- /.panel-body -->
     </div>
-  

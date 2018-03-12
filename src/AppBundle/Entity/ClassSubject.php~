@@ -22,9 +22,8 @@ class ClassSubject
     private $id;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="c_class", type="integer")
+     * @ORM\ManyToOne(targetEntity="Classs", inversedBy="classSubjects")
+     * @ORM\JoinColumn(name="c_class", referencedColumnName="id", onDelete="CASCADE")
      */
     private $cClass;
 

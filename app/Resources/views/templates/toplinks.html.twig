@@ -1,183 +1,299 @@
-<div class="row">
-    <div class="col-lg-3 col-md-6">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                <div class="row">
-                    <div class="col-xs-3">
-                        <i class="fa fa-group fa-5x"></i>
-                    </div>
-                    <div class="col-xs-9 text-right">
-                        <div class="huge">{{ countTimetables }}</div>
-                        <div>TimeTables</div>
-                    </div>
-                </div>
+      <!-- Small boxes (Stat box) -->
+      <div class="row">
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-aqua">
+            <div class="inner">
+              <h3>{{ countTimetables }}</h3>
+
+              <p>Timetables</p>
             </div>
-            <a href="#" data-toggle="modal" data-target="#timetableModal">
-                <div class="panel-footer">
-                    <span class="pull-left">Manage Timetables</span>
-                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                    <div class="clearfix"></div>
-                </div>
-            </a>
-        </div>
-    </div>
-    <div class="col-lg-3 col-md-6">
-        <div class="panel panel-green">
-            <div class="panel-heading">
-                <div class="row">
-                    <div class="col-xs-3">
-                        <i class="fa fa-tasks fa-5x"></i>
-                    </div>
-                    <div class="col-xs-9 text-right">
-                        <div class="huge">{{ countTeachers }}</div>
-                        <div>Teachers</div>
-                    </div>
-                </div>
+            <div class="icon">
+              <i class="ion ion-clock"></i>
             </div>
-            <a href="#" data-toggle="modal" data-target="#teacherModal">
-                <div class="panel-footer">
-                    <span class="pull-left">Manage Teachers</span>
-                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                    <div class="clearfix"></div>
-                </div>
+            <a href="#" class="small-box-footer" data-toggle="modal" data-target="#timetableModal">
+            Manage Timetables <i class="fa fa-arrow-circle-right"></i>
             </a>
+          </div>
         </div>
-    </div>
-    <div class="col-lg-3 col-md-6">
-        <div class="panel panel-yellow">
-            <div class="panel-heading">
-                <div class="row">
-                    <div class="col-xs-3">
-                        <i class="fa fa-building fa-5x"></i>
-                    </div>
-                    <div class="col-xs-9 text-right">
-                        <div class="huge">{# {{ countClasses }} #}</div>
-                        <div>Classes</div>
-                    </div>
-                </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-green">
+            <div class="inner">
+              <h3>{{ countTeachers }}</h3>
+
+              <p>Teachers</p>
             </div>
-            <a href="#" data-toggle="modal" data-target="#classModal">
-                <div class="panel-footer">
-                    <span class="pull-left">Manage Classes</span>
-                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                    <div class="clearfix"></div>
-                </div>
-            </a>
-        </div>
-    </div>
-    <div class="col-lg-3 col-md-6">
-        <div class="panel panel-red">
-            <div class="panel-heading">
-                <div class="row">
-                    <div class="col-xs-3">
-                        <i class="fa fa-file-text-o  fa-5x"></i>
-                    </div>
-                    <div class="col-xs-9 text-right">
-                        <div class="huge">{{ countSubjects }}</div>
-                        <div>Subjects</div>
-                    </div>
-                </div>
+            <div class="icon">
+              <i class="ion ion-person-stalker"></i>
             </div>
-            <a href="#" data-toggle="modal" data-target="#subjectModal">
-                <div class="panel-footer">
-                    <span class="pull-left">Manage Subjects</span>
-                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-                    <div class="clearfix"></div>
-                </div>
+            <a href="#" class="small-box-footer" data-toggle="modal" data-target="#teacherModal">
+                Manage Teachers <i class="fa fa-arrow-circle-right"></i>
             </a>
+          </div>
         </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-yellow">
+            <div class="inner">
+              <h3>{{ countClasses }}</h3>
+
+              <p>Classes</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-ios-grid-view"></i>
+            </div>
+            <a href="#" data-toggle="modal" data-target="#classModal" class="small-box-footer">
+                Manage Classes <i class="fa fa-arrow-circle-right"></i>
+            </a>
+          </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-red">
+            <div class="inner">
+              <h3>{{ countSubjects }}</h3>
+
+              <p>Subjects</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-ios-paper-outline"></i>
+            </div>
+            <a href="#" class="small-box-footer" data-toggle="modal" data-target="#subjectModal">
+                Manage Subjects <i class="fa fa-arrow-circle-right"></i>
+            </a>
+          </div>
+        </div>
+        <!-- ./col -->
+      </div>
+      <!-- /.row -->
+      <!-- Main row -->
+      <div class="row">
+        <!-- Left col -->
+        <section class="col-lg-7 connectedSortable">
+{# {{dump(allTimetables[0])}} #}
+          <!-- Timetables box -->
+          {% for tTable in allTimetables %}
+          <div class="box box-solid">
+            <div class="box-header with-border">
+              <h3 class="box-title">{{tTable.title}}</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              {% set progress = 0 %}
+              {% if tTable.teachers|length >= 1 %}
+                {% set progress = progress + 20 %}
+              {% else %}
+                <a href="{{path('add_teacher', {'tbl': tTable.id})}}">Add teachers</a> |
+              {% endif %}
+
+              {% if tTable.subjects|length >= 1 %}
+                {% set progress = progress + 20 %}
+              {% else %}
+                <a href="{{path('add_subject', {'tbl': tTable.id})}}">Add Subjects</a> |
+              {% endif %}
+
+              {% if tTable.classSubjects|length >= 1 %}
+                {% set progress = progress + 20 %}
+              {% else %}
+                <a href="{{path('list_teachers', {'tbl': tTable.id})}}">Assign teachers to subjects</a> |
+              {% endif %}
+
+              {% if tTable.tableFormats|length >= 1 %}
+                {% set progress = progress + 20 %}
+               {% else %}
+                <a href="{{path('add_table_format', {'tbl': tTable.id})}}">Create the order of events</a> |
+             {% endif %}
+
+              {% set lessons = 0 %}
+                {% for format in tTable.tableFormats %}
+                  {% if format.activity == "lesson" %}
+                    {% set lessons = lessons + 1 %}
+                  {% endif %}
+                {% endfor %}
+              {% set classes = tTable.classes|length %}
+              {% set daysOfWeek = 5 %}
+
+              {% set possibleEntries = lessons * classes * daysOfWeek %}
+
+              {% if tTable.timetablers|length >= possibleEntries %}
+                {% set progress = progress + 20 %}
+              {% else %}
+                {% set progress = progress + 10 %}
+                <a href="{{path('view_timetable', {'tbl': tTable.id})}}">Complete your timetable entries</a>
+              {% endif %}
+
+              <p>Progress : {{ progress }}% </p>
+
+              <div class="progress">
+                <div class="progress-bar progress-bar-primary progress-bar-striped" role="progressbar" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%">
+                  <span class="sr-only">{{progress}}% Complete </span>
+                </div>
+              </div>
+
+              <p><span class="label bg-green">{{tTable.teachers|length}}</span> <a href="{{path('list_teachers', {'tbl': tTable.id })}}">Teachers</a> </p>
+              <p><span class="label bg-green">{{tTable.subjects|length}}</span> <a href="{{path('list_subjects', {'tbl': tTable.id })}}">Subjects</a> </p>
+              <p><span class="label bg-green">{{tTable.classes|length}}</span> <a href="{{path('list_classes', {'tbl': tTable.id })}}">Classes</a> </p>
+              <p><span class="label bg-green">{{tTable.classSubjects|length}}</span> <a href="{{path('list_teachers', {'tbl': tTable.id })}}">Teacher - Class - Lesson Assignments</a> </p>
+              <p><span class="label bg-green">{{tTable.tableFormats|length}}</span> <a href="{{path('add_table_format', {'tbl': tTable.id })}}">Activities per day</a> </p>
+              <p><span class="label bg-green">{{tTable.timetablers|length}}/{{possibleEntries}}</span> <a href="{{path('view_timetable', {'tbl': tTable.id })}}">Entries on the timetable</a> </p>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+          {% endfor %}
+          <!-- /.box (chat box) -->
+
+        </section>
+        <!-- /.Left col -->
+        <!-- right col (We are only adding the ID to make the widgets sortable)-->
+        <section class="col-lg-5 connectedSortable">
+        {% for timetable in app.user.timetables %}
+
+          <!-- Map box -->
+          <div class="box box-solid bg-light-blue-gradient">
+            <div class="box-header">
+              <i class="fa fa-tasks"></i> 
+
+              <h3 class="box-title">
+                {{timetable.title}} - Lessons
+              </h3>
+            </div>
+        
+            {% for class in timetable.classes %}
+
+              <div class="box-body">
+                Class {{ class }}
+                  <div class="progress-group">|
+                  {% for classsubject in class.classSubjects %}
+                    <span class="progress-text" style="background-color:{{classsubject.teacher.color}};">{{classsubject.subject.sTitle}}</span> |
+                  {% endfor %}
+                  </div>
+                  <span class="progress-number"><b>{{class.classSubjects|length}}</b>/{{class.timetable.subjects|length}}</span>
+                  {% set percentage = class.classSubjects|length / class.timetable.subjects|length * 100 %}
+                  <div class="progress sm">
+                    <div class="progress-bar progress-bar-aqua" style="width: {{percentage}}%"></div>
+                  </div>
+              </div>
+                
+
+            {% endfor %}
+
+            <!-- /.box-body-->
+            <div class="box-footer">
+              <div class="row">
+                <a class="btn btn-primary" href="{{path('list_teachers', {'tbl':timetable.id})}}" class="">Edit Teacher Lesson Assignments</a>              
+              </div>
+              <!-- /.row -->
+            </div>
+          </div>
+          <!-- /.box -->
+        {% endfor %}
+
+        </section>
+        <!-- right col -->
+      </div>
+      <!-- /.row (main row) -->
+
+
+
+
+
+
+
+
+
+<div class="modal modal-info fade" id="timetableModal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span></button>
+        <h4 class="modal-title">Manage Timetables</h4>
+      </div>
+      <div class="modal-body">
+        <div class="list-group">
+          <a href="{{ path('add_timetable') }}" class="list-group-item list-group-item-action">Add New Timetable </a>
+          <a href="{{ path('list_timetables') }}" class="list-group-item list-group-item-action">List Timetables</a>
+          <a href="{{ path('choose_table_for_format') }}" class="list-group-item list-group-item-action">Timetable Format</a>
+          <a href="{{ path('choose_timetable_to_view') }}" class="list-group-item list-group-item-action">View Timetable</a>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline pull-right" data-dismiss="modal">Close</button>
+      </div>
     </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
 </div>
 
-<div class="modal fade" id="timetableModal" tabindex="-1" role="dialog" aria-labelledby="timetableModalLabel" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4 class="modal-title" id="timetableModalLabel">Manage Timetables</h4>
-            </div>
-            <div class="modal-body text-center">
-                <div class="list-group">
-                  <a href="{{ path('add_timetable') }}" class="list-group-item list-group-item-action">Add New Timetable </a>
-                  <a href="{{ path('list_timetables') }}" class="list-group-item list-group-item-action">List Timetables</a>
-                  <a href="{{ path('choose_table_for_format') }}" class="list-group-item list-group-item-action">Timetable Format</a>
-                  <a href="{{ path('choose_timetable_to_view') }}" class="list-group-item list-group-item-action">View Timetable</a>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
+<div class="modal modal-info fade" id="teacherModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span></button>
+        <h4 class="modal-title">Manage Teachers</h4>
+      </div>
+      <div class="modal-body">
+        <div class="list-group">
+          <a href="{{ path('choose_table_for_teacher') }}" class="list-group-item list-group-item-action">Add Teacher </a>
+          <a href="{{ path('choose_table_for_teacher_list') }}" class="list-group-item list-group-item-action">List Teachers</a>
         </div>
-        <!-- /.modal-content -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline pull-right" data-dismiss="modal">Close</button>
+      </div>
     </div>
-    <!-- /.modal-dialog -->
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
 </div>
 
-<div class="modal fade" id="teacherModal" tabindex="-1" role="dialog" aria-labelledby="teacherModalLabel" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4 class="modal-title" id="teacherModalLabel">Manage Teachers</h4>
-            </div>
-            <div class="modal-body text-center">
-                <div class="list-group">
-                  <a href="{{ path('choose_table_for_teacher') }}" class="list-group-item list-group-item-action">Add Teacher </a>
-                  <a href="{{ path('list_teachers') }}" class="list-group-item list-group-item-action">List Teachers</a>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-        <!-- /.modal-content -->
+<div class="modal modal-info fade" id="classModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span></button>
+        <h4 class="modal-title">Manage Classes</h4>
+      </div>
+      <div class="modal-body">
+        <a href="{{ path('choose_table_for_classs') }}" class="list-group-item list-group-item-action">Add Class </a>
+        <a href="{{ path('choose_list_for_classs') }}" class="list-group-item list-group-item-action">List Classes</a>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline pull-right" data-dismiss="modal">Close</button>
+      </div>
     </div>
-    <!-- /.modal-dialog -->
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
 </div>
 
-<div class="modal fade" id="classModal" tabindex="-1" role="dialog" aria-labelledby="classModalLabel" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4 class="modal-title" id="classModalLabel">Manage Classes</h4>
-            </div>
-            <div class="modal-body text-center">
-                <div class="list-group">
-                  <a href="{# {{ path('add_class') }} #}" class="list-group-item list-group-item-action">Add Class </a>
-                  <a href="{# {{ path('list_classes') }} #}" class="list-group-item list-group-item-action">List Classes</a>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-        <!-- /.modal-content -->
+
+<div class="modal modal-info fade" id="subjectModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span></button>
+        <h4 class="modal-title">Manage Subjects</h4>
+      </div>
+      <div class="modal-body">
+        <a href="{{ path('choose_table_for_subject') }}" class="list-group-item list-group-item-action">Add Subject</a>
+        <a href="{{ path('choose_list_for_subject') }}" class="list-group-item list-group-item-action">List Subjects</a>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline pull-right" data-dismiss="modal">Close</button>
+      </div>
     </div>
-    <!-- /.modal-dialog -->
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
 </div>
 
-<div class="modal fade" id="subjectModal" tabindex="-1" role="dialog" aria-labelledby="subjectModalLabel" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4 class="modal-title" id="subjectModalLabel">Manage Subjects</h4>
-            </div>
-            <div class="modal-body text-center">
-                <div class="list-group">
-                  <a href="{{ path('choose_table_for_subject') }}" class="list-group-item list-group-item-action">Add Subject</a>
-                  <a href="{{ path('list_subjects') }}" class="list-group-item list-group-item-action">List Subjects</a>
-                {# {% if app.user.classses %}
-                  <a href="{{ path('view_exams', {'classId': app.user.classses|first.id, 'examCompanyId': 'new', 'term': 'none' }) }}" class="list-group-item list-group-item-action">Exam Summaries</a>
-                {% endif %} #}
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-        <!-- /.modal-content -->
-    </div>
-    <!-- /.modal-dialog -->
-</div>

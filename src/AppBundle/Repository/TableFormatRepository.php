@@ -10,4 +10,13 @@ namespace AppBundle\Repository;
  */
 class TableFormatRepository extends \Doctrine\ORM\EntityRepository
 {
+    public function countTableFormats($user)
+    {
+        return $this->createQueryBuilder('s')
+            ->select('s')
+            ->where('s.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+    }
 }

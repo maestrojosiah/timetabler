@@ -31,7 +31,7 @@ class TeacherController extends Controller
 
         $teachers = $em->getRepository('AppBundle:Teacher')
             ->findBy(
-                array('user' => $user),
+                array('user' => $user, 'timetable' => $TimeTable),
                 array('fName' => 'ASC')
             );
 
@@ -64,10 +64,10 @@ class TeacherController extends Controller
             }
 
             $nextAction = $form->get('saveAndAdd')->isClicked()
-                ? 'add_Teacher'
-                : 'homepage';
+                ? 'add_teacher'
+                : 'list_teachers';
 
-            return $this->redirectToRoute($nextAction);
+            return $this->redirectToRoute($nextAction, ['tbl' => $tableId]);
         } 
 
         return $this->render('teacher/create.html.twig', ['form' => $form->createView(), 'data' => $data] );
@@ -81,17 +81,21 @@ class TeacherController extends Controller
     {
         $data = [];
         $user = $this->container->get('security.token_storage')->getToken()->getUser();
-        $data['user'] = $user;
-
         $em = $this->getDoctrine()->getManager();
+
+        $data['user'] = $user;
+        $tableId = $request->query->get('tbl');
+        $timetable = $em->getRepository('AppBundle:Timetable')
+            ->find($tableId);
 
         $teachers = $em->getRepository('AppBundle:Teacher')
             ->findBy(
-                array('user' => $user),
+                array('user' => $user, 'timetable' => $timetable),
                 array('fName' => 'ASC')
             );
 
         $data['teachers'] = $teachers;
+        $data['timetable'] = $timetable;
 
         return $this->render('teacher/list.html.twig', $data );
 
@@ -104,6 +108,16 @@ class TeacherController extends Controller
     {
 
         return $this->render('teacher/choose.html.twig');
+
+    }
+
+    /**
+     * @Route("/timetable/teacher/choose/list", name="choose_table_for_teacher_list")
+     */
+    public function chooseListAction(Request $request)
+    {
+
+        return $this->render('teacher/teacherlist.html.twig');
 
     }
 
@@ -144,13 +158,17 @@ class TeacherController extends Controller
         $teacher = $em->getRepository('AppBundle:Teacher')
             ->find($teacherId);
 
+        $tableId = $request->query->get('tbl');
+        $timetable = $em->getRepository('AppBundle:Timetable')
+            ->find($tableId);
+
         $teachers = $em->getRepository('AppBundle:Teacher')
             ->findBy(
-                array('user' => $user),
+                array('user' => $user, 'timetable' => $timetable),
                 array('fName' => 'ASC')
             );
-
         $data['teachers'] = $teachers;
+
 
 
         $form = $this->createForm(TeacherType::class, $teacher);
@@ -187,7 +205,7 @@ class TeacherController extends Controller
                 ? 'add_teacher'
                 : 'list_teachers';
 
-            return $this->redirectToRoute($nextAction);
+            return $this->redirectToRoute($nextAction, ['tbl' => $tableId]);
 
         } else {
             $form_data['f_name'] = $teacher->getFName();
@@ -209,6 +227,7 @@ class TeacherController extends Controller
     {
     	$data = [];
         $em = $this->getDoctrine()->getManager();
+        $tableId = $request->query->get('tbl');
 
         $teacher = $em->getRepository('AppBundle:Teacher')
         	->find($teacherId);
@@ -216,7 +235,7 @@ class TeacherController extends Controller
         $em->remove($teacher);
         $em->flush();
 
-        return $this->redirectToRoute('list_teachers');
+        return $this->redirectToRoute('list_teachers', ['tbl' => $tableId]);
 
     }
 

@@ -35,36 +35,18 @@ class Timetable
      *
      * @ORM\Column(name="title", type="string", length=255)
      */
-    private $title;
-    
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="classRange", type="string", length=25)
-     */
-    private $classRange;
-    
+    private $title;    
 
 	/**
 	 * @ORM\OneToMany(targetEntity="ClassSubject", mappedBy="timetable")
 	 */
 	private $classSubjects;
-
-	/**
-	 * @ORM\OneToMany(targetEntity="LessonDuration", mappedBy="timetable")
-	 */
-	private $lessonDurations;
 	
 	/**
 	 * @ORM\OneToMany(targetEntity="SchoolDays", mappedBy="timetable")
 	 */
 	private $schoolDays;
-	
-	/**
-	 * @ORM\OneToMany(targetEntity="Student", mappedBy="timetable")
-	 */
-	private $students;
-	
+
 	/**
 	 * @ORM\OneToMany(targetEntity="Subject", mappedBy="timetable")
 	 */
@@ -86,6 +68,11 @@ class Timetable
 	private $teachers;
 	
     /**
+     * @ORM\OneToMany(targetEntity="Classs", mappedBy="timetable")
+     */
+    private $classes;
+    
+    /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="timetables")
      * @ORM\JoinColumn(name="table_id", referencedColumnName="id", onDelete="CASCADE")
      */
@@ -94,13 +81,13 @@ class Timetable
     public function __construct()
     {
    		$this->classSubjects = new ArrayCollection(); 
-   		$this->lessonDurations = new ArrayCollection();
    		$this->schoolDays = new ArrayCollection();
    		$this->students = new ArrayCollection();
    		$this->subjects = new ArrayCollection();
    		$this->teachers = new ArrayCollection();
    		$this->tableFormats = new ArrayCollection();
-   		$this->timetablers = new ArrayCollection();   		
+        $this->timetablers = new ArrayCollection();         
+   		$this->classes = new ArrayCollection();   		
     }
     
     /**
@@ -197,40 +184,6 @@ class Timetable
     }
 
     /**
-     * Add lessonDuration
-     *
-     * @param \AppBundle\Entity\LessonDuration $lessonDuration
-     *
-     * @return Timetable
-     */
-    public function addLessonDuration(\AppBundle\Entity\LessonDuration $lessonDuration)
-    {
-        $this->lessonDurations[] = $lessonDuration;
-
-        return $this;
-    }
-
-    /**
-     * Remove lessonDuration
-     *
-     * @param \AppBundle\Entity\LessonDuration $lessonDuration
-     */
-    public function removeLessonDuration(\AppBundle\Entity\LessonDuration $lessonDuration)
-    {
-        $this->lessonDurations->removeElement($lessonDuration);
-    }
-
-    /**
-     * Get lessonDurations
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getLessonDurations()
-    {
-        return $this->lessonDurations;
-    }
-
-    /**
      * Add schoolDay
      *
      * @param \AppBundle\Entity\SchoolDays $schoolDay
@@ -262,40 +215,6 @@ class Timetable
     public function getSchoolDays()
     {
         return $this->schoolDays;
-    }
-
-    /**
-     * Add student
-     *
-     * @param \AppBundle\Entity\Student $student
-     *
-     * @return Timetable
-     */
-    public function addStudent(\AppBundle\Entity\Student $student)
-    {
-        $this->students[] = $student;
-
-        return $this;
-    }
-
-    /**
-     * Remove student
-     *
-     * @param \AppBundle\Entity\Student $student
-     */
-    public function removeStudent(\AppBundle\Entity\Student $student)
-    {
-        $this->students->removeElement($student);
-    }
-
-    /**
-     * Get students
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getStudents()
-    {
-        return $this->students;
     }
 
     /**
@@ -482,27 +401,38 @@ class Timetable
         return $this->user;
     }
 
+
     /**
-     * Set classRange
+     * Add class
      *
-     * @param string $classRange
+     * @param \AppBundle\Entity\Classs $class
      *
      * @return Timetable
      */
-    public function setClassRange($classRange)
+    public function addClass(\AppBundle\Entity\Classs $class)
     {
-        $this->classRange = $classRange;
+        $this->classes[] = $class;
 
         return $this;
     }
 
     /**
-     * Get classRange
+     * Remove class
      *
-     * @return string
+     * @param \AppBundle\Entity\Classs $class
      */
-    public function getClassRange()
+    public function removeClass(\AppBundle\Entity\Classs $class)
     {
-        return $this->classRange;
+        $this->classes->removeElement($class);
+    }
+
+    /**
+     * Get classes
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getClasses()
+    {
+        return $this->classes;
     }
 }

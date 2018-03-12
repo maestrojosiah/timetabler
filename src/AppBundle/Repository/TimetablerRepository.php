@@ -10,4 +10,36 @@ namespace AppBundle\Repository;
  */
 class TimetablerRepository extends \Doctrine\ORM\EntityRepository
 {
+    public function isAlreadyRecorded($day, $class, $time)
+    {
+        return $this->createQueryBuilder('a')
+            ->select('a')
+            ->where('a.day = :day')
+            ->andWhere('a.class = :class')
+            ->andWhere('a.time = :time')
+            ->orderBy('a.id', 'DESC')
+            ->setMaxResults(1)
+            ->setParameter('day', $day)
+            ->setParameter('class', $class)
+            ->setParameter('time', $time)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+     public function isClashing($day, $time, $teacher)
+    {
+        return $this->createQueryBuilder('a')
+            ->select('a')
+            ->andWhere('a.day = :day')
+            ->andWhere('a.time = :time')
+            ->andWhere('a.teacher = :teacher')
+            ->orderBy('a.id', 'DESC')
+            ->setMaxResults(1)
+            ->setParameter('day', $day)
+            ->setParameter('time', $time)
+            ->setParameter('teacher', $teacher)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+
 }

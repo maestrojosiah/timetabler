@@ -31,18 +31,30 @@ class TableFormatController extends Controller
             ->find($tbl);
 
         $timetable = $em->getRepository('AppBundle:timetable')
-            ->find($teacher->getTimetable()->getId());
+            ->find($tbl);
 
         $data['teacher'] = $teacher;
         $data['timetable'] = $timetable;
-        $recordedRange = $timetable->getClassRange();
-        $separate = explode('-', $recordedRange);
 
-        $classes = range($separate[0], $separate[1]);
+        $classes = $em->getRepository('AppBundle:Classs')
+            ->findBy(
+                array('user'=>$user, 'timetable'=>$timetable),
+                array('id' => 'ASC')
+            );
         $data['classes'] = $classes;
+        $tableFormats = $em->getRepository('AppBundle:TableFormat')
+            ->findBy(
+                array('user' => $user, 'timetable' => $timetable),
+                array('id' => 'ASC')
+            );
+
+        $data['tableFormats'] = $tableFormats;
 
         $form = $this->createFormBuilder()
-            ->add('title')
+            ->add('title', null, array(
+                'required' => false,
+                'empty_data' => '...'
+            ))
             ->add('activity')
             ->add('duration')
             ->getForm();
@@ -100,18 +112,18 @@ class TableFormatController extends Controller
         $data = [];
         $user = $this->container->get('security.token_storage')->getToken()->getUser();
         $data['user'] = $user;
-
         $em = $this->getDoctrine()->getManager();
-
-        $tableFormats = $em->getRepository('AppBundle:TableFormat')
-            ->findBy(
-                array('user' => $user),
-                array('id' => 'ASC')
-            );
 
         $tbl = $request->query->get('tbl');
         $timetable = $em->getRepository('AppBundle:timetable')
             ->find($tbl);
+
+
+        $tableFormats = $em->getRepository('AppBundle:TableFormat')
+            ->findBy(
+                array('user' => $user, 'timetable' => $timetable),
+                array('id' => 'ASC')
+            );
 
         $data['tableFormats'] = $tableFormats;
         $data['timetable'] = $timetable;
@@ -140,10 +152,11 @@ class TableFormatController extends Controller
         $timetable = $em->getRepository('AppBundle:Timetable')
             ->find($tbl);
 
-        $recordedRange = $timetable->getClassRange();
-        $separate = explode('-', $recordedRange);
-
-        $classes = range($separate[0], $separate[1]);
+        $classes = $em->getRepository('AppBundle:Classs')
+            ->findBy(
+                array('user'=>$user, 'timetable'=>$timetable),
+                array('id' => 'ASC')
+            );
         $data['classes'] = $classes;
 
         $form = $this->createFormBuilder()
@@ -197,6 +210,7 @@ class TableFormatController extends Controller
     {
         $data = [];
         $em = $this->getDoctrine()->getManager();
+        $tbl = $request->query->get('tbl');
 
         $tableFormat = $em->getRepository('AppBundle:TableFormat')
             ->find($tableFormatId);
@@ -204,7 +218,7 @@ class TableFormatController extends Controller
         $em->remove($tableFormat);
         $em->flush();
 
-        return $this->redirectToRoute('list_tableFormat');
+        return $this->redirectToRoute('list_tableFormats', ['tbl' => $tbl]);
 
     }
 

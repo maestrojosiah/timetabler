@@ -27,10 +27,18 @@ class SubjectController extends Controller
         $TimeTable = $em->getRepository('AppBundle:Timetable')
             ->find($tableId);
 
+        $subjects = $em->getRepository('AppBundle:Subject')
+            ->findBy(
+                array('user'=>$user, 'timetable'=>$TimeTable),
+                array('id' => 'ASC')
+            );
+
 
         $subject = new Subject();
         $subject->setUser($user);
         $subject->setTimetable($TimeTable);
+        $data['timetable'] = $TimeTable;
+        $data['subjects'] = $subjects;
 
         $form = $this->createForm(SubjectType::class, $subject);
 
@@ -48,16 +56,16 @@ class SubjectController extends Controller
         	);
 
             $nextAction = $form->get('saveAndAdd')->isClicked()
-                ? 'choose_table_for_subject'
-                : 'homepage';
+                ? 'add_subject'
+                : 'list_subjects';
 
-            return $this->redirectToRoute($nextAction);
+            return $this->redirectToRoute($nextAction, ['tbl' => $tableId]);
 
 		} 
 
 	
         // replace this example code with whatever you need
-        return $this->render('subject/create.html.twig',['form' => $form->createView()] );
+        return $this->render('subject/create.html.twig',['form' => $form->createView(), 'data' => $data] );
 
     }
 
@@ -71,11 +79,18 @@ class SubjectController extends Controller
         $data['user'] = $user;
 
         $em = $this->getDoctrine()->getManager();
+        $tbl = $request->query->get('tbl');
+        $timetable = $em->getRepository('AppBundle:timetable')
+            ->find($tbl);
 
         $subjects = $em->getRepository('AppBundle:Subject')
-            ->findAll();
+            ->findBy(
+                array('user' => $user, 'timetable' => $timetable),
+                array('id' => 'ASC')
+            );
 
         $data['subjects'] = $subjects;
+        $data['timetable'] = $timetable;
 
         return $this->render('subject/list.html.twig', $data );
 
@@ -91,6 +106,8 @@ class SubjectController extends Controller
 
         $subject = $em->getRepository('AppBundle:Subject')
             ->find($subjectId);
+
+        $tableId = $request->query->get('tbl');
 
 
         $form = $this->createForm(SubjectType::class, $subject);
@@ -113,7 +130,7 @@ class SubjectController extends Controller
                 ? 'add_subject'
                 : 'list_subjects';
 
-            return $this->redirectToRoute($nextAction);
+            return $this->redirectToRoute($nextAction, ['tbl' => $tableId]);
 
         } else {
             $form_data['s_title'] = $subject->getSTitle();
@@ -134,6 +151,7 @@ class SubjectController extends Controller
     {
         $data = [];
         $em = $this->getDoctrine()->getManager();
+        $tableId = $request->query->get('tbl');
 
         $subject = $em->getRepository('AppBundle:Subject')
             ->find($subjectId);
@@ -143,7 +161,7 @@ class SubjectController extends Controller
         $em->remove($subject);
         $em->flush();
 
-        return $this->redirectToRoute('list_subjects');
+        return $this->redirectToRoute('list_subjects', ['tbl' => $tableId]);
 
     }
     
@@ -154,6 +172,16 @@ class SubjectController extends Controller
     {
 
         return $this->render('subject/choose.html.twig');
+
+    }
+    
+    /**
+     * @Route("/timetable/subject/list", name="choose_list_for_subject")
+     */
+    public function chooseListAction(Request $request)
+    {
+
+        return $this->render('subject/choose_list.html.twig');
 
     }
 

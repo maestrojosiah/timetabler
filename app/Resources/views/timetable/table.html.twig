@@ -12,13 +12,13 @@
                 <tbody>
                 {% for timetable in timetables %}
                     <tr class="odd gradeX">
-                        <td><a href="{{ path('timetable_profile', { timetableId: timetable.id } ) }}">{{ timetable.title }}</a></td>
+                        <td><a href="{{ path('view_timetable', {'tbl': timetable.id }) }}">{{ timetable.title }}</a></td>
                         <td>{{ timetable.time|date('H:i') }}</td>
-                        <td>{{ timetable.classRange }}</td>
+                        <td>{{ timetable.classes|length }}</td>
                         <td class="center">
                             <a class="btn btn-primary" href="{{ path('edit_timetable', { 'timetableId': timetable.id } ) }}">Edit</a>
                             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal{{ timetable.id }}">Delete</button>
-                            <a href="{{ path('timetable_profile', { timetableId: timetable.id } ) }}" class="btn btn-info">View</a>
+                            <a href="{{ path('view_timetable', {'tbl': timetable.id }) }}" class="btn btn-info">View</a>
                         </td>
                     </tr>
                     <!-- Modal -->

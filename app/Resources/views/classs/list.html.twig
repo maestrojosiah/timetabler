@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+{% block pagewrapper %}
+	{% set action_title = "Classes List" %}
+    {% embed "templates/pagewrapper.html.twig" %}
+        {% block toplinks %}
+        {% endblock %}
+
+        {% block charts %}
+           {{ include('classs/table.html.twig') }}        	
+         
+        {% endblock %}
+    {% endembed %}
+{% endblock %}

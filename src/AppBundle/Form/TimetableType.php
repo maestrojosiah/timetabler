@@ -19,7 +19,6 @@ class TimetableType extends AbstractType
         $user = $Timetable->getUser();        
         $builder
             ->add('title', TextType::class, array('label' => false ) )
-            ->add('classRange', TextType::class, array('label' => false ) )
             ->add('time', TimeType::class, array(
                 'input'  => 'datetime',
                 'widget' => 'choice', 

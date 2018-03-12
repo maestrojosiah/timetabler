@@ -81,19 +81,9 @@ class User implements AdvancedUserInterface, \Serializable
 	private $classSubjects;
 
 	/**
-	 * @ORM\OneToMany(targetEntity="LessonDuration", mappedBy="user")
-	 */
-	private $lessonDurations;
-
-	/**
 	 * @ORM\OneToMany(targetEntity="SchoolDays", mappedBy="user")
 	 */
 	private $schoolDays;
-
-	/**
-	 * @ORM\OneToMany(targetEntity="Student", mappedBy="user")
-	 */
-	private $students;
 
 	/**
 	 * @ORM\OneToMany(targetEntity="Subject", mappedBy="user")
@@ -110,10 +100,15 @@ class User implements AdvancedUserInterface, \Serializable
 	 */
 	private $timetablers;
 		
+    /**
+     * @ORM\OneToMany(targetEntity="Teacher", mappedBy="user")
+     */
+    private $teachers;
+    
 	/**
-	 * @ORM\OneToMany(targetEntity="Teacher", mappedBy="user")
+	 * @ORM\OneToMany(targetEntity="Classs", mappedBy="user")
 	 */
-	private $teachers;
+	private $classes;
 	
 	/**
 	 * @ORM\OneToMany(targetEntity="Timetable", mappedBy="user")
@@ -124,13 +119,13 @@ class User implements AdvancedUserInterface, \Serializable
     {
         $this->active = true;
    		$this->classSubjects = new ArrayCollection();
-   		$this->lessonDurations = new ArrayCollection();
    		$this->schoolDays = new ArrayCollection();
    		$this->students = new ArrayCollection();
    		$this->subjects = new ArrayCollection();
    		$this->teachers = new ArrayCollection();
    		$this->tableFormats = new ArrayCollection();   	
-   		$this->timetablers = new ArrayCollection();   		
+        $this->timetablers = new ArrayCollection();         
+   		$this->classes = new ArrayCollection();   		
     }
     
     public function __toString() {
@@ -363,40 +358,6 @@ class User implements AdvancedUserInterface, \Serializable
     }    
 
     /**
-     * Add classRange
-     *
-     * @param \AppBundle\Entity\ClassRange $classRange
-     *
-     * @return User
-     */
-    public function addClassRange(\AppBundle\Entity\ClassRange $classRange)
-    {
-        $this->classRanges[] = $classRange;
-
-        return $this;
-    }
-
-    /**
-     * Remove classRange
-     *
-     * @param \AppBundle\Entity\ClassRange $classRange
-     */
-    public function removeClassRange(\AppBundle\Entity\ClassRange $classRange)
-    {
-        $this->classRanges->removeElement($classRange);
-    }
-
-    /**
-     * Get classRanges
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getClassRanges()
-    {
-        return $this->classRanges;
-    }
-
-    /**
      * Add classSubject
      *
      * @param \AppBundle\Entity\ClassSubject $classSubject
@@ -431,40 +392,6 @@ class User implements AdvancedUserInterface, \Serializable
     }
 
     /**
-     * Add lessonDuration
-     *
-     * @param \AppBundle\Entity\LessonDuration $lessonDuration
-     *
-     * @return User
-     */
-    public function addLessonDuration(\AppBundle\Entity\LessonDuration $lessonDuration)
-    {
-        $this->lessonDurations[] = $lessonDuration;
-
-        return $this;
-    }
-
-    /**
-     * Remove lessonDuration
-     *
-     * @param \AppBundle\Entity\LessonDuration $lessonDuration
-     */
-    public function removeLessonDuration(\AppBundle\Entity\LessonDuration $lessonDuration)
-    {
-        $this->lessonDurations->removeElement($lessonDuration);
-    }
-
-    /**
-     * Get lessonDurations
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getLessonDurations()
-    {
-        return $this->lessonDurations;
-    }
-
-    /**
      * Add schoolDay
      *
      * @param \AppBundle\Entity\SchoolDays $schoolDay
@@ -496,40 +423,6 @@ class User implements AdvancedUserInterface, \Serializable
     public function getSchoolDays()
     {
         return $this->schoolDays;
-    }
-
-    /**
-     * Add student
-     *
-     * @param \AppBundle\Entity\Student $student
-     *
-     * @return User
-     */
-    public function addStudent(\AppBundle\Entity\Student $student)
-    {
-        $this->students[] = $student;
-
-        return $this;
-    }
-
-    /**
-     * Remove student
-     *
-     * @param \AppBundle\Entity\Student $student
-     */
-    public function removeStudent(\AppBundle\Entity\Student $student)
-    {
-        $this->students->removeElement($student);
-    }
-
-    /**
-     * Get students
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getStudents()
-    {
-        return $this->students;
     }
 
     /**
@@ -700,5 +593,39 @@ class User implements AdvancedUserInterface, \Serializable
     public function getTimetables()
     {
         return $this->timetables;
+    }
+
+    /**
+     * Add class
+     *
+     * @param \AppBundle\Entity\Classs $class
+     *
+     * @return User
+     */
+    public function addClass(\AppBundle\Entity\Classs $class)
+    {
+        $this->classes[] = $class;
+
+        return $this;
+    }
+
+    /**
+     * Remove class
+     *
+     * @param \AppBundle\Entity\Classs $class
+     */
+    public function removeClass(\AppBundle\Entity\Classs $class)
+    {
+        $this->classes->removeElement($class);
+    }
+
+    /**
+     * Get classes
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getClasses()
+    {
+        return $this->classes;
     }
 }

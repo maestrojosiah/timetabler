@@ -8,6 +8,18 @@
         {% endblock %}
             {% block otherstuff_lg12 %}
               {# {{ dump(data) }} #}
+      <div class="col-md-6">
+          <!-- general form elements -->
+          <div class="box box-primary">
+            <div class="box-header with-border">
+              <h3 class="box-title">Add Subjects</h3>
+            </div>
+            <!-- /.box-header -->
+            <!-- form start -->
+              <div class="box-body">
+
+            <a href="{{path('list_teachers',{'tbl': data.timetable.id })}}" class="btn btn-info">Teachers List</a>
+            <a href="{{path('list_subjects',{'tbl': data.timetable.id })}}" class="btn btn-info">Subjects List</a>
 
             {{ form_start(form, {'method': 'post', 'attr': {'class': '' }} ) }}
             <div class="row">
@@ -22,13 +34,11 @@
                             <div class="row">
                                 <div class="col-lg-6">
                                  <div class="form-group">
-                                    <label>Table Title</label>
+                                    <label>Subject Title</label>
                                       {{ form_widget(form.s_title, {'attr': {'class': 'form-control', 'placeholder': 'Subject Title', 'id': 'subjecttitle' }} ) }}
                                     </div>
-                                  {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary' }} ) }}
-                                  {{ form_widget(form.saveAndAdd, {'attr': {'class': 'btn btn-info' }} ) }}                               
                                     <!-- /.col-lg-6 (nested) -->
-                  `             {{ form_end(form) }}
+
                             </div>
                             <!-- /.row (nested) -->
                         </div>
@@ -39,7 +49,48 @@
                 <!-- /.col-lg-12 -->
             </div>
             </div>
+              </div>
+              <!-- /.box-body -->
+
+              <div class="box-footer">
+                  {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary' }} ) }}
+                  {{ form_widget(form.saveAndAdd, {'attr': {'class': 'btn btn-info' }} ) }}                               
+              </div>
+          </div>
+               {{ form_end(form) }}
+          <!-- /.box -->
+        </div>
+      <div class="col-md-6">
+          <!-- general form elements -->
+          <div class="box box-primary">
+            <div class="box-header with-border">
+              <h3 class="box-title">Added Subjects</h3>
+            </div>
+            <!-- /.box-header -->
+            <!-- form start -->
+              <div class="box-body">
+                <ol>
+                  {% for subject in data.subjects %}
+                    <li>{{subject}}</li>
+                  {% endfor %}
+                </ol>
+              </div>
+              <!-- /.box-body -->
+
+              <div class="box-footer">
+                *************************
+              </div>
+          </div>
+          <!-- /.box -->
+        </div>
 
         {% endblock %}
     {% endembed %}
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript">
+    $(function() {
+      $("#subject_s_title").focus();
+    });    
+  </script>
 {% endblock %}

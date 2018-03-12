@@ -1,45 +1,41 @@
 {% extends 'base.html.twig' %}
 {% block pagewrapper %}
-    {% set action_title = "Add Class" %}
+    {% set action_title = "Edit Class - Subject Relation " ~ teacher.fName ~ " " ~ teacher.lName %}
     {% embed "templates/pagewrapper.html.twig" %}
         {% block toplinks %}
         {% endblock %}
         {% block charts %}
         {% endblock %}
         {% block otherstuff_lg8 %}
-
-		{{ form_start(form, {'method': 'post', 'attr': {'class': 'form-horizontal' }} ) }}
-				{% if not form.vars.valid %}
-	              <div class="alert alert-warning">
-	              {{ form_errors(form) }}
-	              </div>				
-          		{% endif %}
+        <form action="" method="post">
+			  <div class="form-group">
+			    <label for="class" class="col-sm-2 control-label">Subject</label>
+			    <div class="col-sm-10">
+					<select name="form[subject]" id="class_subject_subject" class="form-control">
+						{% for subject in app.user.subjects %}
+							{% if subject.timetable.id == timetable.id %}
+					    		<option value="{{subject.id}}" {% if subj == subject.sTitle %} selected {% endif %} >{{subject}}</option>
+							{% endif %}
+						{% endfor %}
+					</select>	
+			    </div>
+			  </div>
 			  <div class="form-group">
 			    <label for="class" class="col-sm-2 control-label">Class</label>
 			    <div class="col-sm-10">
-		    		{{ form_row(form.class_number, {'attr': {'class': 'form-control', 'placeholder': 'Class', 'id' : 'class' }}) }}
-			    </div>
+					<select name="form[class]" id="class_subject_class" class="form-control">
+						{% for class in classes %}
+					    	<option value="{{class}}"{% if cls == class %} selected {% endif %} >{{class}}</option>
+						{% endfor %}
+					</select>	
+		    	</div>
 			  </div>
 			  <div class="form-group">
-			    <label for="class_wing" class="col-sm-2 control-label">Class Wing</label>
-			    <div class="col-sm-10">
-		    		{{ form_row(form.class_wing, {'attr': {'class': 'form-control', 'placeholder': 'Class Wing', 'id' : 'class_wing' }}) }}
-			    </div>
+			  	<input type="submit" class="btn btn-primary" value="SAVE">
+			  	<a href="{{ path('list_classSubjects', {'tbl': timetable.id}) }}" class="btn btn-success" >LIST</a>
+			  	<a href="{{ path('list_teachers', {'tbl': timetable.id }) }}" class="btn btn-danger" >EXIT</a>
 			  </div>
-			  <div class="form-group">
-			    <label for="class_teacher" class="col-sm-2 control-label">Class Teacher</label>
-			    <div class="col-sm-10">
-		    		{{ form_row(form.class_teacher, {'attr': {'class': 'form-control', 'placeholder': 'Class Teacher', 'id' : 'class_teacher' }}) }}
-			    </div>
-			  </div>
-			  <div class="form-group">
-			    <div class="col-sm-10">
-		    		{{ form_row(form.save, {'attr': {'class': 'btn btn-primary'}}) }}
-                    {{ form_widget(form.saveAndAdd, {'attr': {'class': 'btn btn-info' }} ) }}
-			    </div>
-			  </div>
-		{{ form_end(form) }}
-
+			</form>
 		{% endblock %}
 	{% endembed %}
 {% endblock %}

@@ -53,7 +53,7 @@ class TableFormat
      * @ORM\JoinColumn(name="table_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $timetable;
-    
+
     /**
      * Get id
      *
