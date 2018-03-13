@@ -66,15 +66,15 @@ class DefaultController extends Controller
             return $this->redirectToRoute('add_timetable');
         }
 
-        if($classes == 0){
+        if(count($lastTimeTable[0]->getClasses()) == 0){
             $this->addFlash(
                 'success',
                 'Please add at least one class!'
             );
-            return $this->redirectToRoute('add_class', ['tbl' => $lastTimeTable[0]->getId()]);
+            return $this->redirectToRoute('add_classs', ['tbl' => $lastTimeTable[0]->getId()]);
         }
 
-        if($teachers == 0){
+        if(count($lastTimeTable[0]->getTeachers()) == 0){
             $this->addFlash(
                 'success',
                 'Please add at least one teacher!'
@@ -82,15 +82,15 @@ class DefaultController extends Controller
             return $this->redirectToRoute('add_teacher', ['tbl' => $lastTimeTable[0]->getId()]);
         }
 
-        if($subjects == 0){
+        if(count($lastTimeTable[0]->getSubjects()) == 0){
             $this->addFlash(
                 'success',
                 'Please add at least one subject!'
             );
-            return $this->redirectToRoute('choose_table_for_subject');
+            return $this->redirectToRoute('add_subject', ['tbl' => $lastTimeTable[0]->getId()]);
         }
 
-        if($tableformats == 0){
+        if(count($lastTimeTable[0]->getTableFormats()) == 0){
             $this->addFlash(
                 'success',
                 'Please add timetable format!'

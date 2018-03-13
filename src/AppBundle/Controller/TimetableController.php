@@ -177,6 +177,13 @@ class TimetableController extends Controller
         $tableformats = $em->getRepository('AppBundle:TableFormat')
             ->findByTimetable($timetable);
 
+        if(!$tableformats){
+            $this->addFlash(
+                'success',
+                'Please setup the timetable order of events!'
+            );            
+            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            
+        }
         $lessons = $em->getRepository('AppBundle:Timetabler')
             ->findByTimetable($timetable);
 

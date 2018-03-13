@@ -15,8 +15,9 @@
         {% endblock %}
 
         {% block charts %}
-            <a href="{{path('add_teacher', {'tbl':timetable.id })}}" class="btn btn-primary">Add Teacher</a>
-            <a href="{{path('add_subject', {'tbl':timetable.id })}}" class="btn btn-primary">Add Subject</a>
+            <a href="{{path('add_teacher', {'tbl':timetable.id })}}" class="btn btn-primary">Add More Teachers</a>
+            <a href="{{path('add_subject', {'tbl':timetable.id })}}" class="btn btn-primary">Add Subjects</a>
+            <a href="{{path('homepage')}}" class="btn btn-danger">DONE</a>
             <nav class="navbar navbar-default">
               <div class="container-fluid">
                 <!-- Brand and toggle get grouped for better mobile display -->

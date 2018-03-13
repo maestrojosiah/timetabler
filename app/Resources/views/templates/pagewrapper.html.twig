@@ -5,7 +5,15 @@
 {% block title %}
   <h1>
     {{ action_title }}
+    {% if timetable is defined %}
+         For {{timetable.title}}
+    {% elseif lastTimeTable is defined %}
+         For {{lastTimeTable.title }}
+    {% elseif data.timetable is defined %}
+         For {{data.timetable.title }}
+    {% endif %}
   </h1>
+
   <ol class="breadcrumb">
     <li><a href="{{path('homepage')}}"><i class="fa fa-dashboard"></i> Home</a></li>
   </ol>

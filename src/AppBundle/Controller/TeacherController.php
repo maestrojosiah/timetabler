@@ -36,6 +36,7 @@ class TeacherController extends Controller
             );
 
         $data['teachers'] = $teachers;
+        $data['timetable'] = $TimeTable;
 
         $form = $this->createForm(TeacherType::class, $Teacher);
 

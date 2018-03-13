@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use AppBundle\Entity\Timetabler;
+use AppBundle\Entity\Config;
 // use AppBundle\Entity\Stock;
 
 
@@ -150,6 +151,41 @@ class AjaxController extends Controller
         $output = [$id, $html];
 
         return new JsonResponse($output);
+
+    }
+
+    /**
+     * @Route("/settings/save", name="save_settings")
+     */
+    public function saveSettingsAction(Request $request)
+    {
+        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $em = $this->getDoctrine()->getManager();
+
+        $schoolTitle = $request->request->get('schoolTitle');
+        $schoolAddress = $request->request->get('schoolAddress');
+        $tableEntries = $request->request->get('tableEntries');
+        $footerMessage = $request->request->get('footerMessage');
+        $sidebar = $request->request->get('sidebar');
+
+        $config = $em->getRepository('AppBundle:Config')
+            ->findOneByUser($user);
+        if(!$config){
+           $config = new Config();
+        }
+        
+        $config->setUser($user);
+        $config->setSchoolTitle($schoolTitle);
+        $config->setSchoolAddress($schoolAddress);
+        $config->setEntriesPerPage($tableEntries);
+        $config->setFooterMessage($footerMessage);
+        $config->setSidebar($sidebar);
+
+        $em->persist($config);
+        
+        $em->flush();
+
+        return new JsonResponse("success");
 
     }
 

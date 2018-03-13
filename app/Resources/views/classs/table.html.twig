@@ -1,7 +1,8 @@
 <div class="panel panel-default">
         <div class="panel-body">
-            <a href="{{ path('add_classs', {'tbl': timetable.id} ) }}" class="btn btn-info">Add Class</a>
+            <a href="{{ path('add_classs', {'tbl': timetable.id} ) }}" class="btn btn-info">Add More Classes</a>
             <a href="{{ path('list_teachers', {'tbl': timetable.id} ) }}" class="btn btn-info">Teachers List</a>
+            <a href="{{path('homepage')}}" class="btn btn-danger">DONE</a>
             <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-example">
                 <thead>
                     <tr>

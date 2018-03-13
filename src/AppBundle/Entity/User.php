@@ -110,10 +110,15 @@ class User implements AdvancedUserInterface, \Serializable
 	 */
 	private $classes;
 	
+    /**
+     * @ORM\OneToMany(targetEntity="Timetable", mappedBy="user")
+     */
+    private $timetables;    
+    
 	/**
-	 * @ORM\OneToMany(targetEntity="Timetable", mappedBy="user")
+	 * @ORM\OneToMany(targetEntity="Config", mappedBy="user")
 	 */
-	private $timetables;	
+	private $configs;	
 	
     public function __construct()
     {
@@ -627,5 +632,39 @@ class User implements AdvancedUserInterface, \Serializable
     public function getClasses()
     {
         return $this->classes;
+    }
+
+    /**
+     * Add config
+     *
+     * @param \AppBundle\Entity\Config $config
+     *
+     * @return User
+     */
+    public function addConfig(\AppBundle\Entity\Config $config)
+    {
+        $this->configs[] = $config;
+
+        return $this;
+    }
+
+    /**
+     * Remove config
+     *
+     * @param \AppBundle\Entity\Config $config
+     */
+    public function removeConfig(\AppBundle\Entity\Config $config)
+    {
+        $this->configs->removeElement($config);
+    }
+
+    /**
+     * Get configs
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getConfigs()
+    {
+        return $this->configs;
     }
 }

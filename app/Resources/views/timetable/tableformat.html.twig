@@ -75,7 +75,7 @@
        	| <a href="{{path('list_teachers', {'tbl':timetable.id})}}" >Teachers: </a>
        	{% if tableformats|first %}
        	{% for teacher in tableformats[0].timetable.teachers %}
-       		<a type="button" id="teacher-details-{{teacher.id}}" class="btn btn-success" data-toggle="modal" data-target="#teacherModal_{{teacher.id}}" style="background-color:{{teacher.color}}">{{teacher.fName}} {{teacher.lName}}[]</a>
+       		<a type="button" id="teacher-details-{{teacher.id}}" class="btn btn-success" data-toggle="modal" data-target="#teacherModal_{{teacher.id}}" style="background-color:{{teacher.color}}">{{teacher.fName}} {{teacher.lName}}</a>
        	{% endfor %}
        	| <a href="{{path('pdf_timetable', {'tbl':tableformats[0].timetable.id })}}" class="btn btn-primary"> Download PDF </a>
        	| <a href="{{path('image_timetable', {'tbl':tableformats[0].timetable.id})}}" class="btn btn-primary">Download as Image </a>

@@ -11,7 +11,7 @@
                 <tbody>
                 {% for teacher in teachers %}
                     <tr class="odd gradeX">
-                        <td><a href="{{ path('teacher_profile', { teacherId: teacher.id } ) }}">{{ teacher.fName }} {{ teacher.lName }}</a></td>
+                        <td><a href="{{ path('assign_subjects', { teacherId: teacher.id } ) }}">{{ teacher.fName }} {{ teacher.lName }}</a></td>
                         <td style="background-color:{{teacher.color}}">{{ teacher.color }}</td>
                         <td class="center">
                             <a class="btn btn-primary" href="{{ path('edit_teacher', { 'teacherId': teacher.id, 'tbl': timetable.id } ) }}">Edit</a>

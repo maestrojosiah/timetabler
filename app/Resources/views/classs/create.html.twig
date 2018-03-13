@@ -1,6 +1,6 @@
-{% extends 'base.html.twig' %}
+H{% extends 'base.html.twig' %}
 {% block pagewrapper %}
-    {% set action_title = "Add Class" %}
+    {% set action_title = "Add Classes" %}
     {% embed "templates/pagewrapper.html.twig" %}
         {% block toplinks %}
         {% endblock %}
@@ -55,6 +55,7 @@
               <div class="box-footer">
                   {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary' }} ) }}
                   {{ form_widget(form.saveAndAdd, {'attr': {'class': 'btn btn-info' }} ) }}                               
+                  <a href="{{path('homepage')}}" class="btn btn-danger">DONE</a>
               </div>
           </div>
                {{ form_end(form) }}
