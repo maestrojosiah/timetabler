@@ -57,6 +57,13 @@ class Config
     private $sidebar;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="max_lesson_occurances", type="string", length=255)
+     */
+    private $maxLessonOccurances;
+
+    /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="configs")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE")
      */
@@ -216,5 +223,29 @@ class Config
     public function getUser()
     {
         return $this->user;
+    }
+
+    /**
+     * Set maxLessonOccurances
+     *
+     * @param string $maxLessonOccurances
+     *
+     * @return Config
+     */
+    public function setMaxLessonOccurances($maxLessonOccurances)
+    {
+        $this->maxLessonOccurances = $maxLessonOccurances;
+
+        return $this;
+    }
+
+    /**
+     * Get maxLessonOccurances
+     *
+     * @return string
+     */
+    public function getMaxLessonOccurances()
+    {
+        return $this->maxLessonOccurances;
     }
 }

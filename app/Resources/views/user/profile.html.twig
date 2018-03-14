@@ -95,13 +95,20 @@
                     </div>
                   </div>
                   <div class="form-group">
+                    <label for="maxLessonOccurances" class="col-sm-2 control-label">Lesson Appearance/Day</label>
+
+                    <div class="col-sm-10">
+                      <input {% if app.user.configs|first.maxLessonOccurances is defined %} value="{{app.user.configs|first.maxLessonOccurances}}" {% endif %} class="form-control" id="maxLessonOccurances" placeholder="Maximum times a lesson appears per day" type="text">
+                    </div>
+                  </div>
+                  <div class="form-group">
                     <label for="tableEntries" class="col-sm-2 control-label">Table Entries/page</label>
 
                     <div class="col-sm-10">
 	                  <select class="form-control" id="tableEntries">
+	                    <option value="10" {% if app.user.configs|first.entriesPerPage is defined and app.user.configs|first.entriesPerPage == 10 %} selected {% endif %}>10</option>
 	                    <option value="25" {% if app.user.configs|first.entriesPerPage is defined and app.user.configs|first.entriesPerPage == 25 %} selected {% endif %}>25</option>
 	                    <option value="50" {% if app.user.configs|first.entriesPerPage is defined and app.user.configs|first.entriesPerPage == 50 %} selected {% endif %}>50</option>
-	                    <option value="75" {% if app.user.configs|first.entriesPerPage is defined and app.user.configs|first.entriesPerPage == 75 %} selected {% endif %}>75</option>
 	                    <option value="100" {% if app.user.configs|first.entriesPerPage is defined and app.user.configs|first.entriesPerPage == 100 %} selected {% endif %}>100</option>
 	                  </select>
                     </div>
@@ -119,7 +126,7 @@
                     <div class="col-sm-10">
 	                  <select class="form-control" id="sidebar">
 	                    <option value="visible" {% if app.user.configs|first.sidebar is defined and app.user.configs|first.sidebar == 'visible' %} selected {% endif %}>Visible</option>
-	                    <option value="collapsed" {% if app.user.configs|first.sidebar is defined and app.user.configs|first.sidebar == 'collapsed' %} selected {% endif %}>Collapsed</option>
+	                    <option value="collapse" {% if app.user.configs|first.sidebar is defined and app.user.configs|first.sidebar == 'collapse' %} selected {% endif %}>Collapsed</option>
 	                  </select>
 
                     </div>
@@ -152,6 +159,7 @@
           var schoolTitle = $("#schoolTitle").val();
           var schoolAddress = $("#schoolAddress").val();
           var tableEntries = $("#tableEntries").val();
+          var maxLessonOccurances = $("#maxLessonOccurances").val();
           var footerMessage = $("#footerMessage").val();
           var sidebar = $("#sidebar").val();
 	      	$.ajax({
@@ -162,6 +170,7 @@
                   "schoolTitle": schoolTitle,
                   "schoolAddress": schoolAddress,
                   "tableEntries": tableEntries,
+                  "maxLessonOccurances": maxLessonOccurances,
                   "footerMessage": footerMessage,
 	              	"sidebar": sidebar,
 	          	},
@@ -169,7 +178,7 @@
 	          	success: function (data)
 	          	{
 	              	$("#info").html(
-                    '<div class="alert alert-success alert-dismissible" style="width:300px; float:right; height:50px; font-size:14;">'
+                    '<div class="alert alert-success alert-dismissible" style="width:300px; float:right; height:30px; font-size:14; padding:4px; ">'
                     + '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>'
                     + '<i class="icon fa fa-check"></i>'
                     +' Settings Saved! '

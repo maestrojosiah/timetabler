@@ -46,6 +46,11 @@ class Classs
      */
     private $classSubjects;
 
+    /**
+     * @ORM\OneToMany(targetEntity="Timetabler", mappedBy="class")
+     */
+    private $timetablers;
+
     public function __construct()
     {
         $this->classSubjects = new ArrayCollection();
@@ -169,5 +174,39 @@ class Classs
     public function getClassSubjects()
     {
         return $this->classSubjects;
+    }
+
+    /**
+     * Add timetabler
+     *
+     * @param \AppBundle\Entity\Timetabler $timetabler
+     *
+     * @return Classs
+     */
+    public function addTimetabler(\AppBundle\Entity\Timetabler $timetabler)
+    {
+        $this->timetablers[] = $timetabler;
+
+        return $this;
+    }
+
+    /**
+     * Remove timetabler
+     *
+     * @param \AppBundle\Entity\Timetabler $timetabler
+     */
+    public function removeTimetabler(\AppBundle\Entity\Timetabler $timetabler)
+    {
+        $this->timetablers->removeElement($timetabler);
+    }
+
+    /**
+     * Get timetablers
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getTimetablers()
+    {
+        return $this->timetablers;
     }
 }

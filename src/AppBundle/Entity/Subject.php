@@ -40,10 +40,15 @@ class Subject
      */
     private $timetable;
     
+    /**
+     * @ORM\OneToMany(targetEntity="ClassSubject", mappedBy="subject")
+     */
+    private $classSubjects;
+    
 	/**
-	 * @ORM\OneToMany(targetEntity="ClassSubject", mappedBy="subject")
+	 * @ORM\OneToMany(targetEntity="Timetabler", mappedBy="subject")
 	 */
-	private $classSubjects;
+	private $timetablers;
 	
     /**
      * Get id
@@ -170,5 +175,39 @@ class Subject
     public function getClassSubjects()
     {
         return $this->classSubjects;
+    }
+
+    /**
+     * Add timetabler
+     *
+     * @param \AppBundle\Entity\Timetabler $timetabler
+     *
+     * @return Subject
+     */
+    public function addTimetabler(\AppBundle\Entity\Timetabler $timetabler)
+    {
+        $this->timetablers[] = $timetabler;
+
+        return $this;
+    }
+
+    /**
+     * Remove timetabler
+     *
+     * @param \AppBundle\Entity\Timetabler $timetabler
+     */
+    public function removeTimetabler(\AppBundle\Entity\Timetabler $timetabler)
+    {
+        $this->timetablers->removeElement($timetabler);
+    }
+
+    /**
+     * Get timetablers
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getTimetablers()
+    {
+        return $this->timetablers;
     }
 }

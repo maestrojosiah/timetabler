@@ -52,7 +52,7 @@
         {% block stylesheets %}{% endblock %}
         {% set action_title = "Dashboard" %}
     </head>
-	<body class="hold-transition skin-blue sidebar-mini">
+	<body class="hold-transition skin-blue sidebar-mini sidebar-{{app.user.configs|first.sidebar}}">
     <div id="wrapper">
 
         {% block navigation %}
@@ -110,6 +110,14 @@
 		<script src="{{ asset('dist/js/pages/dashboard.js') }}"></script>
 		<!-- AdminLTE for demo purposes -->
 		<script src="{{ asset('dist/js/demo.js') }}"></script>
+	    <script>
+	    $(document).ready(function() {
+	        $('#dataTables-example').DataTable({
+	            responsive: true,
+	            "pageLength": {{app.user.configs|first.entriesPerPage}}
+	        });
+	    });
+	    </script>
 
 {# 	    <!-- Custom Theme JavaScript -->
 	    <script src="{{ asset('dist/js/sb-admin-2.js') }}"></script>

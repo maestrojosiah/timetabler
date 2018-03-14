@@ -32,30 +32,6 @@ class Timetabler
     /**
      * @var string
      *
-     * @ORM\Column(name="class", type="string", length=20)
-     */
-
-    private $class;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="teacher", type="string", length=200)
-     */
-
-    private $teacher;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="subject", type="string", length=100)
-     */
-
-    private $subject;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="table_format_column", type="string", length=100)
      */
 
@@ -74,6 +50,24 @@ class Timetabler
      * @ORM\JoinColumn(name="table_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $timetable;
+    
+    /**
+     * @ORM\ManyToOne(targetEntity="Teacher", inversedBy="timetablers")
+     * @ORM\JoinColumn(name="teacher_id", referencedColumnName="id", onDelete="CASCADE")
+     */
+    private $teacher;
+    
+    /**
+     * @ORM\ManyToOne(targetEntity="Subject", inversedBy="timetablers")
+     * @ORM\JoinColumn(name="subject_id", referencedColumnName="id", onDelete="CASCADE")
+     */
+    private $subject;
+    
+    /**
+     * @ORM\ManyToOne(targetEntity="Classs", inversedBy="timetablers")
+     * @ORM\JoinColumn(name="class_id", referencedColumnName="id", onDelete="CASCADE")
+     */
+    private $class;
     
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="timetablers")
@@ -217,77 +211,6 @@ class Timetabler
         return $this->day;
     }
 
-    /**
-     * Set class
-     *
-     * @param string $class
-     *
-     * @return Timetabler
-     */
-    public function setClass($class)
-    {
-        $this->class = $class;
-
-        return $this;
-    }
-
-    /**
-     * Get class
-     *
-     * @return string
-     */
-    public function getClass()
-    {
-        return $this->class;
-    }
-
-    /**
-     * Set teacher
-     *
-     * @param string $teacher
-     *
-     * @return Timetabler
-     */
-    public function setTeacher($teacher)
-    {
-        $this->teacher = $teacher;
-
-        return $this;
-    }
-
-    /**
-     * Get teacher
-     *
-     * @return string
-     */
-    public function getTeacher()
-    {
-        return $this->teacher;
-    }
-
-    /**
-     * Set subject
-     *
-     * @param string $subject
-     *
-     * @return Timetabler
-     */
-    public function setSubject($subject)
-    {
-        $this->subject = $subject;
-
-        return $this;
-    }
-
-    /**
-     * Get subject
-     *
-     * @return string
-     */
-    public function getSubject()
-    {
-        return $this->subject;
-    }
 
     /**
      * Set tableFormatColumn
@@ -311,5 +234,79 @@ class Timetabler
     public function getTableFormatColumn()
     {
         return $this->tableFormatColumn;
+    }
+
+
+
+    /**
+     * Set class
+     *
+     * @param \AppBundle\Entity\Classs $class
+     *
+     * @return Timetabler
+     */
+    public function setClass(\AppBundle\Entity\Classs $class = null)
+    {
+        $this->class = $class;
+
+        return $this;
+    }
+
+    /**
+     * Get class
+     *
+     * @return \AppBundle\Entity\Classs
+     */
+    public function getClass()
+    {
+        return $this->class;
+    }
+
+    /**
+     * Set teacher
+     *
+     * @param \AppBundle\Entity\Teacher $teacher
+     *
+     * @return Timetabler
+     */
+    public function setTeacher(\AppBundle\Entity\Teacher $teacher = null)
+    {
+        $this->teacher = $teacher;
+
+        return $this;
+    }
+
+    /**
+     * Get teacher
+     *
+     * @return \AppBundle\Entity\Teacher
+     */
+    public function getTeacher()
+    {
+        return $this->teacher;
+    }
+
+    /**
+     * Set subject
+     *
+     * @param \AppBundle\Entity\Subject $subject
+     *
+     * @return Timetabler
+     */
+    public function setSubject(\AppBundle\Entity\Subject $subject = null)
+    {
+        $this->subject = $subject;
+
+        return $this;
+    }
+
+    /**
+     * Get subject
+     *
+     * @return \AppBundle\Entity\Subject
+     */
+    public function getSubject()
+    {
+        return $this->subject;
     }
 }

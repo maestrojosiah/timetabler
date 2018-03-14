@@ -199,10 +199,8 @@ class TimetableController extends Controller
 
         $items = [];
         foreach($lessons as $lesson){
-            $subjectEntity = $em->getRepository('AppBundle:Subject')
-                ->find($lesson->getSubject());
-            $teacherEntity = $em->getRepository('AppBundle:Teacher')
-                ->find($lesson->getTeacher());
+            $subjectEntity = $lesson->getSubject();
+            $teacherEntity = $lesson->getTeacher();
             $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor();
         }
 

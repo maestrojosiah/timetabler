@@ -81,7 +81,6 @@
        	| <a href="{{path('image_timetable', {'tbl':tableformats[0].timetable.id})}}" class="btn btn-primary">Download as Image </a>
        	{% endif %}
        	| <a href="{{path('homepage')}}" class="btn btn-default">Home Page</a>
-    	<span id="info"></span>
     </div>
     <!-- /.panel-heading -->
     <div class="panel-body">
@@ -260,6 +259,7 @@
 	              			"border" : "1px solid fff"
 	              		}).text(data.output['subject']);
 	              	$("#info").html(data.message);
+	              	console.log(data.output.occurances);
 	          	},	
 	         	error: function () {
 	              	$("#warning").html("<b>something's wrong</b>");

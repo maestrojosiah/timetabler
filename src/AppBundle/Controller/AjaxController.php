@@ -43,58 +43,85 @@ class AjaxController extends Controller
             ->isClashing($day, $time, $teacher);
                 
         if($isClashing){
-            $message = '<div class="alert alert-danger alert-dismissible" style="width:300px; float:right; height:50px; font-size:14;">
+            $message = '<div class="alert alert-danger alert-dismissible" style="width:300px; float:right; height:30px; font-size:14; padding:4px;">
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                     <i class="icon fa fa-ban"></i> Alert!
                     Teacher Class Conflict!
                   </div>';
+
+            $arrData = ['output' => [] , 'message' => $message ];
+
         } else {
-            $message = '<div class="alert alert-success alert-dismissible" style="width:300px; float:right; height:50px; font-size:14;">
+            $message = '<div class="alert alert-success alert-dismissible" style="width:300px; float:right; height:30px; font-size:14; padding:4px;">
                 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                 <i class="icon fa fa-check"></i>
                 Successfully Added '.$classSubject->getSubject()->getSTitle().'!.
               </div>';
+
+            $subject = $classSubject->getSubject();
+
+            $user = $this->get('security.token_storage')->getToken()->getUser();
+            $config = $em->getRepository('AppBundle:Config')
+                ->findOneByUser($user);
+            $maxAllowedOccurances = $config->getMaxLessonOccurances()-1;
+
+
+            $subjectOccurancesToday = $em->getRepository('AppBundle:Timetabler')
+                ->subjectOccurancesToday($subject, $class, $day);
+
+            $numberOfOccurances = count($subjectOccurancesToday);
+            if($numberOfOccurances > $maxAllowedOccurances){
+                $message = '<div class="alert alert-danger alert-dismissible" style="width:300px; float:right; height:30px; font-size:14; padding:4px;">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <i class="icon fa fa-ban"></i> Alert!
+                    Maximum Lessons per day reached!
+                  </div>';
+
+                $arrData = ['output' => [] , 'message' => $message ];
+            } else {
+                $recorded = $em->getRepository('AppBundle:Timetabler')
+                    ->isAlreadyRecorded($day, $class, $time);
+
+                if($recorded){
+                    $timetabler = $em->getRepository('AppBundle:Timetabler')
+                        ->find($recorded->getId());
+                } else {
+                    $timetabler = new TimeTabler();
+                }
+
+                $timetabler->setClassSubject($classSubject);
+                $timetabler->setUser($user);
+                $timetabler->setTimetable($timetable);
+                $timetabler->setTime($time);
+                $timetabler->setDay($day);
+                $timetabler->setTeacher($classSubject->getTeacher());
+                $timetabler->setSubject($subject);
+                $timetabler->setClass($classSubject->getCClass());
+                $timetabler->setTableFormatColumn($tableFormatColumn);
+
+
+                $em->persist($timetabler);
+                $em->flush();
+
+                $class = $timetabler->getClass();
+                $day = $timetabler->getDay();
+                $format = $timetabler->getTableFormatColumn();
+                // $clr = $em->getRepository('AppBundle:Teacher')
+                //     ->find()
+                $color = $classSubject->getTeacher()->getColor();
+                $sbj = $em->getRepository('AppBundle:Subject')
+                    ->find($subj);
+                $subject = $sbj->getSTitle();
+
+                $string = 'class-'.$class.'_day-'.$day.'_tblfmt-'.$format;
+                $info = ['string'=>$string, 'color'=>$color, 'subject'=>$subject, 'occurances'=>$numberOfOccurances];                
+                $arrData = ['output' => $info , 'message' => $message ];
+            }
+
+                
+
         }
 
-        $user = $this->get('security.token_storage')->getToken()->getUser();
-
-        $recorded = $em->getRepository('AppBundle:Timetabler')
-            ->isAlreadyRecorded($day, $class, $time);
-
-        if($recorded){
-            $timetabler = $em->getRepository('AppBundle:Timetabler')
-                ->find($recorded->getId());
-        } else {
-            $timetabler = new TimeTabler();
-        }
-
-        $timetabler->setClassSubject($classSubject);
-        $timetabler->setUser($user);
-        $timetabler->setTimetable($timetable);
-        $timetabler->setTime($time);
-        $timetabler->setDay($day);
-        $timetabler->setTeacher($classSubject->getTeacher()->getId());
-        $timetabler->setSubject($subj);
-        $timetabler->setClass($classSubject->getCClass());
-        $timetabler->setTableFormatColumn($tableFormatColumn);
-
-
-        $em->persist($timetabler);
-        $em->flush();
-
-        $class = $timetabler->getClass();
-        $day = $timetabler->getDay();
-        $format = $timetabler->getTableFormatColumn();
-        // $clr = $em->getRepository('AppBundle:Teacher')
-        //     ->find()
-        $color = $classSubject->getTeacher()->getColor();
-        $sbj = $em->getRepository('AppBundle:Subject')
-            ->find($subj);
-        $subject = $sbj->getSTitle();
-
-        $string = 'class-'.$class.'_day-'.$day.'_tblfmt-'.$format;
-        $info = ['string'=>$string, 'color'=>$color, 'subject'=>$subject];
-        $arrData = ['output' => $info , 'message' => $message ];
         return new JsonResponse($arrData);
 
     }
@@ -165,6 +192,7 @@ class AjaxController extends Controller
         $schoolTitle = $request->request->get('schoolTitle');
         $schoolAddress = $request->request->get('schoolAddress');
         $tableEntries = $request->request->get('tableEntries');
+        $maxLessonOccurances = $request->request->get('maxLessonOccurances');
         $footerMessage = $request->request->get('footerMessage');
         $sidebar = $request->request->get('sidebar');
 
@@ -178,6 +206,7 @@ class AjaxController extends Controller
         $config->setSchoolTitle($schoolTitle);
         $config->setSchoolAddress($schoolAddress);
         $config->setEntriesPerPage($tableEntries);
+        $config->setMaxLessonOccurances($maxLessonOccurances);
         $config->setFooterMessage($footerMessage);
         $config->setSidebar($sidebar);
 

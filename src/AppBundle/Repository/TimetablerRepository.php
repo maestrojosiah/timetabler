@@ -41,5 +41,20 @@ class TimetablerRepository extends \Doctrine\ORM\EntityRepository
             ->getOneOrNullResult();
     }
 
+     public function subjectOccurancesToday($subject, $class, $day)
+    {
+        return $this->createQueryBuilder('a')
+            ->select('a')
+            ->andWhere('a.subject = :subject')
+            ->andWhere('a.class = :class')
+            ->andWhere('a.day = :day')
+            ->orderBy('a.id', 'DESC')
+            ->setParameter('subject', $subject)
+            ->setParameter('class', $class)
+            ->setParameter('day', $day)
+            ->getQuery()
+            ->getResult();
+    }
+
 
 }

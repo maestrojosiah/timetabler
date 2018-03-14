@@ -40,10 +40,15 @@ class Subject
      */
     private $timetable;
     
+    /**
+     * @ORM\OneToMany(targetEntity="ClassSubject", mappedBy="subject")
+     */
+    private $classSubjects;
+    
 	/**
-	 * @ORM\OneToMany(targetEntity="ClassSubject", mappedBy="subject")
+	 * @ORM\OneToMany(targetEntity="Timetabler", mappedBy="subject")
 	 */
-	private $classSubjects;
+	private $timetablers;
 	
     /**
      * Get id

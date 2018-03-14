@@ -54,10 +54,15 @@ class Teacher
      */
     private $timetable;
     
+    /**
+     * @ORM\OneToMany(targetEntity="ClassSubject", mappedBy="teacher")
+     */
+    private $classSubjects;
+
 	/**
-	 * @ORM\OneToMany(targetEntity="ClassSubject", mappedBy="teacher")
+	 * @ORM\OneToMany(targetEntity="Timetabler", mappedBy="teacher")
 	 */
-	private $classSubjects;
+	private $timetablers;
     
     public function __toString() {
         return $this->fName . ' ' . $this->lName;
@@ -232,5 +237,39 @@ class Teacher
     public function getClassSubjects()
     {
         return $this->classSubjects;
+    }
+
+    /**
+     * Add timetabler
+     *
+     * @param \AppBundle\Entity\Timetabler $timetabler
+     *
+     * @return Teacher
+     */
+    public function addTimetabler(\AppBundle\Entity\Timetabler $timetabler)
+    {
+        $this->timetablers[] = $timetabler;
+
+        return $this;
+    }
+
+    /**
+     * Remove timetabler
+     *
+     * @param \AppBundle\Entity\Timetabler $timetabler
+     */
+    public function removeTimetabler(\AppBundle\Entity\Timetabler $timetabler)
+    {
+        $this->timetablers->removeElement($timetabler);
+    }
+
+    /**
+     * Get timetablers
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getTimetablers()
+    {
+        return $this->timetablers;
     }
 }

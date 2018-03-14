@@ -54,10 +54,15 @@ class Teacher
      */
     private $timetable;
     
+    /**
+     * @ORM\OneToMany(targetEntity="ClassSubject", mappedBy="teacher")
+     */
+    private $classSubjects;
+
 	/**
-	 * @ORM\OneToMany(targetEntity="ClassSubject", mappedBy="teacher")
+	 * @ORM\OneToMany(targetEntity="Timetabler", mappedBy="teacher")
 	 */
-	private $classSubjects;
+	private $timetablers;
     
     public function __toString() {
         return $this->fName . ' ' . $this->lName;

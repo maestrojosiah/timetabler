@@ -66,29 +66,6 @@ class ClassSubject
     }
 
     /**
-     * Set cClass
-     *
-     * @param integer $cClass
-     *
-     * @return ClassSubject
-     */
-    public function setCClass($cClass)
-    {
-        $this->cClass = $cClass;
-
-        return $this;
-    }
-
-    /**
-     * Get cClass
-     *
-     * @return int
-     */
-    public function getCClass()
-    {
-        return $this->cClass;
-    }
-    /**
      * Constructor
      */
     public function __construct()
@@ -258,5 +235,29 @@ class ClassSubject
     public function getTimetablers()
     {
         return $this->timetablers;
+    }
+
+    /**
+     * Set cClass
+     *
+     * @param \AppBundle\Entity\Classs $cClass
+     *
+     * @return ClassSubject
+     */
+    public function setCClass(\AppBundle\Entity\Classs $cClass = null)
+    {
+        $this->cClass = $cClass;
+
+        return $this;
+    }
+
+    /**
+     * Get cClass
+     *
+     * @return \AppBundle\Entity\Classs
+     */
+    public function getCClass()
+    {
+        return $this->cClass;
     }
 }

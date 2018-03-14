@@ -1,9 +1,4 @@
-{% if app.user.configs|first.sidebar == "collapsed" %}
-	{% set page_extended = 'base_collapse.html.twig' %}
-{% else %}
-	{% set page_extended = 'base.html.twig' %}
-{% endif %}
-{% extends page_extended %}
+{% extends 'base.html.twig' %}
 {% block pagewrapper %}
     {% embed "templates/pagewrapper.html.twig" %}
         {% block charts %}
