@@ -5,3 +5,21 @@
         {% endblock %}
     {% endembed %}
 {% endblock %}
+{% block javascripts %}
+
+   <script type="text/javascript">
+    $( "#toManageTimetables" ).click(function() {
+      $("#timetableModal").modal('show');
+    });
+    $( "#toManageClasses" ).click(function() {
+      $("#classModal").modal('show');
+    });
+    $( "#toManageSubjects" ).click(function() {
+      $("#subjectModal").modal('show');
+    });
+    $( "#toManageTeachers" ).click(function() {
+      $("#teacherModal").modal('show');
+    });
+  </script>
+
+{% endblock %}

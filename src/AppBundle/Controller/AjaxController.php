@@ -48,7 +48,13 @@ class AjaxController extends Controller
             $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
 
         } else {
-            $message = 'Successfully Added '.$classSubject->getSubject()->getSTitle().'!.';
+            $totalInWeek = $em->getRepository('AppBundle:Timetabler')
+                ->findBy(
+                    array('subject' => $subj, 'class' => $class, 'timetable' => $timetable),
+                    array('id' => 'DESC')
+                );
+            $countedLessons = count($totalInWeek);
+            $message = $countedLessons + 1 . ' ' .$classSubject->getSubject()->getSTitle().' lessons this week, class '. $class->getCTitle();
 
             $subject = $classSubject->getSubject();
 
@@ -202,7 +208,7 @@ class AjaxController extends Controller
 
         $difference = array_diff($availableClassSubjects, $classSubjectsInPlace);
         
-        $available = '';
+        $available = '<h4>Hints:</h4>';
         foreach($difference as $item){ 
             $color = explode("|", $item)[2];
             $teacher = explode("|", $item)[1];
