@@ -20,6 +20,7 @@ class AjaxController extends Controller
     public function saveEntryAction(Request $request)
     {
         $fullId = explode('|',$request->request->get('info'));
+        $forced = $request->request->get('forced');
         $em = $this->getDoctrine()->getManager();
 
         $classSubj = explode("_", $fullId[0])[1];
@@ -42,7 +43,7 @@ class AjaxController extends Controller
         $isClashing = $em->getRepository('AppBundle:Timetabler')
             ->isClashing($day, $time, $teacher);
                 
-        if($isClashing){
+        if($isClashing && $forced == 'false'){
             $message = 'Teacher Class Conflict!';
 
             $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
@@ -109,7 +110,7 @@ class AjaxController extends Controller
 
                 $string = 'class-'.$class.'_day-'.$day.'_tblfmt-'.$format;
                 $info = ['string'=>$string, 'color'=>$color, 'subject'=>$subject, 'occurances'=>$numberOfOccurances];                
-                $arrData = ['output' => $info, 'theme' => 'dark', 'message' => $message ];
+                $arrData = ['output' => $info, 'theme' => 'dark', 'message' => $message, 'forced' => $forced ];
             }
 
                 

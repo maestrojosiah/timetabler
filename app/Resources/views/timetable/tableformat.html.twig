@@ -63,15 +63,7 @@
 {# table starts here #}
 <div class="panel panel-default">
     <div class="panel-heading">
-       	Classes 
        	{% set counter = 0 %}
-       	{% for class in classes %}
-       		{% set counter = counter + 1 %}
-       		{{class}}
-       		{% if counter < classes|length %}
-       			,
-       		{% endif %}
-       	{% endfor %}
        	| <a href="{{path('list_teachers', {'tbl':timetable.id})}}" >Teachers: </a>
        	{% if tableformats|first %}
        	{% for teacher in tableformats[0].timetable.teachers %}
@@ -81,6 +73,9 @@
        	| <a href="{{path('image_timetable', {'tbl':tableformats[0].timetable.id})}}" class="btn btn-primary">Download as Image </a>
        	{% endif %}
        	| <a href="{{path('homepage')}}" class="btn btn-default">Home Page</a>
+       	| <input type="checkbox" id="forceEntry" style="outline:1px solid black;">
+		      <b> FORCE</b>
+
     </div>
     <!-- /.panel-heading -->
     <div class="panel-body">
@@ -166,7 +161,6 @@
 													                </div>
 													            </div>
 													            <div class="modal-footer">
-													                
 													                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 													            </div>
 													        </div>
@@ -242,12 +236,20 @@
   	<script>
   	    $(document).on('click', '[id^="classSubj_"]', function(){
   	    	var id = jQuery(this).attr("id");
-	      	$.ajax({
+
+				if ($('#forceEntry').is(':checked')) {
+			        var forced = 'true';
+			    } else {
+			        var forced = 'false';
+			    }
+
+			    $.ajax({
 	          	url:'{{ (path('save_timetable_entry')) }}',
 	          	type: "POST",
 	          	dataType: "json",
 	          	data: {
 	              	"info": id,
+	              	"forced": forced,
 	          	},
 	          	async: true,
 	          	success: function (data)
