@@ -52,7 +52,14 @@
         {% block stylesheets %}{% endblock %}
         {% set action_title = "Dashboard" %}
     </head>
-	<body class="hold-transition skin-blue sidebar-mini sidebar-{{app.user.configs|first.sidebar}}">
+    {% if app.user.configs is defined and app.user.configs is not empty %}
+    	{% set sidebar = app.user.configs|first.sidebar  %}
+    	{% set entriesPerPage = app.user.configs|first.entriesPerPage %}
+    {% else %}
+    	{% set sidebar = "" %}
+    	{% set entriesPerPage = 10 %}
+    {% endif %}
+	<body class="hold-transition skin-blue sidebar-mini sidebar-{{sidebar}}">
     <div id="wrapper">
 
         {% block navigation %}
@@ -114,7 +121,7 @@
 	    $(document).ready(function() {
 	        $('#dataTables-example').DataTable({
 	            responsive: true,
-	            "pageLength": {{app.user.configs|first.entriesPerPage}}
+	            "pageLength": {{entriesPerPage}}
 	        });
 	    });
 	    </script>
@@ -125,13 +132,23 @@
         {% block javascripts %}{% endblock %}
 	    {% for message in app.flashes('success') %}
 	        <script type="text/javascript">
-	            $.notiny({ text: '{{ message }}',  position: 'left-top' });
+	            $.notiny({ 
+	            	text: '{{ message }}',  
+	            	position: 'right-top',
+	            	delay: 5000,
+	            	theme: 'dark'
+	            });
 	        </script>
 	    {% endfor %}
 
 	    {% for message in app.flashes('error') %}
 	        <script type="text/javascript">
-	            $.notiny({ text: '{{ message }}',  position: 'left-top' });
+	            $.notiny({ 
+	            	text: '{{ message }}',  
+	            	position: 'right-top',
+	            	delay: 5000,
+	            	theme: 'light'
+	            });
 	        </script>
 	    {% endfor %}        	
     </body>

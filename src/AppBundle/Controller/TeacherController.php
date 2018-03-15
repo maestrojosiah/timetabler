@@ -55,7 +55,7 @@ class TeacherController extends Controller
                 //if the error is not for duplicates, throw the error
                 if($e->getErrorCode() == 1062) {
                     $this->addFlash(
-                        'success',
+                        'error',
                         'Choose another color. That\'s in use!'
                     );
                     return $this->redirectToRoute('list_teachers');
@@ -189,7 +189,7 @@ class TeacherController extends Controller
                 //if the error is not for duplicates, throw the error
                 if($e->getErrorCode() == 1062) {
                     $this->addFlash(
-                        'success',
+                        'error',
                         'Choose another color. That\'s in use!'
                     );
                     return $this->redirectToRoute('list_teachers');

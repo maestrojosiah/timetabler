@@ -10,4 +10,18 @@ namespace AppBundle\Repository;
  */
 class ClassSubjectRepository extends \Doctrine\ORM\EntityRepository
 {
+    public function isAlreadyCreated($subject, $class)
+    {
+        return $this->createQueryBuilder('s')
+            ->select('s')
+            ->where('s.subject = :subject')
+            ->andWhere('s.cClass = :class')
+            ->orderBy('s.id', 'ASC')
+            ->setMaxResults(1)
+            ->setParameter('subject', $subject)
+            ->setParameter('class', $class)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
 }

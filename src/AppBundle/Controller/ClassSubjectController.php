@@ -87,6 +87,19 @@ class ClassSubjectController extends Controller
 
             $tr = $em->getRepository('AppBundle:Teacher')
                 ->find($teacherId);
+
+            $isAlreadyCreated = $em->getRepository('AppBundle:ClassSubject')
+                ->isAlreadyCreated($subj, $classs);
+
+            if($isAlreadyCreated){
+                $this->addFlash(
+                    'error',
+                    'That Subject Is Already Taken!'
+                );
+
+                return $this->redirectToRoute('assign_subjects', ['teacherId' => $teacherId]);
+
+            }
             $classSubject->setSubject($subj);
             $classSubject->setCClass($classs);
             $classSubject->setTimetable($tr->getTimetable());

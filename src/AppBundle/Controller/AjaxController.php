@@ -17,7 +17,7 @@ class AjaxController extends Controller
     /**
      * @Route("/save/table/entry", name="save_timetable_entry")
      */
-    public function getIdAction(Request $request)
+    public function saveEntryAction(Request $request)
     {
         $fullId = explode('|',$request->request->get('info'));
         $em = $this->getDoctrine()->getManager();
@@ -43,20 +43,12 @@ class AjaxController extends Controller
             ->isClashing($day, $time, $teacher);
                 
         if($isClashing){
-            $message = '<div class="alert alert-danger alert-dismissible" style="width:300px; float:right; height:30px; font-size:14; padding:4px;">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <i class="icon fa fa-ban"></i> Alert!
-                    Teacher Class Conflict!
-                  </div>';
+            $message = 'Teacher Class Conflict!';
 
-            $arrData = ['output' => [] , 'message' => $message ];
+            $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
 
         } else {
-            $message = '<div class="alert alert-success alert-dismissible" style="width:300px; float:right; height:30px; font-size:14; padding:4px;">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                <i class="icon fa fa-check"></i>
-                Successfully Added '.$classSubject->getSubject()->getSTitle().'!.
-              </div>';
+            $message = 'Successfully Added '.$classSubject->getSubject()->getSTitle().'!.';
 
             $subject = $classSubject->getSubject();
 
@@ -71,13 +63,9 @@ class AjaxController extends Controller
 
             $numberOfOccurances = count($subjectOccurancesToday);
             if($numberOfOccurances > $maxAllowedOccurances){
-                $message = '<div class="alert alert-danger alert-dismissible" style="width:300px; float:right; height:30px; font-size:14; padding:4px;">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <i class="icon fa fa-ban"></i> Alert!
-                    Maximum Lessons per day reached!
-                  </div>';
+                $message = 'Maximum Lessons for '. $subject->getSTitle() . ' reached!';
 
-                $arrData = ['output' => [] , 'message' => $message ];
+                $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
             } else {
                 $recorded = $em->getRepository('AppBundle:Timetabler')
                     ->isAlreadyRecorded($day, $class, $time);
@@ -115,7 +103,7 @@ class AjaxController extends Controller
 
                 $string = 'class-'.$class.'_day-'.$day.'_tblfmt-'.$format;
                 $info = ['string'=>$string, 'color'=>$color, 'subject'=>$subject, 'occurances'=>$numberOfOccurances];                
-                $arrData = ['output' => $info , 'message' => $message ];
+                $arrData = ['output' => $info, 'theme' => 'dark', 'message' => $message ];
             }
 
                 
@@ -123,6 +111,112 @@ class AjaxController extends Controller
         }
 
         return new JsonResponse($arrData);
+
+    }
+
+    /**
+     * @Route("/remove/table/entry", name="remove_timetable_entry")
+     */
+    public function removeEntryAction(Request $request)
+    {
+        $fullId = explode('|',$request->request->get('info'));
+        $em = $this->getDoctrine()->getManager();
+
+        $day = explode("_", $fullId[0])[1];
+        $class =  explode("_", $fullId[1])[1];
+        $time =  explode("_", $fullId[2])[1];
+
+        $timetablerEntry = $em->getRepository('AppBundle:Timetabler')
+            ->findOneBy(
+                array('day' => $day, 'class' => $class, 'time' => $time),
+                array('id' => 'DESC')
+            );
+        $message = $timetablerEntry->getSubject()->getSTitle(). 'has been removed';
+        $id = 'class-'.$timetablerEntry->getClass()->getCTitle().'_day-'.$day.'_tblfmt-'.$timetablerEntry->getTableFormatColumn();
+
+        $arrData = ['message' => $message, 'id' => $id];
+        
+        $em->remove($timetablerEntry);
+        $em->flush();
+
+        return new JsonResponse($arrData);
+
+    }
+
+    /**
+     * @Route("/timetable/hints", name="give_hints")
+     */
+    public function giveHintsAction(Request $request)
+    {
+        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $fullId = explode('_',$request->request->get('info'));
+        $timetableId = $request->request->get('timetable');
+        $em = $this->getDoctrine()->getManager();
+
+        $className = explode("-", $fullId[0])[1];
+        $day =  explode("-", $fullId[1])[1];
+        $tableFormatColumn =  explode("-", $fullId[2])[1];
+
+        $class = $em->getRepository('AppBundle:Classs')
+            ->findOneBy(
+                array('cTitle' => $className, 'user' => $user),
+                array('id' => 'DESC')
+            );
+
+        $timetable = $em->getRepository('AppBundle:Timetable')
+            ->find($timetableId);
+
+        $subjects = $timetable->getSubjects();
+        $teachers = $timetable->getTeachers();
+        $classSubjects = $timetable->getClassSubjects();
+
+        $timetablerEntriesForThisDayColumn = $em->getRepository('AppBundle:TimeTabler')
+            ->findBy(
+                array('day' => $day, 'tableFormatColumn' =>$tableFormatColumn),
+                array('id' => 'DESC')
+            );
+
+        $timetablerEntriesForThisDayClass = $em->getRepository('AppBundle:TimeTabler')
+            ->findBy(
+                array('day' => $day, 'class' =>$class),
+                array('id' => 'DESC')
+            );
+
+        $classSubjectsInPlace = [];
+        $classSubjectTeachers = [];
+        foreach($timetablerEntriesForThisDayColumn as $c_s_entry){
+            $classSubjectsInPlace[] = $c_s_entry->getSubject()->getSTitle().'|'.$c_s_entry->getTeacher().'|'.$c_s_entry->getTeacher()->getColor();
+            $classSubjectTeachers[] = $c_s_entry->getTeacher();
+        }
+        foreach($timetablerEntriesForThisDayClass as $c_s_entry){
+            $classSubjectsInPlace[] = $c_s_entry->getSubject()->getSTitle().'|'.$c_s_entry->getTeacher().'|'.$c_s_entry->getTeacher()->getColor();
+        }
+
+        $availableClassSubjects = [];
+        foreach($classSubjects as $classSubject){
+            if($classSubject->getCClass()->getCTitle() == $className){
+                $availableClassSubjects[] = $classSubject->getSubject()->getSTitle().'|'.$classSubject->getTeacher().'|'.$classSubject->getTeacher()->getColor();                
+            }
+            
+        }
+
+        $difference = array_diff($availableClassSubjects, $classSubjectsInPlace);
+        
+        $available = '';
+        foreach($difference as $item){ 
+            $color = explode("|", $item)[2];
+            $teacher = explode("|", $item)[1];
+            $subject = explode("|", $item)[0];
+            if(!in_array(explode("|", $item)[1], $classSubjectTeachers)){
+                $available .= '<span class="" style="background-color:'.$color.';">'.$subject.' ['.$teacher.']</span><br />';
+            }
+            
+        }
+        if($available == ""){
+            $available = "No Hints";
+        }
+
+        return new JsonResponse($available);
 
     }
 

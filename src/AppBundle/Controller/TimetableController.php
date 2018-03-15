@@ -179,7 +179,7 @@ class TimetableController extends Controller
 
         if(!$tableformats){
             $this->addFlash(
-                'success',
+                'error',
                 'Please setup the timetable order of events!'
             );            
             return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            

@@ -20,8 +20,12 @@ class DefaultController extends Controller
         $data['tableId'] = $tableId;
 
         $teachers = $em->getRepository('AppBundle:Teacher')
-        	->countTeachers($user);
+            ->countTeachers($user);
         $data['countTeachers'] = $teachers;
+
+        $configs = $em->getRepository('AppBundle:Config')
+        	->countConfigs($user);
+        $data['countConfigs'] = $configs;
 
         $timetables = $em->getRepository('AppBundle:Timetable')
         	->countTimetables($user);
@@ -58,9 +62,17 @@ class DefaultController extends Controller
         $data['allTimetables'] = $allTimetables;
 
 
+        if($configs == 0){
+            $this->addFlash(
+                'error',
+                'Please add some settings!'
+            );
+            return $this->redirectToRoute('view_profile');
+        }
+
         if($timetables == 0){
             $this->addFlash(
-                'success',
+                'error',
                 'Please add at least one timetable!'
             );
             return $this->redirectToRoute('add_timetable');
@@ -68,7 +80,7 @@ class DefaultController extends Controller
 
         if(count($lastTimeTable[0]->getClasses()) == 0){
             $this->addFlash(
-                'success',
+                'error',
                 'Please add at least one class!'
             );
             return $this->redirectToRoute('add_classs', ['tbl' => $lastTimeTable[0]->getId()]);
@@ -76,7 +88,7 @@ class DefaultController extends Controller
 
         if(count($lastTimeTable[0]->getTeachers()) == 0){
             $this->addFlash(
-                'success',
+                'error',
                 'Please add at least one teacher!'
             );
             return $this->redirectToRoute('add_teacher', ['tbl' => $lastTimeTable[0]->getId()]);
@@ -84,7 +96,7 @@ class DefaultController extends Controller
 
         if(count($lastTimeTable[0]->getSubjects()) == 0){
             $this->addFlash(
-                'success',
+                'error',
                 'Please add at least one subject!'
             );
             return $this->redirectToRoute('add_subject', ['tbl' => $lastTimeTable[0]->getId()]);
@@ -92,7 +104,7 @@ class DefaultController extends Controller
 
         if(count($lastTimeTable[0]->getTableFormats()) == 0){
             $this->addFlash(
-                'success',
+                'error',
                 'Please add timetable format!'
             );
             return $this->redirectToRoute('add_table_format', ['tbl' => $lastTimeTable[0]->getId()]);

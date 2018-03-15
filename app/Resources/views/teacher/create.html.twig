@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 {% block stylesheets %}
 
- <link href="{{ asset('bootstrap-colorpicker/dist/css/bootstrap-colorpicker.css') }}" rel="stylesheet">
+ <link href="{{ asset('spectrum/spectrum.css') }}" rel="stylesheet">
 {% endblock %}
 {% block pagewrapper %}
     {% set action_title = "Add Teachers" %}
@@ -36,7 +36,7 @@
                                 <div class="col-lg-6">
                                  <div class="form-group">
                                     <label>First Name</label>
-                                      {{ form_widget(form.f_name, {'attr': {'class': 'form-control', 'placeholder': 'First name', 'id': 'first_name' }} ) }}
+                                      {{ form_widget(form.f_name, {'attr': {'class': 'form-control', 'placeholder': 'First name', 'id': 'first_name', 'value': 'Tr.' }} ) }}
                                     </div>
                                     <div class="form-group">
                                     <label>Last Name</label>
@@ -61,8 +61,6 @@
             </div>
               </div>
               <!-- /.box-body -->
-<hr />
-<hr />
 
               <div class="box-footer">
                   {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary' }} ) }}
@@ -105,14 +103,22 @@
     {% endembed %}
 {% endblock %}
 {% block javascripts %}
-    <script src="{{ asset('bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js') }}"></script>
-  <script>
-    $(function () {
-      $('#teacher_color').colorpicker(
-        {
-          'format': 'hex'
-        });
-    });
+    <script src="{{ asset('spectrum/spectrum.js') }}"></script>
+<script>
+$("#teacher_color").spectrum({
+    preferredFormat: "hex",
+    showInput: true,
+    showPalette: true,
+    palette: [["red", "rgba(0, 255, 0, .5)", "rgb(0, 0, 255)"]]
+});
+// Show the original input to demonstrate the value changing when calling `set`
+$("#teacher_color").show();
+</script>
+  <script type="text/javascript">
+    $(function() {
+      $("#teacher_l_name").focus();
+    });    
   </script>
+
 {% endblock %}
 
