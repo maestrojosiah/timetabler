@@ -25,7 +25,7 @@
 			    <div class="col-sm-10">
 					<select name="form[class]" id="class_subject_class" class="form-control">
 						{% for class in classes %}
-					    	<option value="{{class}}"{% if cls == class %} selected {% endif %} >{{class}}</option>
+					    	<option value="{{class.id}}"{% if cls == class %} selected {% endif %} >{{class}}</option>
 						{% endfor %}
 					</select>	
 		    	</div>

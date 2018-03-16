@@ -52,7 +52,7 @@ html{font-family:sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:1
 {# table starts here #}
 <div class="panel panel-default">
     <div class="panel-heading" style="page-break-before: always;">
-        <h2>{{tableformats|first.timetable.title}}</h2>
+        <h2>{{app.user.configs|first.schoolTitle}} {{tableformats|first.timetable.title}}</h2>
         Teachers: 
         {% for teacher in tableformats[0].timetable.teachers %}
             <a href="#" class="btn" style="background-color:{{teacher.color}}!important">{{teacher.fName}}{{teacher.lName}}</a>

@@ -170,10 +170,11 @@ class ClassSubjectController extends Controller
             ->find($teacher->getTimetable()->getId());
 
         $data['timetable'] = $timetable;
-        $recordedRange = $timetable->getClassRange();
-        $separate = explode('-', $recordedRange);
-
-        $classes = range($separate[0], $separate[1]);
+        $classes = $em->getRepository('AppBundle:Classs')
+            ->findBy(
+                array('user'=>$user, 'timetable'=>$timetable),
+                array('id' => 'ASC')
+            );
 
         $data['teacher'] = $teacher;
         $data['classes'] = $classes;
@@ -193,14 +194,17 @@ class ClassSubjectController extends Controller
             $subj = $em->getRepository('AppBundle:Subject')
                 ->find($form_data['subject']);
 
+            $classs = $em->getRepository('AppBundle:Classs')
+                ->find($form_data['class']);
+
             $classSubject->setSubject($subj);
-            $classSubject->setCClass($form_data['class']);
+            $classSubject->setCClass($classs);
             $em->persist($classSubject);
             $em->flush();
 
             $this->addFlash(
                 'success',
-                'ClassSubject created successfully!'
+                'ClassSubject edited successfully!'
             );
 
             return $this->redirectToRoute('list_classSubjects', ['teacherId' => $teacher->getId(), 'tbl' => $timetable->getId()]);

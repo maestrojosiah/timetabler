@@ -58,7 +58,7 @@ class TeacherController extends Controller
                         'error',
                         'Choose another color. That\'s in use!'
                     );
-                    return $this->redirectToRoute('list_teachers');
+                    return $this->redirectToRoute('list_teachers', ['tbl' => $tableId]);
                 }
 
                 //otherwise ignore it

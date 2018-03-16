@@ -122,6 +122,121 @@ class AjaxController extends Controller
     }
 
     /**
+     * @Route("/fix/table/entry", name="fix_timetable_entry")
+     */
+    public function fixEntryAction(Request $request)
+    {
+        $fullId = explode('|',$request->request->get('info'));
+        $em = $this->getDoctrine()->getManager();
+
+        $classSubj = $request->request->get('classSubj');
+        $subj =  $request->request->get('subject');
+        $teacherId =  $request->request->get('teacher');
+        $forced =  $request->request->get('forced');
+        $time =  explode("_", $fullId[4])[1]; 
+        $t_table =  $request->request->get('timetable');
+        $day =  explode("_", $fullId[2])[1];
+        $tableFormatColumn =  explode("_", $fullId[3])[1];
+        $classId =  explode("_", $fullId[1])[1];
+
+        $timetable = $em->getRepository('AppBundle:Timetable')
+            ->find($t_table);
+
+        // $classSubject = $em->getRepository('AppBundle:ClassSubject')
+        //     ->find($classSubj);
+        $class = $em->getRepository('AppBundle:Classs')
+            ->find($classId);
+
+        $teacher = $em->getRepository('AppBundle:Teacher')
+            ->find($teacherId);
+
+        $subject = $em->getRepository('AppBundle:Subject')
+            ->find($subj);
+
+        // If there is another lesson for this day and this time for this teacher
+        // then show a notification that this is wrong
+        $isClashing = $em->getRepository('AppBundle:Timetabler')
+            ->isClashing($day, $time, $teacher);
+
+        $found = count($isClashing);
+                
+        if($isClashing && $forced == 'false'){
+            $message = 'Teacher Class Conflict!';
+
+            $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
+
+        } else {
+            $totalInWeek = $em->getRepository('AppBundle:Timetabler')
+                ->findBy(
+                    array('subject' => $subj, 'class' => $class, 'timetable' => $timetable),
+                    array('id' => 'DESC')
+                );
+            $countedLessons = count($totalInWeek);
+            $message = $countedLessons + 1 . ' ' .$subject->getSTitle().' lessons this week, class '. $class->getCTitle();
+
+            $user = $this->get('security.token_storage')->getToken()->getUser();
+            $config = $em->getRepository('AppBundle:Config')
+                ->findOneByUser($user);
+            $maxAllowedOccurances = $config->getMaxLessonOccurances()-1;
+
+
+            $subjectOccurancesToday = $em->getRepository('AppBundle:Timetabler')
+                ->subjectOccurancesToday($subject, $class, $day);
+
+            $numberOfOccurances = count($subjectOccurancesToday);
+            if($numberOfOccurances > $maxAllowedOccurances){
+                $message = 'Maximum Lessons for '. $subject->getSTitle() . ' reached!';
+
+                $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
+            } else {
+                $recorded = $em->getRepository('AppBundle:Timetabler')
+                    ->isAlreadyRecorded($day, $class, $time);
+
+                if($recorded){
+                    $timetabler = $em->getRepository('AppBundle:Timetabler')
+                        ->find($recorded->getId());
+                } else {
+                    $timetabler = new TimeTabler();
+                }
+
+                $timetabler->setClassSubject(NULL);
+                $timetabler->setUser($user);
+                $timetabler->setTimetable($timetable);
+                $timetabler->setTime($time);
+                $timetabler->setDay($day);
+                $timetabler->setTeacher($teacher);
+                $timetabler->setSubject($subject);
+                $timetabler->setClass($class);
+                $timetabler->setTableFormatColumn($tableFormatColumn);
+
+
+                $em->persist($timetabler);
+                $em->flush();
+
+                $class = $timetabler->getClass();
+                $day = $timetabler->getDay();
+                $format = $timetabler->getTableFormatColumn();
+                // $clr = $em->getRepository('AppBundle:Teacher')
+                //     ->find()
+                $color = $teacher->getColor();
+                $sbj = $em->getRepository('AppBundle:Subject')
+                    ->find($subj);
+                $subject = $sbj->getSTitle();
+
+                $string = 'class-'.$class.'_day-'.$day.'_tblfmt-'.$format;
+                $info = ['string'=>$string, 'color'=>$color, 'subject'=>$subject, 'occurances'=>$numberOfOccurances];                
+                $arrData = ['output' => $info, 'theme' => 'dark', 'message' => $message, 'forced' => $forced ];
+            }
+
+                
+
+        }
+
+        return new JsonResponse($arrData);
+
+    }
+
+    /**
      * @Route("/remove/table/entry", name="remove_timetable_entry")
      */
     public function removeEntryAction(Request $request)
