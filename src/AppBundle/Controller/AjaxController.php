@@ -436,6 +436,33 @@ class AjaxController extends Controller
     }
 
     /**
+     * @Route("/timetable/clear", name="clear_timetable")
+     */
+    public function clearAction(Request $request)
+    {
+        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $em = $this->getDoctrine()->getManager();
+
+        $timetableId = $request->request->get('timetable');
+        $timetable = $em->getRepository('AppBundle:Timetable')
+            ->find($timetableId);
+
+        $timetablers = $em->getRepository('AppBundle:Timetabler')
+            ->findByTimetable($timetable);
+
+        
+        foreach($timetablers as $timetabler){
+            $em->remove($timetabler);
+        }
+        
+        
+        $em->flush();
+
+        return new JsonResponse("success");
+
+    }
+
+    /**
      * @Route("/auto/entries", name="save_entries_auto")
      */
     public function saveEntriesAction(Request $request)
@@ -454,11 +481,16 @@ class AjaxController extends Controller
 
         $subject = $em->getRepository('AppBundle:Subject')
             ->find($subjectId);
-        if($classId != "all"){
-            $classes = [$em->getRepository('AppBundle:Classs')->find($classId)];            
+        if($classId != ""){
+            $classes = [$em->getRepository('AppBundle:Classs')->find($classId)];     
+            $reload = 'true';       
         } else {
-            $classes = $timetable->getClasses();
+            $message = 'Please select a class to add subjects to!';
+            $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
+            $reload = 'false';
+            goto end;
         }
+        $totalToPlace = $quantity * count($classes);
 
         $numberOfClasses = count($classes);
         $numberOfDays = count($days);
@@ -533,7 +565,7 @@ class AjaxController extends Controller
                         array('id' => 'DESC')
                     );
                 $countLessonsAlreadyRecorded = count($lessonsAlreadyRecorded);
-                if($countLessonsAlreadyRecorded == $quantity*count($classes)){
+                if($countLessonsAlreadyRecorded == $totalToPlace){
                     $message[] = 'Enough!';
 
                     $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
@@ -668,8 +700,9 @@ class AjaxController extends Controller
 
         }
 
-        
-        return new JsonResponse($message);
+        end:
+        $toSend = ['reload' => $reload, 'message' => $message];
+        return new JsonResponse($toSend);
 
     }
 
