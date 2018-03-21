@@ -25,6 +25,22 @@ class TimetablerRepository extends \Doctrine\ORM\EntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function isAlreadyRecordedFormat($day, $class, $tableFormatColumn)
+    {
+        return $this->createQueryBuilder('a')
+            ->select('a')
+            ->where('a.day = :day')
+            ->andWhere('a.class = :class')
+            ->andWhere('a.tableFormatColumn = :tableFormatColumn')
+            ->orderBy('a.id', 'DESC')
+            ->setMaxResults(1)
+            ->setParameter('day', $day)
+            ->setParameter('class', $class)
+            ->setParameter('tableFormatColumn', $tableFormatColumn)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
      public function isClashing($day, $time, $teacher)
     {
         return $this->createQueryBuilder('a')
@@ -36,6 +52,22 @@ class TimetablerRepository extends \Doctrine\ORM\EntityRepository
             ->setMaxResults(1)
             ->setParameter('day', $day)
             ->setParameter('time', $time)
+            ->setParameter('teacher', $teacher)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+     public function isClashingFormat($day, $tableFormatColumn, $teacher)
+    {
+        return $this->createQueryBuilder('a')
+            ->select('a')
+            ->andWhere('a.day = :day')
+            ->andWhere('a.tableFormatColumn = :tableFormatColumn')
+            ->andWhere('a.teacher = :teacher')
+            ->orderBy('a.id', 'DESC')
+            ->setMaxResults(1)
+            ->setParameter('day', $day)
+            ->setParameter('tableFormatColumn', $tableFormatColumn)
             ->setParameter('teacher', $teacher)
             ->getQuery()
             ->getOneOrNullResult();

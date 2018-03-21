@@ -41,7 +41,7 @@ class AjaxController extends Controller
         // If there is another lesson for this day and this time for this teacher
         // then show a notification that this is wrong
         $isClashing = $em->getRepository('AppBundle:Timetabler')
-            ->isClashing($day, $time, $teacher);
+            ->isClashingFormat($day, $tableFormatColumn, $teacher);
                 
         if($isClashing && $forced == 'false'){
             $message = 'Teacher Class Conflict!';
@@ -75,7 +75,7 @@ class AjaxController extends Controller
                 $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
             } else {
                 $recorded = $em->getRepository('AppBundle:Timetabler')
-                    ->isAlreadyRecorded($day, $class, $time);
+                    ->isAlreadyRecordedFormat($day, $class, $tableFormatColumn);
 
                 if($recorded){
                     $timetabler = $em->getRepository('AppBundle:Timetabler')
@@ -156,7 +156,7 @@ class AjaxController extends Controller
         // If there is another lesson for this day and this time for this teacher
         // then show a notification that this is wrong
         $isClashing = $em->getRepository('AppBundle:Timetabler')
-            ->isClashing($day, $time, $teacher);
+            ->isClashingFormat($day, $tableFormatColumn, $teacher);
 
         $found = count($isClashing);
                 
@@ -190,7 +190,7 @@ class AjaxController extends Controller
                 $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
             } else {
                 $recorded = $em->getRepository('AppBundle:Timetabler')
-                    ->isAlreadyRecorded($day, $class, $time);
+                    ->isAlreadyRecordedFormat($day, $class, $tableFormatColumn);
 
                 if($recorded){
                     $timetabler = $em->getRepository('AppBundle:Timetabler')
@@ -247,13 +247,14 @@ class AjaxController extends Controller
         $day = explode("_", $fullId[0])[1];
         $class =  explode("_", $fullId[1])[1];
         $time =  explode("_", $fullId[2])[1];
+        $tableFormat =  explode("_", $fullId[3])[1];
 
         $timetablerEntry = $em->getRepository('AppBundle:Timetabler')
             ->findOneBy(
-                array('day' => $day, 'class' => $class, 'time' => $time),
+                array('day' => $day, 'class' => $class, 'tableFormatColumn' => $tableFormat),
                 array('id' => 'DESC')
             );
-        $message = $timetablerEntry->getSubject()->getSTitle(). 'has been removed';
+        $message = $timetablerEntry->getSubject()->getSTitle(). ' has been removed';
         $id = 'class-'.$timetablerEntry->getClass()->getCTitle().'_day-'.$day.'_tblfmt-'.$timetablerEntry->getTableFormatColumn();
 
         $arrData = ['message' => $message, 'id' => $id];
@@ -274,6 +275,9 @@ class AjaxController extends Controller
         $fullId = explode('_',$request->request->get('info'));
         $timetableId = $request->request->get('timetable');
         $em = $this->getDoctrine()->getManager();
+        $timetable = $em->getRepository('AppBundle:Timetable')
+            ->find($timetableId);
+
 
         $className = explode("-", $fullId[0])[1];
         $day =  explode("-", $fullId[1])[1];
@@ -281,12 +285,9 @@ class AjaxController extends Controller
 
         $class = $em->getRepository('AppBundle:Classs')
             ->findOneBy(
-                array('cTitle' => $className, 'user' => $user),
+                array('timetable' => $timetable, 'cTitle' => $className, 'user' => $user),
                 array('id' => 'DESC')
             );
-
-        $timetable = $em->getRepository('AppBundle:Timetable')
-            ->find($timetableId);
 
         $subjects = $timetable->getSubjects();
         $teachers = $timetable->getTeachers();
@@ -294,13 +295,13 @@ class AjaxController extends Controller
 
         $timetablerEntriesForThisDayColumn = $em->getRepository('AppBundle:TimeTabler')
             ->findBy(
-                array('day' => $day, 'tableFormatColumn' =>$tableFormatColumn),
+                array('timetable' => $timetable, 'day' => $day, 'tableFormatColumn' =>$tableFormatColumn),
                 array('id' => 'DESC')
             );
 
         $timetablerEntriesForThisDayClass = $em->getRepository('AppBundle:TimeTabler')
             ->findBy(
-                array('day' => $day, 'class' =>$class),
+                array('timetable' => $timetable, 'day' => $day, 'class' =>$class),
                 array('id' => 'DESC')
             );
 
@@ -432,6 +433,262 @@ class AjaxController extends Controller
 
         return new JsonResponse("success");
 
+    }
+
+    /**
+     * @Route("/auto/entries", name="save_entries_auto")
+     */
+    public function saveEntriesAction(Request $request)
+    {
+        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $em = $this->getDoctrine()->getManager();
+        $timetableId = $request->request->get('timetableId');
+        $timetable = $em->getRepository('AppBundle:Timetable')
+            ->find($timetableId);
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        
+        $tableFormats = $timetable->getTableFormats();
+        $quantity = $request->request->get('auto_quantity');
+        $subjectId = $request->request->get('auto_subject');
+        $classId = $request->request->get('auto_class');
+
+        $subject = $em->getRepository('AppBundle:Subject')
+            ->find($subjectId);
+        if($classId != "all"){
+            $classes = [$em->getRepository('AppBundle:Classs')->find($classId)];            
+        } else {
+            $classes = $timetable->getClasses();
+        }
+
+        $numberOfClasses = count($classes);
+        $numberOfDays = count($days);
+        $numberOfTableFormats = count($tableFormats);
+        
+        $days_assigned = [];
+        if($quantity == 5){
+            $days_assigned = $days;
+        } elseif ($quantity > 5) {
+            $days_assigned = $days;
+            $excess = $quantity - count($days);
+            $extraDays = $this->generateRandomDays($excess);
+            foreach($extraDays as $aDay){
+                $days_assigned[] = $aDay;
+            }
+        } elseif ($quantity < 5) {
+            $days_assigned = $days;
+            $less = (int)$quantity;
+            $difference = count($days) - $quantity;
+            shuffle($days_assigned);
+            for ($i=0; $i < $difference; $i++) { 
+                array_pop($days_assigned);
+            }
+        }
+
+        $tblfmt_assigned = [];
+        foreach($tableFormats as $tableFormat){
+            if($tableFormat->getActivity() == "lesson"){
+                $tblfmt_assigned[] = $tableFormat->getId();
+            }
+            
+        }
+
+        // quantity x classes
+        $numberOfEntriesPossible = $quantity * count($classes);
+
+        // shuffle($tblfmt_assigned);
+        $shuffledTblFmt = [];
+        foreach($tblfmt_assigned as $tblfmt){
+            $shuffledTblFmt[] = $em->getRepository('AppBundle:tableFormat')
+                ->find($tblfmt);
+        }
+
+
+        $css_class_string = [];
+        $possible_entries = [];
+
+        $classesArray = [];
+        foreach($classes as $class){
+            $classesArray[] = $class;
+        }
+        $message = [];
+        $subjectCount  = 0;
+
+        foreach($days_assigned as &$day){
+            $copyShuffledTblFmt = $shuffledTblFmt;
+            $copyShuffledTblFmt = array_values($copyShuffledTblFmt);
+            $int = 0;
+            $tries = 0;
+            $subjectCount += 1;
+            foreach($classesArray as &$class){
+                $tries += 1;
+                if($tries == 200){
+                    $message[] = 'Maximum tries reached. couldn\'t find a slot!';
+                    $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
+                    break 2;
+                }
+
+                $lessonsAlreadyRecorded = $em->getRepository('AppBundle:Timetabler')
+                    ->findBy(
+                        array('class' => $class, 'subject' => $subject, 'timetable' => $timetable, 'user' => $user),
+                        array('id' => 'DESC')
+                    );
+                $countLessonsAlreadyRecorded = count($lessonsAlreadyRecorded);
+                if($countLessonsAlreadyRecorded == $quantity*count($classes)){
+                    $message[] = 'Enough!';
+
+                    $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
+                    break 2;
+                } else {
+                    $classSubject = $em->getRepository('AppBundle:ClassSubject')
+                        ->findOneBy(
+                            array('cClass' => $class, 'subject' => $subject, 'timetable' => $timetable, 'user' => $user),
+                            array('id' => 'DESC')
+                        );
+
+                    if(!$classSubject){
+                            $message[] = 'Please assign a teacher to this subject for class'.$class->getCTitle().'!';
+
+                            $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
+                            $classesArray[] = $class;
+                            $int += 2;
+                            if($int > count($copyShuffledTblFmt)-1){
+                                $int = 0;
+                            } 
+                            break 2;
+
+                    } else {
+                        $teacher = $classSubject->getTeacher();
+
+                        $isClashing = $em->getRepository('AppBundle:Timetabler')
+                            ->isClashingFormat($day, $copyShuffledTblFmt[$int]->getId(), $teacher);
+
+                        $found = count($isClashing);
+                                
+                        if($isClashing){
+                            $message[] = 'Teacher Class Conflict!' . $day . $class . $copyShuffledTblFmt[$int]->getId();
+
+                            $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
+                            $classesArray[] = $class;
+
+                            if($subjectCount > 5){
+                                $int += rand(2, count($tableFormats));
+                            } else {
+                                $int += 1;
+                            }
+                            
+                            if($int > count($copyShuffledTblFmt)-1){
+                                $int = 0;
+                            } 
+                            continue;
+
+                        } else {
+
+                            $user = $this->get('security.token_storage')->getToken()->getUser();
+                            $config = $em->getRepository('AppBundle:Config')
+                                ->findOneByUser($user);
+                            $maxAllowedOccurances = $config->getMaxLessonOccurances()-1;
+
+
+                            $subjectOccurancesToday = $em->getRepository('AppBundle:Timetabler')
+                                ->subjectOccurancesToday($subject, $class, $day);
+
+                            $numberOfOccurances = count($subjectOccurancesToday);
+                            if($numberOfOccurances > $maxAllowedOccurances){
+                                $message[] = 'Maximum Lessons for '. $subject->getSTitle() .' class'.$class->getCTitle(). ' reached! '.$day;
+                                $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
+                                // $days[] = $day;
+                                break 1;
+                            } else {
+                                $recorded = $em->getRepository('AppBundle:Timetabler')
+                                    ->isAlreadyRecordedFormat($day, $class, $copyShuffledTblFmt[$int]);
+
+                                if($recorded){
+                                $message[] = 'There is already a record in this slot'.$day.$class.$copyShuffledTblFmt[$int]->getId();
+                                $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
+                                    $classesArray[] = $class;
+                                    $int += 1;
+                                    if($int > count($copyShuffledTblFmt)-1){
+                                        $int = 0;
+                                    } 
+                                    continue;
+                                } else {
+                                    $timetabler = new TimeTabler();
+                                    $timetabler->setClassSubject($classSubject);
+                                    $timetabler->setUser($user);
+                                    $timetabler->setTimetable($timetable);
+                                    $timetabler->setTime('auto');
+                                    $timetabler->setDay($day);
+                                    $timetabler->setTeacher($classSubject->getTeacher());
+                                    $timetabler->setSubject($subject);
+                                    $timetabler->setClass($classSubject->getCClass());
+                                    $timetabler->setTableFormatColumn($copyShuffledTblFmt[$int]->getId());
+
+                                    $em->persist($timetabler);
+                                    $em->flush();
+                                    // unset($copyShuffledTblFmt[$int]);
+                                    // $copyShuffledTblFmt = array_values($copyShuffledTblFmt);
+
+                                    $totalInWeek = $em->getRepository('AppBundle:Timetabler')
+                                        ->findBy(
+                                            array('subject' => $subject, 'class' => $class, 'timetable' => $timetable),
+                                            array('id' => 'DESC')
+                                        );
+                                    $countedLessons = count($totalInWeek);
+                                    $message[] = $countedLessons . ' ' .$subject->getSTitle().' lessons this week, class '. $class->getCTitle().' column '.$copyShuffledTblFmt[$int]->getId().' '. $day;
+
+                                    $class = $timetabler->getClass();
+                                    $day = $timetabler->getDay();
+                                    $format = $timetabler->getTableFormatColumn();
+                                    // $clr = $em->getRepository('AppBundle:Teacher')
+                                    //     ->find()
+                                    $color = $teacher->getColor();
+                                    $subj = $subject->getSTitle();
+
+                                    $string = 'class-'.$class.'_day-'.$day.'_tblfmt-'.$format;
+                                    $info = ['string'=>$string, 'color'=>$color, 'subject'=>$subj, 'occurances'=>$numberOfOccurances];                
+                                    $arrData = ['output' => $info, 'theme' => 'dark', 'message' => $message ];
+                                    $int += 2;
+                                    if($int > count($copyShuffledTblFmt)-1){
+                                        $int = 0;
+                                    } 
+                                    continue 2;
+                                }
+
+                            }
+
+                                
+
+                        }
+
+                    }
+
+                }
+            }
+            
+
+        }
+
+        
+        return new JsonResponse($message);
+
+    }
+
+    public function randomAssignAction($lesson, $quantity, $class){
+
+    }
+
+    public function generateRandomDays($quantity){
+        $addedDays = [];
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        for ($i=0; $i < $quantity; $i++) { 
+            shuffle($days);
+            $addedDays[] = array_pop($days);
+        }
+        return $addedDays;
+    }
+
+    public function addToArray($array, $item){
+        array_push($array, $item);
     }
 
 }

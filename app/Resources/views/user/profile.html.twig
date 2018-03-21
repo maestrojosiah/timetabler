@@ -178,13 +178,13 @@
 	          	async: true,
 	          	success: function (data)
 	          	{
-	              	$("#info").html(
-                    '<div class="alert alert-success alert-dismissible" style="width:300px; float:right; height:30px; font-size:14; padding:4px; ">'
-                    + '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>'
-                    + '<i class="icon fa fa-check"></i>'
-                    +' Settings Saved! '
-                  + '</div>'
-                    );
+
+                  $.notiny({ 
+                    text: "Settings Saved",  
+                    position: 'left-top',
+                    delay: 5000,
+                    theme: 'dark'
+                  });
 	          	},	
 	         	error: function () {
 	              	$("#warning").html("<b>something's wrong</b>");
