@@ -38,7 +38,7 @@ class Teacher
     /**
      * @var string
      *
-     * @ORM\Column(name="color", type="string", length=7, unique=true)
+     * @ORM\Column(name="color", type="string", length=7)
      */
     private $color;
 
@@ -237,5 +237,39 @@ class Teacher
     public function getClassSubjects()
     {
         return $this->classSubjects;
+    }
+
+    /**
+     * Add timetabler
+     *
+     * @param \AppBundle\Entity\Timetabler $timetabler
+     *
+     * @return Teacher
+     */
+    public function addTimetabler(\AppBundle\Entity\Timetabler $timetabler)
+    {
+        $this->timetablers[] = $timetabler;
+
+        return $this;
+    }
+
+    /**
+     * Remove timetabler
+     *
+     * @param \AppBundle\Entity\Timetabler $timetabler
+     */
+    public function removeTimetabler(\AppBundle\Entity\Timetabler $timetabler)
+    {
+        $this->timetablers->removeElement($timetabler);
+    }
+
+    /**
+     * Get timetablers
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getTimetablers()
+    {
+        return $this->timetablers;
     }
 }

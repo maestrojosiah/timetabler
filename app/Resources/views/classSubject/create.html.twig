@@ -105,8 +105,41 @@
                   </ol>
               </div>
           </div>
+        </div>
+          <!-- /.box -->
+      {% if app.user.timetables|length > 1 %}
+      <div class="col-md-6">
+          <div class="box box-primary">
+            <div class="box-header with-border">
+              <h3 class="box-title">Added Class-Subject Relations</h3>
+            </div>
+            <!-- /.box-header -->
+            <!-- form start -->
+              <div class="box-body">
+                <div class="col-md-12">
+                  <p class="text-center">
+                    <strong>Use Classes From Another Timetable</strong>
+                  </p>
+                  <div class="col-md-9">
+                    <select id="timetables" class="form-control">
+                      {% for timetbl in app.user.timetables %}
+                        {% if timetbl.id != timetable.id %}
+                          <option value="{{timetbl.id}}">{{timetbl.title}}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>               
+                  </div>
+                  <div class="col-md-3">
+                    <button id="choose_from_this_timetable" class="btn btn-info"> NEXT </button>
+                  </div>
+                  <!-- /.progress-group -->
+                </div> 
+              </div>
+              <!-- /.box-body -->
+          </div>
           <!-- /.box -->
         </div>
+      {% endif %}
         <div class="modal fade" id="availableSubjects" style="display: none;">
           <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -135,3 +168,32 @@
 	{% endembed %}
 {% endblock %}
 
+{% block javascripts %}
+  <script>
+      $(document).on('click', '#choose_from_this_timetable', function(){
+        var other_timetable = $('#timetables').val();
+        var this_timetable = {{timetable.id}};
+        var entity = 'ClassSubject';
+        $.ajax({
+            url:'{{ (path('take_classes_from_this_timetable')) }}',
+            type: "POST",
+            dataType: "json",
+            data: {
+                "other_timetable": other_timetable,
+                "this_timetable": this_timetable,
+                "entity": entity,
+            },
+            async: true,
+            success: function (data)
+            {
+               location.href = data.url
+            },  
+          error: function () {
+                $("#info").html("<b>something's wrong</b>");
+          }
+        });
+
+    });
+  </script>
+
+{% endblock %}

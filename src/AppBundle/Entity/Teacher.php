@@ -38,7 +38,7 @@ class Teacher
     /**
      * @var string
      *
-     * @ORM\Column(name="color", type="string", length=7, unique=true)
+     * @ORM\Column(name="color", type="string", length=7)
      */
     private $color;
 

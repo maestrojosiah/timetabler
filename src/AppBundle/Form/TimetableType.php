@@ -23,9 +23,6 @@ class TimetableType extends AbstractType
                 'input'  => 'datetime',
                 'widget' => 'choice', 
             ))
-            ->add('saveAndAdd', SubmitType::class, array(
-                'label' => "Save and Add More"
-            ))
             ->add('save', SubmitType::class, array(
                 'label' => "Save Timetable"
             ))

@@ -224,4 +224,28 @@ class Config
     {
         return $this->user;
     }
+
+    /**
+     * Set maxLessonOccurances
+     *
+     * @param string $maxLessonOccurances
+     *
+     * @return Config
+     */
+    public function setMaxLessonOccurances($maxLessonOccurances)
+    {
+        $this->maxLessonOccurances = $maxLessonOccurances;
+
+        return $this;
+    }
+
+    /**
+     * Get maxLessonOccurances
+     *
+     * @return string
+     */
+    public function getMaxLessonOccurances()
+    {
+        return $this->maxLessonOccurances;
+    }
 }

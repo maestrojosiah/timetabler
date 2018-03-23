@@ -204,6 +204,10 @@ class TimetableController extends Controller
             $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor();
         }
 
+        $timetablers = $em->getRepository('AppBundle:Timetabler')
+            ->findByTimetable($timetable);
+
+        $data['timetablers'] = $timetablers;
         $data['classes'] = $classes;
         $data['timetable'] = $timetable;
         $data['tableformats'] = $tableformats;

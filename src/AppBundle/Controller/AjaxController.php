@@ -8,6 +8,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use AppBundle\Entity\Timetabler;
 use AppBundle\Entity\Config;
+use AppBundle\Entity\Classs;
+use AppBundle\Entity\Subject;
+use AppBundle\Entity\Teacher;
+use AppBundle\Entity\ClassSubject;
+use AppBundle\Entity\Timetable;
+use AppBundle\Entity\TableFormat;
 // use AppBundle\Entity\Stock;
 
 
@@ -263,6 +269,123 @@ class AjaxController extends Controller
         $em->flush();
 
         return new JsonResponse($arrData);
+
+    }
+
+    /**
+     * @Route("/take/from_timetable", name="take_classes_from_this_timetable")
+     */
+    public function useTimetableAction(Request $request)
+    {
+        $this_timetableId = $request->request->get('this_timetable');
+        $other_timetableId = $request->request->get('other_timetable');
+        $entity = $request->request->get('entity');
+        $user = $this->get('security.token_storage')->getToken()->getUser();
+
+        $em = $this->getDoctrine()->getManager();
+
+        $this_timetable = $em->getRepository('AppBundle:Timetable')
+            ->find($this_timetableId);
+        
+        $other_timetable = $em->getRepository('AppBundle:Timetable')
+            ->find($other_timetableId);
+        if($entity == 'Classs'){
+            $entities = $other_timetable->getClasses();
+            foreach($entities as $anEntity){
+                $class = new Classs();
+
+                $class->setTimetable($this_timetable);
+                $class->setcTitle($anEntity->getCTitle());
+                $class->setUser($anEntity->getUser());
+
+                $em->persist($class);
+                $em->flush();
+
+                $url = $this->generateUrl('homepage');                
+            }
+        } else if ($entity == 'Teacher'){
+            $entities = $other_timetable->getTeachers();
+            foreach($entities as $anEntity){
+                $teacher = new Teacher();
+
+                $teacher->setTimetable($this_timetable);
+                $teacher->setFName($anEntity->getFName());
+                $teacher->setLName($anEntity->getLName());
+                $teacher->setUser($anEntity->getUser());
+                $teacher->setColor($anEntity->getColor());
+
+                $em->persist($teacher);
+                $em->flush();
+
+                $url = $this->generateUrl('homepage');                
+            }
+        } else if ($entity == 'Subject'){
+            $entities = $other_timetable->getSubjects();
+            foreach($entities as $anEntity){
+                $subject = new Subject();
+
+                $subject->setTimetable($this_timetable);
+                $subject->setUser($anEntity->getUser());
+                $subject->setSTitle($anEntity->getSTitle());
+
+                $em->persist($subject);
+                $em->flush();
+
+                $url = $this->generateUrl('homepage');                
+            }            
+        } else if ($entity == 'TableFormat'){
+            $entities = $other_timetable->getTableFormats();
+            foreach($entities as $anEntity){
+                $tableFormat = new TableFormat();
+
+                $tableFormat->setTimetable($this_timetable);
+                $tableFormat->setUser($anEntity->getUser());
+                $tableFormat->setActivity($anEntity->getActivity());
+                $tableFormat->setDuration($anEntity->getDuration());
+                $tableFormat->setTitle($anEntity->getTitle());
+
+                $em->persist($tableFormat);
+                $em->flush();
+
+                $url = $this->generateUrl('homepage');                
+            }            
+        } else if ($entity == 'ClassSubject'){
+            $entities = $other_timetable->getClassSubjects();
+            foreach($entities as $anEntity){
+                $classSubject = new ClassSubject();
+                $teacher = $em->getRepository('AppBundle:Teacher')
+                    ->findOneBy(
+                        array('user' => $user, 'timetable' => $this_timetable, 'lName' => $anEntity->getTeacher()->getLName(), 'color' => $anEntity->getTeacher()->getColor()),
+                        array('id' => 'DESC')
+                    );
+
+                $class = $em->getRepository('AppBundle:Classs')
+                    ->findOneBy(
+                        array('user' => $user, 'timetable' => $this_timetable, 'cTitle' => $anEntity->getCClass()->getCTitle()),
+                        array('id' => 'DESC')
+                    );
+
+                $subject = $em->getRepository('AppBundle:Subject')
+                    ->findOneBy(
+                        array('user' => $user, 'timetable' => $this_timetable, 'sTitle' => $anEntity->getSubject()->getSTitle()),
+                        array('id' => 'DESC')
+                    );
+
+                $classSubject->setTimetable($this_timetable);
+                $classSubject->setUser($anEntity->getUser());
+                $classSubject->setCClass($class);
+                $classSubject->setTeacher($teacher);
+                $classSubject->setSubject($subject);
+
+                $em->persist($classSubject);
+                $em->flush();
+
+                $url = $this->generateUrl('homepage');                
+            }            
+        }
+        
+        $output = ['url' => $url];
+        return new JsonResponse($output);
 
     }
 
@@ -699,9 +822,9 @@ class AjaxController extends Controller
             
 
         }
-
+        $url = $this->generateUrl('view_timetable', ['tbl' => $timetable->getId()]);
         end:
-        $toSend = ['reload' => $reload, 'message' => $message];
+        $toSend = ['reload' => $reload, 'message' => $message, 'url' => $url];
         return new JsonResponse($toSend);
 
     }
