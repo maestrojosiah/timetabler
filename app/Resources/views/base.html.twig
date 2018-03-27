@@ -48,7 +48,7 @@
     	{% set sidebar = "" %}
     	{% set entriesPerPage = 10 %}
     {% endif %}
-	<body class="hold-transition skin-blue sidebar-mini sidebar-{{sidebar}}">
+	<body class="hold-transition skin-blue sidebar-mini sidebar-{{sidebar}}" {% if app.request.attributes.get('_route') == 'login' %}  style="background:url({{asset('images/school_image.jpg')}}) no-repeat center center fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover;" {% endif %}>
     <div id="wrapper">
 
         {% block navigation %}
