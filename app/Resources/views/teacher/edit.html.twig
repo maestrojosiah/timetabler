@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 {% block stylesheets %}
 
- <link href="{{ asset('bootstrap-colorpicker/dist/css/bootstrap-colorpicker.css') }}" rel="stylesheet">
+ <link href="{{ asset('spectrum/spectrum.css') }}" rel="stylesheet">
 {% endblock %}
 {% block pagewrapper %}
     {% set action_title = "Edit Teacher" %}
@@ -68,14 +68,16 @@
     {% endembed %}
 {% endblock %}
 {% block javascripts %}
-    <script src="{{ asset('bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js') }}"></script>
-  <script>
-    $(function () {
-      $('#teacher_color').colorpicker(
-        {
-          'format': 'hex'
-        });
-    });
-  </script>
+    <script src="{{ asset('spectrum/spectrum.js') }}"></script>
+<script>
+$("#teacher_color").spectrum({
+    preferredFormat: "hex",
+    showInput: true,
+    showPalette: true,
+    palette: [["red", "rgba(0, 255, 0, .5)", "rgb(0, 0, 255)"]]
+});
+// Show the original input to demonstrate the value changing when calling `set`
+$("#teacher_color").show();
+</script>
 {% endblock %}
 
