@@ -64,6 +64,13 @@ class Config
     private $maxLessonOccurances;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="teacher_numbers", type="string", length=50)
+     */
+    private $teacherNumbers;
+
+    /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="configs")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE")
      */

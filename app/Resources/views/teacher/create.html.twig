@@ -16,7 +16,7 @@
           <!-- general form elements -->
           <div class="box box-primary">
             <div class="box-header with-border">
-              <h3 class="box-title">Add Teachers</h3>
+              <h3 class="box-title">Add Teachers in order of their assigned numbers</h3>
             </div>
             <!-- /.box-header -->
             <!-- form start -->
@@ -114,10 +114,12 @@
                 <!-- /.box-header -->
                 <!-- form start -->
                   <div class="box-body">
-                    {% for teacher in data.teachers %}                              
+
+                    {% for position, teacher in data.teachers %} 
+                    {% set postn = position + 1 %}                             
                       <div class="list-group">
                           <a href="#" class="list-group-item">
-                              <i class="fa fa-comment fa-fw"></i> {{teacher.fName}} {{teacher.lName}}
+                              <span>{{postn}}.</span>  {{teacher.fName}} {{teacher.lName}}
                               <span style="background-color:{{teacher.color}}" class="pull-right text-muted small"><em>{{teacher.color}}</em>
                               </span>
                           </a>

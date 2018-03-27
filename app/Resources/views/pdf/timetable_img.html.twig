@@ -100,19 +100,27 @@ html{font-family:sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:1
                                     <table style="margin-bottom:0px;" class="full_width table table-bordered table-hover">
                                         {% set counter = 0 %}
                                         {% for class in classes %}
-                                            <tr style="text-align: center;" id="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" data-toggle="modal" data-target="#timetableModal_{{class}}_{{day}}_{{tableformat.id}}">
-                                                    {% set key = tableformat.id ~ "." ~ class ~ "." ~ day %}
-                                                    {% if items[key] is defined %}
-                                                        {% set subject = items[key]|split("|")[0] %}
-                                                        {% set color = items[key]|split("|")[1] %}
+			                        		<tr style=" " id="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" data-toggle="modal" data-target="#timetableModal_{{class}}_{{day}}_{{tableformat.id}}">
+			                        				{% set key = tableformat.id ~ "." ~ class ~ "." ~ day %}
+			                        				{% if items[key] is defined %}
+			                        					{% set subject = items[key]|split("|")[0] %}
+			                        					{% set subj = items[key]|split("|")[0]|slice(0,3) %}
+			                        					{% set color = items[key]|split("|")[1] %}
+			                        					{% set position = "[" ~ items[key]|split("|")[2] ~ "]" %}
+			                        				{% else %}
+			                        					{% set subject = 'No Subject' %}
+			                        					{% set subj = 'No Subject' %}
+			                        					{% set color = '' %}
+			                        					{% set position = '' %}
+			                        				{% endif %}
+			                        				
+			                        			<td class="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" style="padding:2px; cursor:pointer; background-color:{{color}}; font-size:15px; font-weight:bold;">
+                                                    {% if app.user.configs|first.teacherNumbers == "visible" %}
+                                                    	{{subj}} {{position}}
                                                     {% else %}
-                                                        {% set subject = 'No Subject' %}
-                                                        {% set color = '' %}
+                                                    	{{subject}}
                                                     {% endif %}
-                                                    
-			                        			<td style="padding:2px; cursor:pointer; background-color:{{color}}!important; font-size:17px; font-weight:bold;">
-                                                    {{ subject }}
-                                                </td>
+			                        			</td>
                                                 {# Modal for every tr #}
 
                                                     <div class="modal fade" id="timetableModal_{{class}}_{{day}}_{{tableformat.id}}" tabindex="-1" role="dialog" aria-labelledby="timetableModalLabel" aria-hidden="true" style="display: none;">

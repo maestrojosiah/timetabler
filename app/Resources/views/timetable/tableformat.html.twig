@@ -66,8 +66,9 @@
        	{% set counter = 0 %}
        	| <a href="{{path('list_teachers', {'tbl':timetable.id})}}" >Teachers: </a>
        	{% if tableformats|first %}
-       	{% for teacher in tableformats[0].timetable.teachers %}
-       		<a type="button" id="teacher-details-{{teacher.id}}" class="btn btn-success btn-xs" data-toggle="modal" data-target="#teacherModal_{{teacher.id}}" style="background-color:{{teacher.color}}">{{teacher.fName}} {{teacher.lName}}</a>
+       	{% for position, teacher in tableformats[0].timetable.teachers %}
+       		{% set postn = position + 1 %}
+       		<a type="button" id="teacher-details-{{teacher.id}}" class="btn btn-success btn-xs" data-toggle="modal" data-target="#teacherModal_{{teacher.id}}" style="background-color:{{teacher.color}}">{{teacher.fName}} {{teacher.lName}}[{{postn}}]</a>
        	{% endfor %}
        	| <a href="{{path('pdf_timetable', {'tbl':tableformats[0].timetable.id })}}" class="btn btn-primary"> Download PDF </a>
        	| <a href="{{path('image_timetable', {'tbl':tableformats[0].timetable.id})}}" class="btn btn-primary">Download as Image </a>
@@ -127,14 +128,22 @@
 			                        				{% set key = tableformat.id ~ "." ~ class ~ "." ~ day %}
 			                        				{% if items[key] is defined %}
 			                        					{% set subject = items[key]|split("|")[0] %}
+			                        					{% set subj = items[key]|split("|")[0]|slice(0,3) %}
 			                        					{% set color = items[key]|split("|")[1] %}
+			                        					{% set position = "[" ~ items[key]|split("|")[2] ~ "]" %}
 			                        				{% else %}
 			                        					{% set subject = 'No Subject' %}
+			                        					{% set subj = 'No Subject' %}
 			                        					{% set color = '' %}
+			                        					{% set position = '' %}
 			                        				{% endif %}
 			                        				
 			                        			<td class="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" style="padding:2px; cursor:pointer; background-color:{{color}}; font-size:15px; font-weight:bold;">
-			                        				{{ subject }}
+                                                    {% if app.user.configs|first.teacherNumbers == "visible" %}
+                                                    	{{subj}} {{position}}
+                                                    {% else %}
+                                                    	{{subject}}
+                                                    {% endif %}
 			                        			</td>
 			                        			{# Modal for every tr #}
 
@@ -666,3 +675,4 @@ number of lessons per teacher on click
 
 when adding clases, subjects etc, use teachers from this or this timetable
  #}
+ {# 0700550007/0712250987 radiant hospital #}

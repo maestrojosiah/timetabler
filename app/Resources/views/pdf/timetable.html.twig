@@ -97,14 +97,22 @@ html{font-family:sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:1
                                                     {% set key = tableformat.id ~ "." ~ class ~ "." ~ day %}
                                                     {% if items[key] is defined %}
                                                         {% set subject = items[key]|split("|")[0] %}
+                                                        {% set subj = items[key]|split("|")[0]|slice(0,3) %}
                                                         {% set color = items[key]|split("|")[1] %}
+                                                        {% set position = "[" ~ items[key]|split("|")[2] ~ "]" %}
                                                     {% else %}
                                                         {% set subject = 'No Subject' %}
+                                                        {% set subj = 'No Subject' %}
                                                         {% set color = '' %}
+                                                        {% set position = '' %}
                                                     {% endif %}
                                                     
 			                        			<td style="padding:2px; cursor:pointer; background-color:{{color}}!important; font-size:17px; font-weight:bold;">
-                                                    {{ subject }}
+                                                    {% if app.user.configs|first.teacherNumbers == "visible" %}
+                                                    	{{subj}} {{position}}
+                                                    {% else %}
+                                                    	{{subject}}
+                                                    {% endif %}
                                                 </td>
                                                 {# Modal for every tr #}
 
@@ -164,10 +172,22 @@ html{font-family:sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:1
         <h2>{{app.user.configs|first.schoolTitle}}</h2>
         <h3>{{app.user.configs|first.schoolAddress }}</h3>
         <h4>{{tableformats|first.timetable.title}}</h4>
-        Teachers: 
-        {% for teacher in tableformats[0].timetable.teachers %}
-            <a href="#" class="btn" style="background-color:{{teacher.color}}!important">{{teacher.fName}} {{teacher.lName}}</a>
+        <p>Teachers: 
+        {% for position, teacher in tableformats[0].timetable.teachers %}
+        	{% set postn = position + 1 %}
+            <a href="#" class="btn" style="background-color:{{teacher.color}}!important">{{teacher.fName}} {{teacher.lName}}[{{postn}}]</a>
         {% endfor %}
+    	</p>
+    	<p>
+        {% if app.user.configs|first.teacherNumbers == "visible" %}
+			Subjects:
+			<ul>
+				{% for subject in timetable.subjects %}
+					<li>{{subject|slice(0,3)}} - {{subject}}</li>
+				{% endfor %}
+			</ul>
+        {% endif %}
+    	</p>
     </div>
 
 </div>

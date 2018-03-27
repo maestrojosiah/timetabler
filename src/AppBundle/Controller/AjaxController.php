@@ -534,6 +534,7 @@ class AjaxController extends Controller
         $tableEntries = $request->request->get('tableEntries');
         $maxLessonOccurances = $request->request->get('maxLessonOccurances');
         $footerMessage = $request->request->get('footerMessage');
+        $teacherNumbers = $request->request->get('teacherNumbers');
         $sidebar = $request->request->get('sidebar');
 
         $config = $em->getRepository('AppBundle:Config')
@@ -548,6 +549,7 @@ class AjaxController extends Controller
         $config->setEntriesPerPage($tableEntries);
         $config->setMaxLessonOccurances($maxLessonOccurances);
         $config->setFooterMessage($footerMessage);
+        $config->setTeacherNumbers($teacherNumbers);
         $config->setSidebar($sidebar);
 
         $em->persist($config);

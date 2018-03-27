@@ -42,9 +42,11 @@ class ClasssController extends Controller
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $form_data = $form->getData();
 
             $em = $this->getDoctrine()->getManager();
-
+            $safe_class = trim(str_replace(" ", "", $form_data->getCTitle()));
+            $classs->setCTitle($safe_class);
             $em->persist($classs);
             $em->flush();
 
@@ -115,6 +117,8 @@ class ClasssController extends Controller
         if($form->isSubmitted() && $form->isValid()) {
             $form_data = $form->getData();
             $data['form'] = $form_data;
+            $safe_class = trim(str_replace(" ", "", $form_data->getCTitle()));
+            $form_data->setCTitle($safe_class);
 
             $em->persist($form_data);
             $em->flush();

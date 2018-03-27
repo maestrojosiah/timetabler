@@ -196,12 +196,19 @@ class TimetableController extends Controller
             $lesson_series[] = $first_part .'-'.$current_time.'|'.$value->getId();
 
         }
+        $teachers = $em->getRepository('AppBundle:Teacher')
+            ->findByTimetable($timetable);
+
+        $teachers_list = [];
+        foreach ($teachers as $key => $teacher) {
+            $teachers_list[$teacher->getId()] = $key+1;
+        }
 
         $items = [];
         foreach($lessons as $lesson){
             $subjectEntity = $lesson->getSubject();
             $teacherEntity = $lesson->getTeacher();
-            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor();
+            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teachers_list[$teacherEntity->getId()];
         }
 
         $timetablers = $em->getRepository('AppBundle:Timetabler')
@@ -253,13 +260,20 @@ class TimetableController extends Controller
 
         }
 
+        $teachers = $em->getRepository('AppBundle:Teacher')
+            ->findByTimetable($timetable);
+
+        $teachers_list = [];
+        foreach ($teachers as $key => $teacher) {
+            $teachers_list[$teacher->getId()] = $key+1;
+        }
+
+
         $items = [];
         foreach($lessons as $lesson){
-            $subjectEntity = $em->getRepository('AppBundle:Subject')
-                ->find($lesson->getSubject());
-            $teacherEntity = $em->getRepository('AppBundle:Teacher')
-                ->find($lesson->getTeacher());
-            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor();
+            $subjectEntity = $lesson->getSubject();
+            $teacherEntity = $lesson->getTeacher();
+            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teachers_list[$teacherEntity->getId()];
         }
 
         $data['classes'] = $classes;
@@ -321,13 +335,21 @@ class TimetableController extends Controller
 
         }
 
+        $teachers = $em->getRepository('AppBundle:Teacher')
+            ->findByTimetable($timetable);
+
+        $teachers_list = [];
+        foreach ($teachers as $key => $teacher) {
+            $teachers_list[$teacher->getId()] = $key+1;
+        }
+
         $items = [];
         foreach($lessons as $lesson){
             $subjectEntity = $em->getRepository('AppBundle:Subject')
                 ->find($lesson->getSubject());
             $teacherEntity = $em->getRepository('AppBundle:Teacher')
                 ->find($lesson->getTeacher());
-            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor();
+            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teachers_list[$teacherEntity->getId()];
         }
 
         $data['classes'] = $classes;

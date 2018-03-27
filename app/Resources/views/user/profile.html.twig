@@ -52,20 +52,6 @@
 
               <hr>
 
-              <strong><i class="fa fa-map-marker margin-r-5"></i> Settings</strong>
-
-              <p class="text-muted">Saved</p>
-
-              <hr>
-
-              <strong><i class="fa fa-pencil margin-r-5"></i> Teachers</strong>
-
-              <p>
-              	{% for teacher in app.user.teachers %}
-                	<span class="label" style="background-color:{{teacher.color}}">{{teacher}}</span>
-            	{% endfor %}
-              </p>
-
             </div>
             <!-- /.box-body -->
           </div>
@@ -121,6 +107,17 @@
                     </div>
                   </div>
                   <div class="form-group">
+                    <label for="sidebar" class="col-sm-2 control-label">Teacher Numbers</label>
+
+                    <div class="col-sm-10">
+                    <select class="form-control" id="teacherNumbers">
+                      <option value="hidden" {% if app.user.configs|first.teacherNumbers is defined and app.user.configs|first.teacherNumbers == 'hidden' %} selected {% endif %}>Hidden</option>
+                      <option value="visible" {% if app.user.configs|first.teacherNumbers is defined and app.user.configs|first.teacherNumbers == 'visible' %} selected {% endif %}>Visible</option>
+                    </select>
+
+                    </div>
+                  </div>
+                  <div class="form-group">
                     <label for="sidebar" class="col-sm-2 control-label">Sidebar</label>
 
                     <div class="col-sm-10">
@@ -162,6 +159,7 @@
           var tableEntries = $("#tableEntries").val();
           var maxLessonOccurances = $("#maxLessonOccurances").val();
           var footerMessage = $("#footerMessage").val();
+          var teacherNumbers = $("#teacherNumbers").val();
           var sidebar = $("#sidebar").val();
 	      	$.ajax({
 	          	url:'{{ (path('save_settings')) }}',
@@ -173,6 +171,7 @@
                   "tableEntries": tableEntries,
                   "maxLessonOccurances": maxLessonOccurances,
                   "footerMessage": footerMessage,
+                  "teacherNumbers": teacherNumbers,
 	              	"sidebar": sidebar,
 	          	},
 	          	async: true,

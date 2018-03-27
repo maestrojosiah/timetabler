@@ -64,6 +64,13 @@ class Config
     private $maxLessonOccurances;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="teacher_numbers", type="string", length=50)
+     */
+    private $teacherNumbers;
+
+    /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="configs")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE")
      */
@@ -247,5 +254,29 @@ class Config
     public function getMaxLessonOccurances()
     {
         return $this->maxLessonOccurances;
+    }
+
+    /**
+     * Set teacherNumbers
+     *
+     * @param string $teacherNumbers
+     *
+     * @return Config
+     */
+    public function setTeacherNumbers($teacherNumbers)
+    {
+        $this->teacherNumbers = $teacherNumbers;
+
+        return $this;
+    }
+
+    /**
+     * Get teacherNumbers
+     *
+     * @return string
+     */
+    public function getTeacherNumbers()
+    {
+        return $this->teacherNumbers;
     }
 }
