@@ -47,7 +47,8 @@ class DefaultController extends Controller
         $allTimetables = $em->getRepository('AppBundle:Timetable')
             ->findBy(
                 array('user' => $user),
-                array('id' => 'DESC') 
+                array('id' => 'DESC'),
+                5
             );
 
         $tableformats = $em->getRepository('AppBundle:TableFormat')
