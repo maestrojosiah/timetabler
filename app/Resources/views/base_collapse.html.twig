@@ -66,7 +66,7 @@
 	    <!-- Notification javascript - notiny -->
 	    <script src="{{ asset('notiny/notiny.min.js') }}"></script>
 		<!-- AdminLTE App -->
-		<script src="{{ asset('dist/js/adminlte.min.js') }}"></script>
+		<script src="{{ asset('dist/js/adminlte.js') }}"></script>
 		<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
 		<script src="{{ asset('dist/js/pages/dashboard.js') }}"></script>
 		<!-- AdminLTE for demo purposes -->
@@ -85,13 +85,13 @@
         {% block javascripts %}{% endblock %}
 	    {% for message in app.flashes('success') %}
 	        <script type="text/javascript">
-	            $.notiny({ text: '{{ message }}',  position: 'left-top' });
+	            $.notiny({ text: '{{ message }}',  position: 'left-top', delay: 5000, });
 	        </script>
 	    {% endfor %}
 
 	    {% for message in app.flashes('error') %}
 	        <script type="text/javascript">
-	            $.notiny({ text: '{{ message }}',  position: 'left-top' });
+	            $.notiny({ text: '{{ message }}',  position: 'left-top', delay: 1000, });
 	        </script>
 	    {% endfor %}        	
     </body>

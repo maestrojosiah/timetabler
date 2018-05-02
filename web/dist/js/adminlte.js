@@ -571,6 +571,14 @@ throw new Error('AdminLTE requires jQuery')
       });
     }
 
+    if (this.options.resetHeight) {
+      $(Selector.wrapper).css({
+        'height'    : 'auto',
+        'min-height': '100%',
+        'overflow-y': 'hidden'
+      });
+    }
+
     if (!this.bindedResize) {
       $(window).resize(function () {
         this.fix();

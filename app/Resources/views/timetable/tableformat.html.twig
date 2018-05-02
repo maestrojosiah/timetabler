@@ -1,12 +1,6 @@
 {% extends 'base_collapse.html.twig' %}
 {% block stylesheets %}
 
-    <!-- DataTables CSS -->
-    <link href="{{ asset('vendor/datatables-plugins/dataTables.bootstrap.css') }}" rel="stylesheet">
-
-    <!-- DataTables Responsive CSS -->
-    <link href="{{ asset('vendor/datatables-responsive/dataTables.responsive.css') }}" rel="stylesheet">
-
 {% endblock %}
 
 {% block pagewrapper %}
@@ -248,7 +242,8 @@
 		
       </div>
       <div class="modal-footer" style="background-color:{{teacher.color}}!important">
-        <button type="button" class="btn btn-outline pull-right" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger pull-right" data-dismiss="modal">Close</button>
+        <a href="{{path('view_timetable_single_teacher', {'teacherId': teacher.id, 'tbl': timetable.id} ) }}" class="btn btn-primary">{{teacher}}'s Timetable</a>
       </div>
     </div>
     <!-- /.modal-content -->
@@ -266,24 +261,34 @@
       </div>
       <div class="modal-body">
 		<div class="row">
-		    <div class="col-sm-4">
+		    <div class="col-sm-2">
 		        <div class="form-group">
-		           <input type="text" class="form-control col-sm-4" placeholder="Number of Lessons Per Week" id="auto_quantity" />
+		           <input type="text" class="form-control col-sm-4" placeholder="e.g. 5" id="auto_quantity" />
 		        </div>
 		    </div>
-		    <div class="col-sm-4">
+		    <div class="col-sm-3">
 			    <select class="col-sm-4 form-control auto_subject">
-		        	<option value="">Select Lesson</option>
+		        	<option value="">Lesson</option>
 		        	{% for subject in timetable.subjects %}
 		            	<option value="{{subject.id}}">{{subject.sTitle}}</option>
 		            {% endfor %}
 		        </select>
 		    </div>
-		    <div class="col-sm-4">
+		    <div class="col-sm-3">
 			    <select class="col-sm-4 form-control auto_class">
-		        	<option value="">Select Class</option>
+		        	<option value="all">All Classes</option>
 		        	{% for class in timetable.classes %}
 		            	<option value="{{class.id}}">{{class.cTitle}}</option>
+		            {% endfor %}
+		        </select>
+		    </div>
+		    <div class="col-sm-4">
+			    <select class="col-sm-4 form-control auto_time">
+		        	<option value="">Before Slot</option>
+		            <option value="freestyle">Any Time</option>
+		            {% for slot in tableformats %}
+		            	{% set slot_position = slot.id %}
+		            	<option value="{{loop.index}}">Before slot {{loop.index}}</option>
 		            {% endfor %}
 		        </select>
 		    </div>
@@ -367,10 +372,6 @@
     {% endembed %}
 {% endblock %}
 {% block javascripts %}
-    <!-- DataTables JavaScript -->
-    <script src="{{ asset('vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('vendor/datatables-plugins/dataTables.bootstrap.min.js') }}"></script>
-    <script src="{{ asset('vendor/datatables-responsive/dataTables.responsive.js') }}"></script>
 
     <script>
     $(document).ready(function() {
@@ -412,7 +413,7 @@
 	              		}).text(data.output['subject']);
 	              	// $("#info").html(data.message);
 	              	$.notiny({ 
-		            	text: data.message,  
+		            	text: data.message[data.message.length -1],  
 		            	position: 'right-top',
 		            	delay: 5000,
 		            	theme: data.theme
@@ -440,7 +441,7 @@
 	          	success: function (data)
 	          	{
 	              	$.notiny({ 
-		            	text: data.message,  
+		            	text: data.message[data.message.length -1],  
 		            	position: 'right-top',
 		            	delay: 5000,
 		            	theme: 'dark'
@@ -549,6 +550,12 @@
   	    	var auto_quantity = $("#auto_quantity").val();
   	    	var auto_subject = $(".auto_subject").val();
   	    	var auto_class = $(".auto_class").val();
+  	    	var auto_time = $(".auto_time").val();
+			if ($('#forceEntry').is(':checked')) {
+		        var forced = 'true';
+		    } else {
+		        var forced = 'false';
+		    }
 	      	$.ajax({
 	          	url:'{{ (path('save_entries_auto')) }}',
 	          	type: "POST",
@@ -558,26 +565,24 @@
 	              	"auto_quantity": auto_quantity,
 	              	"auto_subject": auto_subject,
 	              	"auto_class": auto_class,
+	              	"auto_time": auto_time,
+	              	"forced": forced,
 	          	},
 	          	async: true,
 	          	success: function (data)
 	          	{
-					console.log(data.message);
+					console.log(data);
 					if(data.reload == 'true'){
-						location.href = data.url;
+						location.reload();
 					} else {
 		              	$.notiny({ 
-			            	text: data.message,  
+			            	text: data.message[data.message.length -1],  
 			            	position: 'right-top',
 			            	delay: 5000,
 			            	theme: data.theme
 			            });
 					}
-					
-					// $.each(data, function( index, value ) {
-					// 	$("."+value).css("background-color", "yellow");
-					// });
-						          	
+											          	
 				},	
 	         	error: function () {
 	              	$("#info").html("<b>something's wrong</b>");
@@ -625,7 +630,7 @@
 	              		}).text(data.output['subject']);
 	              	// $("#info").html(data.message);
 	              	$.notiny({ 
-		            	text: data.message,  
+		            	text: data.message[data.message.length -1],  
 		            	position: 'right-top',
 		            	delay: 5000,
 		            	theme: data.theme

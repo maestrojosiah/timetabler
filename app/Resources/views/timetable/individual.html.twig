@@ -1,0 +1,133 @@
+{% extends 'base_collapse.html.twig' %}
+{% block pagewrapper %}
+{% set action_title = teacher.fName ~ " " ~ teacher.lName ~ "'s timetable" %}
+    {% embed "templates/pagewrapper.html.twig" %}
+        {% block toplinks %}
+        {% endblock %}
+
+        {% block charts %}
+<style>
+ 	th, td {
+    	border: 1px solid black;
+     	border-collapse: collapse;
+   	} 
+   	td, th{
+   		padding:0px;
+   		text-align: center;
+   		text-transform: uppercase;
+   	}
+
+   	#page-wrapper{
+   		margin:0px;
+   	}
+
+	.rotate {
+	  text-align: center;
+	  white-space: nowrap;
+	  vertical-align: middle;
+	  width: 1.5em;
+	}
+
+	.rotate div {
+	     -moz-transform: rotate(-90.0deg);  /* FF3.5+ */
+	       -o-transform: rotate(-90.0deg);  /* Opera 10.5 */
+	  -webkit-transform: rotate(-90.0deg);  /* Saf3.1+, Chrome */
+	             filter:  progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);  /* IE6,IE7 */
+	         -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)"; /* IE8 */
+	         margin-left: -10em;
+	         margin-right: -10em;
+	}
+	.full_width tr td {
+		display:block; 
+     	width:100%;
+     	clear:both;
+
+	}
+</style>
+{# table starts here #}
+<div class="panel panel-default">
+    <div class="panel-heading">
+       	{% set counter = 0 %}
+       	{% if tableformats|first %}
+       	| <a href="{{path('pdf_timetable_single', {'teacherId': teacher.id, 'tbl':tableformats[0].timetable.id, 'format': 'pdf' } ) }}" class="btn btn-primary"> Download PDF </a>
+       	| <a href="{{path('pdf_timetable_single', {'teacherId': teacher.id, 'tbl':tableformats[0].timetable.id, 'format': 'img' } ) }}" class="btn btn-primary">Download as Image </a>
+       	{% endif %}
+       	| <a href="{{path('homepage')}}" class="btn btn-default">Home Page</a>
+    </div>
+    <!-- /.panel-heading -->
+    <div class="panel-body">
+        <div class="">
+
+        	{% set days_per_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
+
+            <table  style="width:100%;">
+
+                <thead>
+                    <tr>
+                        <th id="day">Day</th>
+                        {% for lesson_time in lesson_series %}
+                        	<th id="activity_{{lesson_time|split('|')[1]}}">{{lesson_time|split('|')[0]}}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+
+        		{% for day in days_per_week %}
+                <tbody>
+                    {% set height = 50 %}
+                    <tr style="height:{{height}}px;" class="success">
+                        <td class="rotate"><div>{{day|slice(0,3)}}</div></td>
+                        {% set counterz = 0 %}
+                        {% for tableformat in tableformats %}
+                        	{% if tableformat.activity == 'lesson' %}
+		                        <td id="with_children">
+		                        	<table style="margin-bottom:0px;" class="full_width table table-bordered table-hover">
+			                        		<tr style=" " id="day-{{day}}_tblfmt-{{tableformat.id}}" data-toggle="modal" data-target="#{{day}}_{{tableformat.id}}">
+			                        			{% set key = tableformat.id ~ "." ~ day %}
+		                        				{% if items[key] is defined %}
+		                        					{% set subject = items[key]|split("|")[0] %}
+		                        					{% set color = items[key]|split("|")[1] %}
+		                        					{% set position = "[" ~ items[key]|split("|")[2] ~ "]" %}
+		                        					{% set class = items[key]|split("|")[3] %}
+		                        				{% else %}
+		                        					{% set subject = 'No Subject' %}
+		                        					{% set color = '' %}
+		                        					{% set position = '' %}
+		                        					{% set class = '' %}
+		                        				{% endif %}
+		                        				{% for dup in dups %}
+		                        				{% if dup[key] is defined %}
+		                        					{% set class = class ~ " / " ~ dups[0][key]|split("|")[3] %}
+		                        				{% endif %}
+		                        				{% endfor %}
+			                        			<td class="day-{{day}}_tblfmt-{{tableformat.id}}" style="padding:2px; cursor:pointer; background-color:{{color}}; font-size:15px; font-weight:bold;">
+                                                	{{subject}}<br />
+                                                	<h3>{{class}}</h3>
+			                        			</td>
+
+			                        		</tr>
+		                        	</table>
+		                        </td>
+		                    {% else %}
+		                        <td rowspan="1">
+		                        	<div>{{tableformat.title}}</div>
+		                        </td>
+	                    	{% endif %}
+	                    	{% if counterz <= lesson_series|length %}
+	                    		{% set counterz = counterz + 1 %}
+	                    	{% endif %}
+                        {% endfor %}
+                    </tr>
+                </tbody>
+
+        		{% endfor %}
+
+            </table>
+        </div>
+        <!-- /.table-responsive -->
+    </div>
+    <!-- /.panel-body -->
+</div>
+{# table ends here #}
+       {% endblock %}
+    {% endembed %}
+{% endblock %}

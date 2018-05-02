@@ -18,29 +18,21 @@ class TimetableController extends Controller
      */
     public function createAction(Request $request)
     {
-
         $data = [];
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $user = $this->find_user();
         $data['user'] = $user;
-
-        $em = $this->getDoctrine()->getManager();
-
         $Timetable = new Timetable();
         $Timetable->setUser($user);
 
         $form = $this->createForm(TimetableType::class, $Timetable);
-
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
 
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($Timetable);
-            $em->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->em()->persist($Timetable);
+            $this->em()->flush();
             return $this->redirectToRoute('add_classs', ['tbl' => $Timetable->getId()]);
         } 
-
         return $this->render('timetable/create.html.twig',['form' => $form->createView(), 'data' => $data] );
-
     }
 
     /**
@@ -49,21 +41,11 @@ class TimetableController extends Controller
     public function listAction(Request $request)
     {
         $data = [];
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $user = $this->find_user();
         $data['user'] = $user;
-
-        $em = $this->getDoctrine()->getManager();
-
-        $timetables = $em->getRepository('AppBundle:Timetable')
-            ->findBy(
-                array('user' => $user),
-                array('id' => 'ASC')
-            );
-
+        $timetables = $this->get_timetables($user);
         $data['timetables'] = $timetables;
-
         return $this->render('timetable/list.html.twig', $data );
-
     }
 
     /**
@@ -72,18 +54,12 @@ class TimetableController extends Controller
     public function classListAction(Request $request, $classId)
     {
         $data = [];
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $user = $this->find_user();
         $data['user'] = $user;
+        
+        $class = $this->find_class($classId);
 
-        $em = $this->getDoctrine()->getManager();
-        $class = $em->getRepository('AppBundle:Classs')
-            ->find($classId);
-
-        $timetables = $em->getRepository('AppBundle:Timetable')
-            ->findBy(
-                array('user' => $user, 'classs' => $class),
-                array('fName' => 'ASC')
-            );
+        $timetables = $this->get_timetables_class($user, $class);
 
         $data['timetables'] = $timetables;
 
@@ -97,11 +73,8 @@ class TimetableController extends Controller
     public function editAction(Request $request, $timetableId)
     {
         $data = [];
-        $em = $this->getDoctrine()->getManager();
 
-        $timetable = $em->getRepository('AppBundle:Timetable')
-            ->find($timetableId);
-
+        $timetable = $this->find_timetable($timetableId);
 
         $form = $this->createForm(TimetableType::class, $timetable);
 
@@ -111,17 +84,12 @@ class TimetableController extends Controller
             $form_data = $form->getData();
             $data['form'] = $form_data;
 
-            $em->persist($form_data);
-            $em->flush();
+            $this->em()->persist($form_data);
+            $this->em()->flush();
 
-            $this->addFlash(
-                'success',
-                'Timetable edited successfully!'
-            );
+            $this->addFlash('success', 'Timetable edited successfully!');
 
-            $nextAction = $form->get('saveAndAdd')->isClicked()
-                ? 'add_timetable'
-                : 'list_timetables';
+            $nextAction = $form->get('saveAndAdd')->isClicked() ? 'add_timetable' : 'list_timetables';
 
             return $this->redirectToRoute($nextAction);
 
@@ -144,13 +112,12 @@ class TimetableController extends Controller
     public function deleteAction(Request $request, $timetableId)
     {
     	$data = [];
-        $em = $this->getDoctrine()->getManager();
+        
 
-        $timetable = $em->getRepository('AppBundle:Timetable')
-        	->find($timetableId);
+        $timetable = $this->find_timetable($timetableId);
 
-        $em->remove($timetable);
-        $em->flush();
+        $this->em()->remove($timetable);
+        $this->em()->flush();
 
         return $this->redirectToRoute('list_timetables');
 
@@ -162,56 +129,23 @@ class TimetableController extends Controller
     public function viewAction(Request $request)
     {
         $data = [];
-        $em = $this->getDoctrine()->getManager();
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        
+        $user = $this->find_user();
         $tableId = $request->query->get('tbl');
-        $timetable = $em->getRepository('AppBundle:Timetable')
-            ->find($tableId);
-
-        $classes = $em->getRepository('AppBundle:Classs')
-            ->findBy(
-                array('user'=>$user, 'timetable'=>$timetable),
-                array('id' => 'ASC')
-            );
-
-        $tableformats = $em->getRepository('AppBundle:TableFormat')
-            ->findByTimetable($timetable);
+        $timetable = $this->find_timetable($tableId);
+        $classes = $this->find_classes($user, $timetable);
+        $tableformats = $this->find_table_formats($timetable);
+        $lessons = $this->find_lessons($timetable);
+        $teachers = $this->find_teachers($timetable);
 
         if(!$tableformats){
-            $this->addFlash(
-                'error',
-                'Please setup the timetable order of events!'
-            );            
+            $this->addFlash('error', 'Please setup the timetable order of events!');            
             return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            
         }
-        $lessons = $em->getRepository('AppBundle:Timetabler')
-            ->findByTimetable($timetable);
-
-        $lesson_series = [];
-        $start_time = $timetable->getTime()->format('H:i');
-        $current_time = $timetable->getTime()->format('H:i');
-        foreach ($tableformats as $key => $value) {
-            $first_part = $current_time;
-            $current_time = $this->add_minutes($value->getDuration(), $current_time);
-            $lesson_series[] = $first_part .'-'.$current_time.'|'.$value->getId();
-
-        }
-        $teachers = $em->getRepository('AppBundle:Teacher')
-            ->findByTimetable($timetable);
-
-        $teachers_list = [];
-        foreach ($teachers as $key => $teacher) {
-            $teachers_list[$teacher->getId()] = $key+1;
-        }
-
-        $items = [];
-        foreach($lessons as $lesson){
-            $subjectEntity = $lesson->getSubject();
-            $teacherEntity = $lesson->getTeacher();
-            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teachers_list[$teacherEntity->getId()];
-        }
-
-        $timetablers = $em->getRepository('AppBundle:Timetabler')
+        $lesson_series = $this->get_lesson_series($tableformats, $timetable);
+        $teachers_list = $this->teachers_list($teachers);
+        $items = $this->add_items($lessons, $teachers_list);
+        $timetablers = $this->em()->getRepository('AppBundle:Timetabler')
             ->findByTimetable($timetable);
 
         $data['timetablers'] = $timetablers;
@@ -227,54 +161,129 @@ class TimetableController extends Controller
     }
 
     /**
+     * @Route("/timetable/teacher/{teacherId}", name="view_timetable_single_teacher")
+     */
+    public function teacherAction(Request $request, $teacherId)
+    {
+        $data = [];
+        
+        $user = $this->find_user();
+        $tableId = $request->query->get('tbl');
+        $timetable = $this->find_timetable($tableId);
+        $classes = $this->find_classes($user, $timetable);
+        $tableformats = $this->find_table_formats($timetable);
+        $lessons = $this->find_lessons($timetable);
+        $teacher = $this->find_teacher($teacherId);
+
+        if(!$tableformats){
+            $this->addFlash('error', 'Please setup the timetable order of events!');            
+            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            
+        }
+        $lesson_series = $this->get_lesson_series($tableformats, $timetable);
+        list($items, $dups) = $this->add_items_single_teacher($lessons, $teacher);
+        $timetablers = $this->em()->getRepository('AppBundle:Timetabler')
+            ->findByTimetable($timetable);
+
+        $data['teacher'] = $teacher;
+        $data['timetablers'] = $timetablers;
+        $data['classes'] = $classes;
+        $data['timetable'] = $timetable;
+        $data['tableformats'] = $tableformats;
+        $data['lesson_series'] = $lesson_series;
+        $data['actual_lessons'] = $lessons;
+        $data['items'] = $items;
+        $data['dups'] = $dups;
+
+        return $this->render('timetable/individual.html.twig', $data);
+
+    }
+
+    /**
+     * @Route("/timetable/pdf/{teacherId}/{format}", name="pdf_timetable_single")
+     */
+    public function pdfSingleAction(Request $request, $teacherId, $format)
+    {
+        $data = [];
+        
+        $user = $this->find_user();
+        $tableId = $request->query->get('tbl');
+        $timetable = $this->find_timetable($tableId);
+        $classes = $this->find_classes($user, $timetable);
+        $tableformats = $this->find_table_formats($timetable);
+        $lessons = $this->find_lessons($timetable);
+        $teacher = $this->find_teacher($teacherId);
+
+        if(!$tableformats){
+            $this->addFlash('error', 'Please setup the timetable order of events!');            
+            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            
+        }
+        $lesson_series = $this->get_lesson_series($tableformats, $timetable);
+        list($items, $dups) = $this->add_items_single_teacher($lessons, $teacher);
+        $timetablers = $this->em()->getRepository('AppBundle:Timetabler')
+            ->findByTimetable($timetable);
+
+        $data['teacher'] = $teacher;
+        $data['timetablers'] = $timetablers;
+        $data['classes'] = $classes;
+        $data['timetable'] = $timetable;
+        $data['tableformats'] = $tableformats;
+        $data['lesson_series'] = $lesson_series;
+        $data['actual_lessons'] = $lessons;
+        $data['items'] = $items;
+        $data['dups'] = $dups;
+        if($format == 'pdf'){
+           // return $this->render('timetable/tableformat.html.twig', $data);
+            $appPath = $this->container->getParameter('kernel.root_dir');
+
+            $html = $this->renderView('pdf/timetable_single.html.twig', $data);
+
+            $filename = sprintf("single_timetable-%s.pdf", date('Ymd~his'));
+
+            return new Response(
+                $this->get('knp_snappy.pdf')->getOutputFromHtml($html, array('orientation'=>'Landscape')),
+                200,
+                [
+                    'Content-Type'        => 'application/pdf',
+                    'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+                ]
+            );
+
+        } else if($format == 'img') {
+            $appPath = $this->container->getParameter('kernel.root_dir');
+
+            $html = $this->renderView('pdf/timetable_single_img.html.twig', $data);
+
+            $filename = sprintf("single_timetable-%s.jpg", date('Ymd~his'));
+
+            return new Response(
+                $this->get('knp_snappy.image')->getOutputFromHtml($html),
+                200,
+                [
+                    'Content-Type'        => 'image/jpg',
+                    'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+                ]
+            );
+
+        }
+    }
+
+    /**
      * @Route("/timetable/pdf", name="pdf_timetable")
      */
     public function pdfAction(Request $request)
     {
         $data = [];
-        $em = $this->getDoctrine()->getManager();
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        
+        $user = $this->find_user();
         $tableId = $request->query->get('tbl');
-        $timetable = $em->getRepository('AppBundle:Timetable')
-            ->find($tableId);
-
-        $classes = $em->getRepository('AppBundle:Classs')
-            ->findBy(
-                array('user'=>$user, 'timetable'=>$timetable),
-                array('id' => 'ASC')
-            );
-
-        $tableformats = $em->getRepository('AppBundle:TableFormat')
-            ->findByTimetable($timetable);
-
-        $lessons = $em->getRepository('AppBundle:Timetabler')
-            ->findByTimetable($timetable);
-
-        $lesson_series = [];
-        $start_time = $timetable->getTime()->format('H:i');
-        $current_time = $timetable->getTime()->format('H:i');
-        foreach ($tableformats as $key => $value) {
-            $first_part = $current_time;
-            $current_time = $this->add_minutes($value->getDuration(), $current_time);
-            $lesson_series[] = $first_part .'-'.$current_time.'|'.$value->getId();
-
-        }
-
-        $teachers = $em->getRepository('AppBundle:Teacher')
-            ->findByTimetable($timetable);
-
-        $teachers_list = [];
-        foreach ($teachers as $key => $teacher) {
-            $teachers_list[$teacher->getId()] = $key+1;
-        }
-
-
-        $items = [];
-        foreach($lessons as $lesson){
-            $subjectEntity = $lesson->getSubject();
-            $teacherEntity = $lesson->getTeacher();
-            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teachers_list[$teacherEntity->getId()];
-        }
+        $timetable = $this->find_timetable($tableId);
+        $classes = $this->find_classes($user, $timetable);
+        $tableformats =  $this->find_table_formats($timetable);
+        $lessons = $this->find_lessons($timetable);
+        $lesson_series = $this->get_lesson_series($tableformats, $timetable);
+        $teachers = $this->find_teachers($timetable);
+        $teachers_list = $this->teachers_list($teachers);
+        $items = $this->add_items($lessons, $teachers_list);
 
         $data['classes'] = $classes;
         $data['timetable'] = $timetable;
@@ -306,51 +315,17 @@ class TimetableController extends Controller
     public function imageAction(Request $request)
     {
         $data = [];
-        $em = $this->getDoctrine()->getManager();
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        
+        $user = $this->find_user();
         $tableId = $request->query->get('tbl');
-        $timetable = $em->getRepository('AppBundle:Timetable')
-            ->find($tableId);
-
-        $classes = $em->getRepository('AppBundle:Classs')
-            ->findBy(
-                array('user'=>$user, 'timetable'=>$timetable),
-                array('id' => 'ASC')
-            );
-
-
-        $tableformats = $em->getRepository('AppBundle:TableFormat')
-            ->findByTimetable($timetable);
-
-        $lessons = $em->getRepository('AppBundle:Timetabler')
-            ->findByTimetable($timetable);
-
-        $lesson_series = [];
-        $start_time = $timetable->getTime()->format('H:i');
-        $current_time = $timetable->getTime()->format('H:i');
-        foreach ($tableformats as $key => $value) {
-            $first_part = $current_time;
-            $current_time = $this->add_minutes($value->getDuration(), $current_time);
-            $lesson_series[] = $first_part .'-'.$current_time.'|'.$value->getId();
-
-        }
-
-        $teachers = $em->getRepository('AppBundle:Teacher')
-            ->findByTimetable($timetable);
-
-        $teachers_list = [];
-        foreach ($teachers as $key => $teacher) {
-            $teachers_list[$teacher->getId()] = $key+1;
-        }
-
-        $items = [];
-        foreach($lessons as $lesson){
-            $subjectEntity = $em->getRepository('AppBundle:Subject')
-                ->find($lesson->getSubject());
-            $teacherEntity = $em->getRepository('AppBundle:Teacher')
-                ->find($lesson->getTeacher());
-            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teachers_list[$teacherEntity->getId()];
-        }
+        $timetable = $this->find_timetable($tableId);
+        $classes = $this->find_classes($user, $timetable);
+        $tableformats =  $this->find_table_formats($timetable);
+        $lessons = $this->find_lessons($timetable);
+        $lesson_series = $this->get_lesson_series($tableformats, $timetable);
+        $teachers = $this->find_teachers($timetable);
+        $teachers_list = $this->teachers_list($teachers);
+        $items = $this->add_items($lessons, $teachers_list);
 
         $data['classes'] = $classes;
         $data['timetable'] = $timetable;
@@ -386,100 +361,136 @@ class TimetableController extends Controller
 
     }
 
-    /**
-     * @Route("/timetable/profile/{timetableId}", name="timetable_profile")
-     */
-    public function timetableAction(Request $request, $timetableId )
-    {   
-        $data = [];
-        $em = $this->getDoctrine()->getManager();
-
-        $timetable = $em->getRepository('AppBundle:Timetable')
-            ->find($timetableId);
-
-        $data['timetable'] = $timetable;
-        $attendances = $timetable->getAttendances();
-        $exams = $timetable->getExams();
-
-        $attendedPoints = 0;
-        $presentPoints = 0;
-        $absentPoints = 0;
-        $totalPoints = 0;
-
-        $daily = [];
-        $counter = 0;
-        foreach($attendances as $attn){
-            $counter += 1;
-            if($attn->getMorning() == true && $attn->getAfternoon() == true){
-                $attendedPoints += 10;
-                $presentPoints = 10;
-                $absentPoints = 0;
-                $totalPoints += 10;
-            }
-            if($attn->getMorning() == true && $attn->getAfternoon() == false){
-                $attendedPoints += 5;
-                $presentPoints = 5;
-                $absentPoints = 5;
-                $totalPoints += 10;
-            }
-            if($attn->getMorning() == false && $attn->getAfternoon() == true){
-                $attendedPoints += 5;
-                $presentPoints = 5;
-                $absentPoints = 5;
-                $totalPoints += 10;
-            }
-            if($attn->getMorning() == false && $attn->getAfternoon() == false){
-                $attendedPoints += 0;
-                $presentPoints = 0;
-                $absentPoints = 10;
-                $totalPoints += 10;
-            }
-
-            $date = $attn->getOnDate()->format('Y-m-d');
-            $daily[$counter] = '{ score:"'.$date.'",' . 'present:'.$presentPoints . "," . 'absent:'.$absentPoints . ' }';
-            if($counter == 61 ){
-                break;
-            }
-        }
-
-        $examList = [];
-        $key = null;
-        $limiter = 0;
-        foreach($exams as $exam){
-            $limiter += 1;
-
-            $key = $exam->getExamCompany()->getId().$exam->getTerm();
-
-            if (isset($examList[$key])) {
-                $examList[$key][] = $exam;
-            } else {
-                $examList[$key] = array($exam);
-            }
-            if($limiter == 50 ){
-                break;
-            }
-        }
-
-
-        $data['attendedPoints'] = $attendedPoints;
-        $data['presentPoints'] = $presentPoints;
-        $data['absentPoints'] = $absentPoints;
-        $data['totalPoints'] = $totalPoints;
-        $data['daily'] = $daily;
-        $data['examList'] = $examList;
-
-        return $this->render('timetable/timetable.html.twig', $data);
-
-    }
 
     private function add_minutes($minutes_to_add, $given_time){
 
         $time = new \DateTime($given_time);
         $time->add(new DateInterval('PT' . $minutes_to_add . 'M'));
-
         $new_time = $time->format('H:i');
-
         return $new_time;
+    }
+
+    private function find_user(){
+        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        return $user;        
+    }
+
+    private function em(){
+        $em = $this->getDoctrine()->getManager();
+        return $em;
+    }
+
+    private function get_timetables($user){
+        $timetables = $this->em()->getRepository('AppBundle:Timetable')
+            ->findBy(
+                array('user' => $user),
+                array('id' => 'ASC')
+            );
+        return $timetables;
+    }
+
+    private function get_timetables_class($user, $class){
+        $timetables = $this->em()->getRepository('AppBundle:Timetable')
+            ->findBy(
+                array('user' => $user, 'classs' => $class),
+                array('fName' => 'ASC')
+            );
+        return $timetables;
+    }
+
+    private function find_timetable($timetableId){
+        $timetable = $this->em()->getRepository('AppBundle:Timetable')
+            ->find($timetableId);
+        return $timetable;
+    }
+
+    private function find_class($classId){
+        $class = $this->em()->getRepository('AppBundle:Classs')
+            ->find($classId);
+        return $class;
+    }
+
+    private function find_classes($user, $timetable){
+        $classes = $this->em()->getRepository('AppBundle:Classs')
+            ->findBy(
+                array('user'=>$user, 'timetable'=>$timetable),
+                array('id' => 'ASC')
+            );
+        return $classes;
+    }
+
+    private function find_table_formats($timetable){
+        $tableformats = $this->em()->getRepository('AppBundle:TableFormat')
+            ->findByTimetable($timetable);  
+        return $tableformats;      
+    }
+
+    private function find_lessons($timetable){
+        $lessons = $this->em()->getRepository('AppBundle:Timetabler')
+            ->findByTimetable($timetable);   
+        return $lessons;     
+    }
+
+    private function find_teachers($timetable){
+        $teachers = $this->em()->getRepository('AppBundle:Teacher')
+            ->findByTimetable($timetable);
+        return $teachers;
+    }
+
+    private function find_teacher($id){
+        $teacher = $this->em()->getRepository('AppBundle:Teacher')
+            ->find($id);
+        return $teacher;
+    }
+
+    private function add_items($lessons, $teachers_list){
+        $items = [];
+        foreach($lessons as $lesson){
+            $subjectEntity = $lesson->getSubject();
+            $teacherEntity = $lesson->getTeacher();
+            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teachers_list[$teacherEntity->getId()];
+        }
+        return $items;
+    }
+
+    private function add_items_single_teacher($lessons, $teacher){
+        $items = [];
+        $dups = [];
+        foreach($lessons as $lesson){
+            $subjectEntity = $lesson->getSubject();
+            $teacherEntity = $lesson->getTeacher();
+            if($teacherEntity == $teacher){
+                $key = $lesson->getTableFormatColumn().".".$lesson->getDay();
+                if(array_key_exists($key, $items)){
+                    $dups[][$key] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teacher->getId()."|".$lesson->getClass();    
+                } else {
+                    $items[$key] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teacher->getId()."|".$lesson->getClass();    
+                }
+            }
+            
+        }
+        return [$items, $dups];
+    }
+
+    private function get_lesson_series($tableformats, $timetable){
+        $lesson_series = [];
+        $start_time = $timetable->getTime()->format('H:i');
+        $current_time = $timetable->getTime()->format('H:i');
+        foreach ($tableformats as $key => $value) {
+            $first_part = $current_time;
+            $current_time = $this->add_minutes($value->getDuration(), $current_time);
+            $lesson_series[] = $first_part .'-'.$current_time.'|'.$value->getId();
+
+        }
+        return $lesson_series;
+    }
+
+    private function teachers_list($teachers){
+        $teachers_list = [];
+        foreach ($teachers as $key => $teacher) {
+            $teachers_list[$teacher->getId()] = $key+1;
+        }
+        return $teachers_list;
     }
 
 }
