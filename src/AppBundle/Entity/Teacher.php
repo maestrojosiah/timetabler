@@ -43,6 +43,13 @@ class Teacher
     private $color;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="code", type="string", length=7)
+     */
+    private $code;
+
+    /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="teachers")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE")
      */
@@ -124,6 +131,16 @@ class Teacher
     public function getLName()
     {
         return $this->lName;
+    }
+
+    /**
+     * Get fullName
+     *
+     * @return string
+     */
+    public function getFullName()
+    {
+        return $this->fName . " " . $this->lName;
     }
 
     /**
@@ -271,5 +288,29 @@ class Teacher
     public function getTimetablers()
     {
         return $this->timetablers;
+    }
+
+    /**
+     * Set code
+     *
+     * @param string $code
+     *
+     * @return Teacher
+     */
+    public function setCode($code)
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    /**
+     * Get code
+     *
+     * @return string
+     */
+    public function getCode()
+    {
+        return $this->code;
     }
 }

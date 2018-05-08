@@ -121,9 +121,20 @@
                     <label for="sidebar" class="col-sm-2 control-label">Sidebar</label>
 
                     <div class="col-sm-10">
-	                  <select class="form-control" id="sidebar">
-	                    <option value="visible" {% if app.user.configs|first.sidebar is defined and app.user.configs|first.sidebar == 'visible' %} selected {% endif %}>Visible</option>
-	                    <option value="collapse" {% if app.user.configs|first.sidebar is defined and app.user.configs|first.sidebar == 'collapse' %} selected {% endif %}>Collapsed</option>
+                    <select class="form-control" id="sidebar">
+                      <option value="visible" {% if app.user.configs|first.sidebar is defined and app.user.configs|first.sidebar == 'visible' %} selected {% endif %}>Visible</option>
+                      <option value="collapse" {% if app.user.configs|first.sidebar is defined and app.user.configs|first.sidebar == 'collapse' %} selected {% endif %}>Collapsed</option>
+                    </select>
+
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="sidebar" class="col-sm-2 control-label">Split Timetable</label>
+
+                    <div class="col-sm-10">
+	                  <select class="form-control" id="split_days">
+	                    <option value="dont" {% if app.user.configs|first.splitDays is defined and app.user.configs|first.splitDays == 'dont' %} selected {% endif %}>Dont Split</option>
+	                    <option value="by_days" {% if app.user.configs|first.splitDays is defined and app.user.configs|first.splitDays == 'by_days' %} selected {% endif %}>Split By Days</option>
 	                  </select>
 
                     </div>
@@ -161,6 +172,7 @@
           var footerMessage = $("#footerMessage").val();
           var teacherNumbers = $("#teacherNumbers").val();
           var sidebar = $("#sidebar").val();
+          var split_days = $("#split_days").val();
 	      	$.ajax({
 	          	url:'{{ (path('save_settings')) }}',
 	          	type: "POST",
@@ -172,7 +184,8 @@
                   "maxLessonOccurances": maxLessonOccurances,
                   "footerMessage": footerMessage,
                   "teacherNumbers": teacherNumbers,
-	              	"sidebar": sidebar,
+                  "sidebar": sidebar,
+	              	"split_days": split_days,
 	          	},
 	          	async: true,
 	          	success: function (data)

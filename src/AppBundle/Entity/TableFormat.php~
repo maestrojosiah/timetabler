@@ -54,6 +54,12 @@ class TableFormat
      */
     private $timetable;
 
+
+    public function __toString() {
+        return (string)$this->id;
+    }
+
+
     /**
      * Get id
      *

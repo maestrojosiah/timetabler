@@ -71,6 +71,13 @@ class Config
     private $teacherNumbers;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="split_days", type="string", length=50)
+     */
+    private $splitDays;
+
+    /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="configs")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE")
      */
@@ -278,5 +285,29 @@ class Config
     public function getTeacherNumbers()
     {
         return $this->teacherNumbers;
+    }
+
+    /**
+     * Set splitDays
+     *
+     * @param string $splitDays
+     *
+     * @return Config
+     */
+    public function setSplitDays($splitDays)
+    {
+        $this->splitDays = $splitDays;
+
+        return $this;
+    }
+
+    /**
+     * Get splitDays
+     *
+     * @return string
+     */
+    public function getSplitDays()
+    {
+        return $this->splitDays;
     }
 }

@@ -212,6 +212,7 @@ class TeacherController extends Controller
             $form_data['f_name'] = $teacher->getFName();
             $form_data['l_name'] = $teacher->getLName();
             $form_data['color'] = $teacher->getColor();
+            $form_data['code'] = $teacher->getCode();
             $data['form'] = $form_data;
         }
         $data['teacher'] = $teacher;

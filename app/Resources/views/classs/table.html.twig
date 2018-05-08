@@ -8,6 +8,7 @@
                     <tr>
                         <th>Class</th>
                         {# <th>Code</th> #}
+                        <th>Timetable</th>
                         <th>Manage</th>
                     </tr>
                 </thead>
@@ -15,6 +16,7 @@
                 {% for classs in classes %}
                     <tr class="odd gradeX">
                         <td><a href="">{{ classs.cTitle }}</a></td>
+                        <td><a class="btn btn-info" href="{{path('view_timetable_for_class', {'classId': classs.id, 'tbl': timetable.id} ) }}">View Timetable</a></td>
                         {# <td>{{ classs.classsCode }}</td> #}
                         <td class="center">
                             <a class="btn btn-primary" href="{{ path('edit_classs', { 'classsId': classs.id, 'tbl': timetable.id } ) }}">Edit</a>

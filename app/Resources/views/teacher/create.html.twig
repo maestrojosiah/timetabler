@@ -43,6 +43,10 @@
                                       {{ form_widget(form.l_name, {'attr': {'class': 'form-control', 'placeholder': 'Last name', 'id': 'second_name' }} ) }}
                                     </div>
                                     <div class="form-group">
+                                    <label>Teacher's Code</label>
+                                      {{ form_widget(form.code, {'attr': {'class': 'form-control', 'placeholder': 'Code' }} ) }}
+                                    </div>
+                                    <div class="form-group">
                                     <label>Color</label>
                                       {{ form_widget(form.color, {'attr': {'class': 'form-control' }} ) }}
                                     </div>
@@ -119,7 +123,7 @@
                     {% set postn = position + 1 %}                             
                       <div class="list-group">
                           <a href="#" class="list-group-item">
-                              <span>{{postn}}.</span>  {{teacher.fName}} {{teacher.lName}}
+                              <span>{{teacher.code}}.</span>  {{teacher.fName}} {{teacher.lName}}
                               <span style="background-color:{{teacher.color}}" class="pull-right text-muted small"><em>{{teacher.color}}</em>
                               </span>
                           </a>

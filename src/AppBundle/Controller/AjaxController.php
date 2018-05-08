@@ -362,6 +362,7 @@ class AjaxController extends Controller
         $footerMessage = $request->request->get('footerMessage');
         $teacherNumbers = $request->request->get('teacherNumbers');
         $sidebar = $request->request->get('sidebar');
+        $split_days = $request->request->get('split_days');
 
         $config = $this->get_config($user);
         if(!$config){
@@ -376,6 +377,7 @@ class AjaxController extends Controller
         $config->setFooterMessage($footerMessage);
         $config->setTeacherNumbers($teacherNumbers);
         $config->setSidebar($sidebar);
+        $config->setSplitDays($split_days);
 
         $this->save($config);
         

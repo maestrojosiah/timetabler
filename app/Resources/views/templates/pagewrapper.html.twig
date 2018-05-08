@@ -3,6 +3,13 @@
 <!-- Content Header (Page header) -->
 <section class="content-header">
 {% block title %}
+    {% if show_sth is defined and show_sth == "show_auto_button" %}
+        <button type="button" data-toggle="modal" data-target="#auto_modal" class="btn btn-success btn-xl pull-right" style="margin-left:5px; margin-right:5px;">Automate</button>
+        {% if tableformats|first %}
+        <a href="{{path('pdf_timetable', {'tbl':tableformats[0].timetable.id })}}" class="btn btn-primary pull-right" style="margin-left:5px; margin-right:5px;"> Download PDF </a>
+        <a href="{{path('image_timetable', {'tbl':tableformats[0].timetable.id})}}" class="btn btn-primary pull-right" style="margin-left:5px; margin-right:5px;">Download as Image </a>
+        {% endif %}
+    {% endif %}
   <h1>
     {{ action_title }}
     {% if timetable is defined %}
@@ -12,11 +19,7 @@
     {% elseif data.timetable is defined %}
          For {{data.timetable.title }}
     {% endif %}
-  </h1>
-
-  <ol class="breadcrumb">
-    <li><a href="{{path('homepage')}}"><i class="fa fa-dashboard"></i> Home</a></li>
-  </ol>
+  </h1>  
 {% endblock %}
 </section>
 <!-- Main content -->

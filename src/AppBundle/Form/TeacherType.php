@@ -21,6 +21,7 @@ class TeacherType extends AbstractType
             ->add('f_name', TextType::class, array('label' => false ) )
             ->add('l_name', TextType::class, array('label' => false ) )
             ->add('color', TextType::class, array('label' => false ) )
+            ->add('code', TextType::class, array('label' => false ) )
             ->add('saveAndAdd', SubmitType::class, array(
                 'label' => "Save and Add More"
             ))

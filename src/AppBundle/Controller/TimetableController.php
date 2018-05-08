@@ -129,6 +129,7 @@ class TimetableController extends Controller
     public function viewAction(Request $request)
     {
         $data = [];
+        $data['show_sth'] = "show_auto_button";
         
         $user = $this->find_user();
         $tableId = $request->query->get('tbl');
@@ -157,6 +158,42 @@ class TimetableController extends Controller
         $data['items'] = $items;
 
         return $this->render('timetable/tableformat.html.twig', $data);
+
+    }
+    /**
+     * @Route("/timetable/class/{classId}", name="view_timetable_for_class")
+     */
+    public function classAction(Request $request, $classId)
+    {
+        $data = [];
+        
+        $user = $this->find_user();
+        $tableId = $request->query->get('tbl');
+        $timetable = $this->find_timetable($tableId);
+        $class = $this->find_class($classId);
+        $tableformats = $this->find_table_formats($timetable);
+        $lessons = $this->find_lessons($timetable);
+        $teachers = $this->find_teachers($timetable);
+
+        if(!$tableformats){
+            $this->addFlash('error', 'Please setup the timetable order of events!');            
+            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            
+        }
+        $lesson_series = $this->get_lesson_series($tableformats, $timetable);
+        $teachers_list = $this->teachers_list($teachers);
+        $items = $this->add_items($lessons, $teachers_list, "full_name");
+        $timetablers = $this->em()->getRepository('AppBundle:Timetabler')
+            ->findByTimetable($timetable);
+
+        $data['timetablers'] = $timetablers;
+        $data['class'] = $class;
+        $data['timetable'] = $timetable;
+        $data['tableformats'] = $tableformats;
+        $data['lesson_series'] = $lesson_series;
+        $data['actual_lessons'] = $lessons;
+        $data['items'] = $items;
+
+        return $this->render('timetable/class.html.twig', $data);
 
     }
 
@@ -212,6 +249,7 @@ class TimetableController extends Controller
         $tableformats = $this->find_table_formats($timetable);
         $lessons = $this->find_lessons($timetable);
         $teacher = $this->find_teacher($teacherId);
+        $teacherName = $teacher->getFullName();
 
         if(!$tableformats){
             $this->addFlash('error', 'Please setup the timetable order of events!');            
@@ -237,7 +275,7 @@ class TimetableController extends Controller
 
             $html = $this->renderView('pdf/timetable_single.html.twig', $data);
 
-            $filename = sprintf("single_timetable-%s.pdf", date('Ymd~his'));
+            $filename = sprintf("{$teacherName}_timetable-%s.pdf", date('Ymd~his'));
 
             return new Response(
                 $this->get('knp_snappy.pdf')->getOutputFromHtml($html, array('orientation'=>'Landscape')),
@@ -253,7 +291,77 @@ class TimetableController extends Controller
 
             $html = $this->renderView('pdf/timetable_single_img.html.twig', $data);
 
-            $filename = sprintf("single_timetable-%s.jpg", date('Ymd~his'));
+            $filename = sprintf("{$teacherName}_timetable-%s.jpg", date('Ymd~his'));
+
+            return new Response(
+                $this->get('knp_snappy.image')->getOutputFromHtml($html),
+                200,
+                [
+                    'Content-Type'        => 'image/jpg',
+                    'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+                ]
+            );
+
+        }
+    }
+
+    /**
+     * @Route("/timetable/class/pdf/{classId}/{format}", name="pdf_timetable_class")
+     */
+    public function pdfClassAction(Request $request, $classId, $format)
+    {
+        $data = [];
+        
+        $user = $this->find_user();
+        $tableId = $request->query->get('tbl');
+        $timetable = $this->find_timetable($tableId);
+        $class = $this->find_class($classId);
+        $tableformats = $this->find_table_formats($timetable);
+        $lessons = $this->find_lessons($timetable);
+        $teachers = $this->find_teachers($timetable);
+        $className  = $class->getCTitle();
+
+        if(!$tableformats){
+            $this->addFlash('error', 'Please setup the timetable order of events!');            
+            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            
+        }
+        $lesson_series = $this->get_lesson_series($tableformats, $timetable);
+        $teachers_list = $this->teachers_list($teachers);
+        $items = $this->add_items($lessons, $teachers_list, "full_name");
+        $timetablers = $this->em()->getRepository('AppBundle:Timetabler')
+            ->findByTimetable($timetable);
+
+        $data['timetablers'] = $timetablers;
+        $data['class'] = $class;
+        $data['timetable'] = $timetable;
+        $data['tableformats'] = $tableformats;
+        $data['lesson_series'] = $lesson_series;
+        $data['actual_lessons'] = $lessons;
+        $data['items'] = $items;
+
+        if($format == 'pdf'){
+           // return $this->render('timetable/tableformat.html.twig', $data);
+            $appPath = $this->container->getParameter('kernel.root_dir');
+
+            $html = $this->renderView('pdf/class_timetable.html.twig', $data);
+
+            $filename = sprintf("class{$className}_timetable-%s.pdf", date('Ymd~his'));
+
+            return new Response(
+                $this->get('knp_snappy.pdf')->getOutputFromHtml($html, array('orientation'=>'Landscape')),
+                200,
+                [
+                    'Content-Type'        => 'application/pdf',
+                    'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+                ]
+            );
+
+        } else if($format == 'img') {
+            $appPath = $this->container->getParameter('kernel.root_dir');
+
+            $html = $this->renderView('pdf/class_timetable.html.twig', $data);
+
+            $filename = sprintf("class{$className}_timetable-%s.jpg", date('Ymd~his'));
 
             return new Response(
                 $this->get('knp_snappy.image')->getOutputFromHtml($html),
@@ -284,6 +392,7 @@ class TimetableController extends Controller
         $teachers = $this->find_teachers($timetable);
         $teachers_list = $this->teachers_list($teachers);
         $items = $this->add_items($lessons, $teachers_list);
+        $timetableName = $timetable->getTitle();
 
         $data['classes'] = $classes;
         $data['timetable'] = $timetable;
@@ -297,7 +406,7 @@ class TimetableController extends Controller
 
         $html = $this->renderView('pdf/timetable.html.twig', $data);
 
-        $filename = sprintf("timetable-%s.pdf", date('Ymd~his'));
+        $filename = sprintf("{$timetableName}-%s.pdf", date('Ymd~his'));
 
         return new Response(
             $this->get('knp_snappy.pdf')->getOutputFromHtml($html, array('orientation'=>'Landscape')),
@@ -326,6 +435,7 @@ class TimetableController extends Controller
         $teachers = $this->find_teachers($timetable);
         $teachers_list = $this->teachers_list($teachers);
         $items = $this->add_items($lessons, $teachers_list);
+        $timetableName = $timetable->getTitle();
 
         $data['classes'] = $classes;
         $data['timetable'] = $timetable;
@@ -339,7 +449,7 @@ class TimetableController extends Controller
 
         $html = $this->renderView('pdf/timetable_img.html.twig', $data);
 
-        $filename = sprintf("timetable-%s.jpg", date('Ymd~his'));
+        $filename = sprintf("{$timetableName}-%s.jpg", date('Ymd~his'));
 
         return new Response(
             $this->get('knp_snappy.image')->getOutputFromHtml($html),
@@ -443,12 +553,17 @@ class TimetableController extends Controller
         return $teacher;
     }
 
-    private function add_items($lessons, $teachers_list){
+    private function add_items($lessons, $teachers_list, $what = "color"){
         $items = [];
         foreach($lessons as $lesson){
             $subjectEntity = $lesson->getSubject();
             $teacherEntity = $lesson->getTeacher();
-            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teachers_list[$teacherEntity->getId()];
+            if($what == "color"){
+                $asked_for = $teacherEntity->getColor();
+            } else {
+                $asked_for = $teacherEntity->getFName() ." ". $teacherEntity->getLName();
+            }
+            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$asked_for."|".$teachers_list[$teacherEntity->getId()];
         }
         return $items;
     }
@@ -488,7 +603,7 @@ class TimetableController extends Controller
     private function teachers_list($teachers){
         $teachers_list = [];
         foreach ($teachers as $key => $teacher) {
-            $teachers_list[$teacher->getId()] = $key+1;
+            $teachers_list[$teacher->getId()] = $teacher->getCode();
         }
         return $teachers_list;
     }
