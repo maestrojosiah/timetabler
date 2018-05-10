@@ -268,7 +268,7 @@
           <span aria-hidden="true">×</span></button>
         <h4 class="modal-title">Lessons Per Week. Automatic Placement</h4>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" id="to_append">
 		<div class="row">
 		    <div class="col-sm-2">
 		        <div class="form-group">
@@ -321,10 +321,22 @@
       </div>
       <div class="modal-body">
       	<p>Are you sure you want to delete all entries from {{timetable.title}}?</p>
+      	<p>Or may be you want to delete a specific subject?</p>
+      	<div>
+            <select class="form-control deleteSubjects">
+            	<option value="">Select Subject To Delete</option>
+            	{% for subject in timetable.subjects %}
+                	<option value="{{subject.id}}">{{subject.sTitle}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Cancel</button>
-        <button type="button" id="clearTimeTable" class="btn btn-primary" data-dismiss="modal">Go Ahead</button>
+        <button type="button" class="btn btn-info pull-left" data-dismiss="modal">Cancel</button>
+        <button type="button" id="deleteSubjectFromTimetable" class="btn btn-warning" data-dismiss="modal">Delete Subject From Timetable</button>
+        <button type="button" id="clearTimeTable" class="btn btn-danger" data-dismiss="modal">Delete Everything</button>
       </div>
     </div>
     <!-- /.modal-content -->
@@ -366,8 +378,6 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Cancel</button>
-        <button type="button" id="clearTimeTable" class="btn btn-primary" data-dismiss="modal">Go Ahead</button>
       </div>
     </div>
     <!-- /.modal-content -->
@@ -376,6 +386,7 @@
 </div>
  <input id="teacherFixed" type="hidden" />
 <input id="subjectFixed" type="hidden" />
+<input id="deleteSubjectFixed" type="hidden" />
        {% endblock %}
     {% endembed %}
 {% endblock %}
@@ -497,7 +508,21 @@
 
 	  	});
   	</script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$('#auto_modal').on('shown.bs.modal', function() {
+				if ($('#forceEntry').is(':checked')) {
+			        var forced = 'true';
+			        $('#to_append').append('<p id="warn" style="color:red; font-size: 18px; font-weight:bold; margin: 10px;">You may need to uncheck the "FORCE" feature. It may input undesired entries.</p>');
+			    } else {
+			        var forced = 'false';
+			        $('#warn').remove();
+			    }
+			    
 
+			})
+		});
+	</script>
   	<script>
   	    $(document).on('click', '[id^="teacher-details-"]', function(){
   	    	var id = jQuery(this).attr("id");
@@ -652,6 +677,41 @@
 
 	</script>
 	<script type="text/javascript">
+  	    $(document).on('click', '[id^="deleteSubjectFromTimetable"]', function(){
+
+  	    	var id = jQuery(this).attr("id");
+  	    	var timetable = {{timetable.id}};
+  	    	var subject_id = $("#deleteSubjectFixed").val();
+
+	      	$.ajax({
+	          	url:'{{ (path('delete_all_such_subjects')) }}',
+	          	type: "POST",
+	          	dataType: "json",
+	          	data: {
+	              	"info": id,
+	              	"subject_id": subject_id,
+	              	"timetable": timetable,
+	          	},
+	          	async: true,
+	          	success: function (data)
+	          	{
+	              	$.notiny({ 
+		            	text: data,  
+		            	position: 'right-top',
+		            	delay: 5000,
+		            	theme: data.theme
+		            });
+
+					location.reload();
+	          	},	
+	         	error: function () {
+	              	console.log("No deletions occured");
+	       	 	}
+	      	});
+	    });
+
+	</script>
+	<script type="text/javascript">
 		$(document).on('change', '.fixTeacher', function() {
 			console.log($( this ).val());
 	      $("#teacherFixed").val($( this ).val());
@@ -660,6 +720,11 @@
 		$(document).on('change', '.fixSubject', function() {
 			console.log($( this ).val());
 	      $("#subjectFixed").val($( this ).val());
+		});
+
+		$(document).on('change', '.deleteSubjects', function() {
+			console.log("value: " + $( this ).val());
+	      $("#deleteSubjectFixed").val($( this ).val());
 		});
 
 	</script>

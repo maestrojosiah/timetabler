@@ -42,26 +42,26 @@ class TeacherController extends Controller
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $form_data = $form->getData();
+            $found_teacher_with_similar_code = $em->getRepository('AppBundle:Teacher')
+               ->findBy(
+                    array('code' => $form_data->getCode(), 'timetable' => $TimeTable),
+                    array('id' => 'DESC')
+                );
 
             $em = $this->getDoctrine()->getManager();
             
             $Teacher->setTimetable($TimeTable);
-            try {
+            
+            if($found_teacher_with_similar_code){
+                $this->addFlash(
+                    'error',
+                    'Teacher Code in use - '.$found_teacher_with_similar_code[0]->getFullName().'!'
+                );                
+                $this->redirectToRoute('add_teacher', ['tbl' => $tableId]);
+            } else {
                 $em->persist($Teacher);
                 $em->flush(); 
-            }
-            catch(\Doctrine\DBAL\DBALException $e) {
-
-                //if the error is not for duplicates, throw the error
-                if($e->getErrorCode() == 1062) {
-                    $this->addFlash(
-                        'error',
-                        'Choose another color. That\'s in use!'
-                    );
-                    return $this->redirectToRoute('list_teachers', ['tbl' => $tableId]);
-                }
-
-                //otherwise ignore it
             }
 
             $nextAction = $form->get('saveAndAdd')->isClicked()
@@ -180,27 +180,22 @@ class TeacherController extends Controller
             $form_data = $form->getData();
             $data['form'] = $form_data;
 
-            try {
+            $found_teacher_with_similar_code = $em->getRepository('AppBundle:Teacher')
+               ->findBy(
+                    array('code' => $form_data->getCode(), 'timetable' => $timetable),
+                    array('id' => 'DESC')
+                );
+
+            if($found_teacher_with_similar_code){
+                $this->addFlash(
+                    'error',
+                    'Teacher Code in use - '.$found_teacher_with_similar_code[0]->getFullName().'!'
+                );                
+                $this->redirectToRoute('add_teacher', ['tbl' => $tableId]);
+            } else {
                 $em->persist($form_data);
                 $em->flush(); 
             }
-            catch(\Doctrine\DBAL\DBALException $e) {
-
-                //if the error is not for duplicates, throw the error
-                if($e->getErrorCode() == 1062) {
-                    $this->addFlash(
-                        'error',
-                        'Choose another color. That\'s in use!'
-                    );
-                    return $this->redirectToRoute('list_teachers');
-                }
-
-                //otherwise ignore it
-            }
-            $this->addFlash(
-                'success',
-                'Teacher edited successfully!'
-            );
 
             $nextAction = $form->get('saveAndAdd')->isClicked()
                 ? 'add_teacher'

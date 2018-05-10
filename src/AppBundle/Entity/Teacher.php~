@@ -134,6 +134,16 @@ class Teacher
     }
 
     /**
+     * Get fullName
+     *
+     * @return string
+     */
+    public function getFullName()
+    {
+        return $this->fName . " " . $this->lName;
+    }
+
+    /**
      * Set color
      *
      * @param string $color

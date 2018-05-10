@@ -89,9 +89,7 @@ class TimetableController extends Controller
 
             $this->addFlash('success', 'Timetable edited successfully!');
 
-            $nextAction = $form->get('saveAndAdd')->isClicked() ? 'add_timetable' : 'list_timetables';
-
-            return $this->redirectToRoute($nextAction);
+            return $this->redirectToRoute('list_timetables');
 
         } else {
             $form_data['title'] = $timetable->getTitle();

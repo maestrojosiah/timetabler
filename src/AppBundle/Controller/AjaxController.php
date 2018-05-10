@@ -76,6 +76,32 @@ class AjaxController extends Controller
     }
 
     /**
+     * @Route("/delete/subjects/", name="delete_all_such_subjects")
+     */
+    public function delSubjectsAction(Request $request)
+    {
+        $fullId = $request->request->get('info');
+        $subject_id = $request->request->get('subject_id');
+        $table_id =  $request->request->get('timetable');
+        
+        $timetable = $this->find_timetable($table_id);
+
+        $subject = $this->em()->getRepository('AppBundle:Subject')->find($subject_id);
+        $timetabler_entries_of_this_subject = $this->em()->getRepository('AppBundle:Timetabler') -> findBySubject($subject);
+
+        $message = "";
+
+        foreach($timetabler_entries_of_this_subject as $entry){
+            $this->em()->remove($entry);
+            $this->em()->flush();
+            $message = "Deleted Successfully";
+        }
+        
+        return new JsonResponse($message);
+
+    }
+
+    /**
      * @Route("/remove/table/entry", name="remove_timetable_entry")
      */
     public function removeEntryAction(Request $request)
@@ -141,6 +167,7 @@ class AjaxController extends Controller
                 $teacher->setTimetable($this_timetable);
                 $teacher->setFName($anEntity->getFName());
                 $teacher->setLName($anEntity->getLName());
+                $teacher->setCode($anEntity->getCode());
                 $teacher->setUser($anEntity->getUser());
                 $teacher->setColor($anEntity->getColor());
 
