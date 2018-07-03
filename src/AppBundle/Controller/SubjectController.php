@@ -19,53 +19,18 @@ class SubjectController extends Controller
     public function createAction(Request $request)
     {
     	$data = [];
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $user = $this->user();
         $data['user'] = $user;
-        $em = $this->getDoctrine()->getManager();
-
         $tableId = $request->query->get('tbl');
-        $TimeTable = $em->getRepository('AppBundle:Timetable')
-            ->find($tableId);
-
-        $subjects = $em->getRepository('AppBundle:Subject')
+        $TimeTable = $this->find('Timetable', $tableId);
+        $subjects = $this->em()->getRepository('AppBundle:Subject')
             ->findBy(
                 array('user'=>$user, 'timetable'=>$TimeTable),
                 array('id' => 'ASC')
             );
-
-
-        $subject = new Subject();
-        $subject->setUser($user);
-        $subject->setTimetable($TimeTable);
         $data['timetable'] = $TimeTable;
         $data['subjects'] = $subjects;
-
-        $form = $this->createForm(SubjectType::class, $subject);
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-
-            $em = $this->getDoctrine()->getManager();
-
-            $em->persist($subject);
-            $em->flush();
-
-        	$this->addFlash(
-	            'success',
-	            'Subject created successfully!'
-        	);
-
-            $nextAction = $form->get('saveAndAdd')->isClicked()
-                ? 'add_subject'
-                : 'list_subjects';
-
-            return $this->redirectToRoute($nextAction, ['tbl' => $tableId]);
-
-		} 
-
-	
-        // replace this example code with whatever you need
-        return $this->render('subject/create.html.twig',['form' => $form->createView(), 'data' => $data] );
+	      return $this->render('subject/create.html.twig', ['data' => $data] );
 
     }
 
@@ -75,25 +40,18 @@ class SubjectController extends Controller
     public function listAction(Request $request)
     {
         $data = [];
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $user = $this->user();
         $data['user'] = $user;
-
-        $em = $this->getDoctrine()->getManager();
         $tbl = $request->query->get('tbl');
-        $timetable = $em->getRepository('AppBundle:timetable')
-            ->find($tbl);
-
-        $subjects = $em->getRepository('AppBundle:Subject')
+        $timetable = $this->find('Timetable', $tbl);
+        $subjects = $this->em()->getRepository('AppBundle:Subject')
             ->findBy(
                 array('user' => $user, 'timetable' => $timetable),
                 array('id' => 'ASC')
             );
-
         $data['subjects'] = $subjects;
         $data['timetable'] = $timetable;
-
         return $this->render('subject/list.html.twig', $data );
-
     }
 
     /**
@@ -102,45 +60,13 @@ class SubjectController extends Controller
     public function editAction(Request $request, $subjectId)
     {
         $data = [];
-        $em = $this->getDoctrine()->getManager();
-
-        $subject = $em->getRepository('AppBundle:Subject')
+        $subject = $this->em()->getRepository('AppBundle:Subject')
             ->find($subjectId);
-
         $tableId = $request->query->get('tbl');
-
-
-        $form = $this->createForm(SubjectType::class, $subject);
-
-        $form->handleRequest($request);
-
-        if($form->isSubmitted() && $form->isValid()) {
-            $form_data = $form->getData();
-            $data['form'] = $form_data;
-
-            $em->persist($form_data);
-            $em->flush();
-
-            $this->addFlash(
-                'success',
-                'Subject edited successfully!'
-            );
-
-            $nextAction = $form->get('saveAndAdd')->isClicked()
-                ? 'add_subject'
-                : 'list_subjects';
-
-            return $this->redirectToRoute($nextAction, ['tbl' => $tableId]);
-
-        } else {
-            $form_data['s_title'] = $subject->getSTitle();
-            $data['form'] = $form_data;
-        }
-
+        $timetable = $this->find('Timetable', $tableId);
         $data['subject'] = $subject;
-
-
-        return $this->render('subject/edit.html.twig', ['form' => $form->createView(), 'data' => $data,] );
+        $data['timetable'] = $timetable;
+        return $this->render('subject/edit.html.twig', ['data' => $data] );
 
     }
 
@@ -150,21 +76,21 @@ class SubjectController extends Controller
     public function deleteAction(Request $request, $subjectId)
     {
         $data = [];
-        $em = $this->getDoctrine()->getManager();
+
         $tableId = $request->query->get('tbl');
 
-        $subject = $em->getRepository('AppBundle:Subject')
+        $subject = $this->em()->getRepository('AppBundle:Subject')
             ->find($subjectId);
 
             // exit(VarDumper::dump($childrenString));
 
-        $em->remove($subject);
-        $em->flush();
+        $this->em()->remove($subject);
+        $this->em()->flush();
 
         return $this->redirectToRoute('list_subjects', ['tbl' => $tableId]);
 
     }
-    
+
     /**
      * @Route("/timetable/subject/choose", name="choose_table_for_subject")
      */
@@ -174,7 +100,7 @@ class SubjectController extends Controller
         return $this->render('subject/choose.html.twig');
 
     }
-    
+
     /**
      * @Route("/timetable/subject/list", name="choose_list_for_subject")
      */
@@ -185,235 +111,49 @@ class SubjectController extends Controller
 
     }
 
-    /**
-     * @Route("/subject/profile/{subjectId}/{classId}", name="subject_profile")
-     */
-    public function subjectProfileAction(Request $request, $subjectId, $classId)
-    {
-        $data = [];
+
+    private function em(){
         $em = $this->getDoctrine()->getManager();
-        $classs = $em->getRepository('AppBundle:Classs')
-            ->find($classId);
+        return $em;
+    }
 
-        $subject = $em->getRepository('AppBundle:Subject')
-            ->find($subjectId);
-        
-        $exams = $em->getRepository('AppBundle:Exam')
+    private function find($entity, $id){
+        $entity = $this->em()->getRepository("AppBundle:$entity")->find($id);
+        return $entity;
+    }
+
+    private function findby($entity, $by, $actual){
+        $query_string = "findBy$by";
+        $entity = $this->em()->getRepository("AppBundle:$entity")->$query_string($actual);
+        return $entity;
+    }
+
+    private function findandlimit($entity, $by, $actual, $limit, $order){
+        $entity = $this->em()->getRepository("AppBundle:$entity")
             ->findBy(
-                array('classs' => $classs, 'subject' => $subject),
-                array('term' => 'ASC')
+                array($by => $actual),
+                array('id' => $order),
+                $limit
             );
-
-        $using = 'subject';
-        if(!$subject){
-            $subject = $em->getRepository('AppBundle:ChildSubject')
-                ->find($subjectId);
-
-            $exams = $em->getRepository('AppBundle:Exam')
-                ->findBy(
-                    array('classs' => $classs, 'childSubject' => $subject),
-                    array('term' => 'ASC')
-                );
-            $using = 'childSubject';
-        }
-
-
-        $data['subject'] = $subject;
-
-        $examList = [];
-        $examCompanies = [];
-        $index = 0;
-        foreach($exams as $exam){
-            $examList[] = $exam;
-            $examCompanies[$exam->getTerm()."_".$index] = $exam->getExamCompany()->getId();
-            $index++;
-        }
-
-        $noOfStudents = count($classs->getStudents());
-
-        $summations = [];
-        foreach($examCompanies as $term => $singleCompany){
-            $thisTerm = explode("_", $term)[0];
-            $thisCompany = $em->getRepository('AppBundle:ExamCompany')
-                ->find($singleCompany);
-
-            if($using == 'subject'){
-              $sumMarksForThisCompany = $em->getRepository('AppBundle:Exam')
-                ->getTotalMarksForSubject($subject, $singleCompany, $thisTerm, $classs);
-            } else {
-              $sumMarksForThisCompany = $em->getRepository('AppBundle:Exam')
-                ->getTotalMarksForChildSubject($subject, $singleCompany, $thisTerm, $classs);
-            }
-            $meanScore = $sumMarksForThisCompany / $noOfStudents;
-            $summations[$thisCompany->getCompanyName()." Term $thisTerm"] = round($meanScore, 2);
-        }
-
-        $data['exams'] = $summations;
-        $data['examList'] = $examList;
-        $data['test'] = $examCompanies;
-
-        return $this->render('subject/subject.html.twig', $data );
-        
+        return $entity;
     }
 
-    /**
-     * @Route("/student/ajax/record", name="ajax_save_subject")
-     */
-    public function recordAction(Request $request)
-    {
-
-        if($request->request->get('subjectTitle')){
-            $data = [];
-            $subjectTitle = $request->request->get('subjectTitle');
-            $role = $request->request->get('role');
-            $parentName = $request->request->get('parentName');
-            $children = $request->request->get('children');
-            $outOf1 = $request->request->get('outOf1');
-            $outOf2 = $request->request->get('outOf2');
-
-            $user = $this->get('security.token_storage')->getToken()->getUser();
-          
-            $em = $this->getDoctrine()->getManager();
-
-
-            if($role == "parent"){ // or null
-
-                $subjectPar = new Subject();
-                $subjectPar->setSubjectTitle($parentName);
-                $subjectPar->setOutOf('children');
-                $subjectPar->setUser($user);
-                $em->persist($subjectPar);
-                $em->flush();
-
-                $childrens = explode("_", $children);
-                $pointer = 0;
-                foreach($childrens as $child){
-                    $pointer += 1;
-                    $subject = new ChildSubject();
-                    $subject->setSubjectTitle($child);
-                    $subject->setParent($subjectPar);
-                    if($pointer == 1){
-                        $subject->setOutOf($outOf1);
-                    } else if ($pointer == 2 ){
-                        $subject->setOutOf($outOf2);
-                    }
-                    
-                    $subject->setUser($user);
-
-                    $em->persist($subject);
-                    $em->flush();
-                }
-
-
-
-
-            } else {
-                $subject = new Subject();
-                $subject->setSubjectTitle($subjectTitle);
-                $subject->setOutOf(100);
-                $subject->setUser($user);
-
-                $em->persist($subject);
-                $em->flush();
-            }
-
-
-
-            $data['subjectTitle'] = $subjectTitle;
-            $data['role'] = $role;
-            $data['children'] = $children;
-            $data['outOf1'] = $outOf1;
-            $data['outOf2'] = $outOf2;
-            $data['parentName'] = $parentName;
-        }
-
-        $this->addFlash(
-            'success',
-            'Subject added successfully!'
-        );
-
-            return new JsonResponse($data);
-
+    private function save($entity){
+        $this->em()->persist($entity);
+        $this->em()->flush();
+        return true;
     }
 
-    /**
-     * @Route("/student/ajax/edit", name="ajax_edit_subject")
-     */
-    public function ajaxEditAction(Request $request)
-    {
-
-        if($request->request->get('subjectTitle')){
-            $data = [];
-            $id = $request->request->get('id');
-            $subjectTitle = $request->request->get('subjectTitle');
-            $role = $request->request->get('role');
-            $parentName = $request->request->get('parentName');
-            $children = $request->request->get('children');
-            $outOf1 = $request->request->get('outOf1');
-            $outOf2 = $request->request->get('outOf2');
-
-            $user = $this->get('security.token_storage')->getToken()->getUser();
-          
-            $em = $this->getDoctrine()->getManager();
-
-            if($role == "parent"){ // or null
-
-                $subjectPar = $em->getRepository('AppBundle:Subject')
-                    ->find($id);
-                $subjectPar->setSubjectTitle($parentName);
-                $subjectPar->setOutOf('children');
-                $subjectPar->setUser($user);
-                $em->persist($subjectPar);
-                $em->flush();
-
-                $childrens = $subjectPar->getChildSubjects();
-                $pointer = 0;
-                foreach($childrens as $subject){
-                    $pointer += 1;
-                    $subject->setParent($subjectPar);
-                    if($pointer == 1){
-                        $subject->setOutOf($outOf1);
-                    } else if ($pointer == 2 ){
-                        $subject->setOutOf($outOf2);
-                    }
-                    
-                    $subject->setUser($user);
-
-                    $em->persist($subject);
-                    $em->flush();
-                }
-
-
-
-
-            } else {
-                $subject = new Subject();
-                $subject->setSubjectTitle($subjectTitle);
-                $subject->setOutOf(100);
-                $subject->setUser($user);
-
-                $em->persist($subject);
-                $em->flush();
-            }
-
-
-            $data['subjectTitle'] = $subjectTitle;
-            $data['role'] = $role;
-            $data['children'] = $children;
-            $data['outOf1'] = $outOf1;
-            $data['outOf2'] = $outOf2;
-            $data['parentName'] = $parentName;
-        }
-
-        $this->addFlash(
-            'success',
-            'Subject added successfully!'
-        );
-
-            return new JsonResponse($data);
-
+    private function delete($entity){
+        $this->em()->remove($entity);
+        $this->em()->flush();
+        return true;
     }
 
+    private function user(){
+        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        return $user;
+    }
 
 
 }

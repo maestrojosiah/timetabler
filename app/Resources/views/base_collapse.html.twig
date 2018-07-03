@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html>
-    <head> 
+    <head>
         <meta charset="UTF-8" />
 	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 	    <meta name="viewport" content="width=device-width, initial-scale=1">
 	    <meta name="description" content="">
 	    <meta name="author" content="">
         <title>{% block title %}TimeTabler{% endblock %}</title>
-        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon.png') }}">
 	    <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
 
 	    <!-- MetisMenu CSS -->
 	    <link href="{{ asset('vendor/metisMenu/metisMenu.min.css') }}" rel="stylesheet">
-    
+
 	    <!-- notiny CSS -->
 	    <link href="{{ asset('notiny/notiny.min.css') }}" rel="stylesheet">
 
@@ -93,6 +93,6 @@
 	        <script type="text/javascript">
 	            $.notiny({ text: '{{ message }}',  position: 'left-top', delay: 1000, });
 	        </script>
-	    {% endfor %}        	
+	    {% endfor %}
     </body>
 </html>

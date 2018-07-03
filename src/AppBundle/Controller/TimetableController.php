@@ -31,7 +31,7 @@ class TimetableController extends Controller
             $this->em()->persist($Timetable);
             $this->em()->flush();
             return $this->redirectToRoute('add_classs', ['tbl' => $Timetable->getId()]);
-        } 
+        }
         return $this->render('timetable/create.html.twig',['form' => $form->createView(), 'data' => $data] );
     }
 
@@ -56,7 +56,7 @@ class TimetableController extends Controller
         $data = [];
         $user = $this->find_user();
         $data['user'] = $user;
-        
+
         $class = $this->find_class($classId);
 
         $timetables = $this->get_timetables_class($user, $class);
@@ -110,7 +110,7 @@ class TimetableController extends Controller
     public function deleteAction(Request $request, $timetableId)
     {
     	$data = [];
-        
+
 
         $timetable = $this->find_timetable($timetableId);
 
@@ -126,20 +126,29 @@ class TimetableController extends Controller
      */
     public function viewAction(Request $request)
     {
+        ini_set('memory_limit', '-1');
         $data = [];
         $data['show_sth'] = "show_auto_button";
-        
+
         $user = $this->find_user();
         $tableId = $request->query->get('tbl');
         $timetable = $this->find_timetable($tableId);
         $classes = $this->find_classes($user, $timetable);
         $tableformats = $this->find_table_formats($timetable);
+        $lesson_tableformats = $this->em()->getRepository('AppBundle:TableFormat')
+          ->countPossibleLessons($user);
         $lessons = $this->find_lessons($timetable);
         $teachers = $this->find_teachers($timetable);
 
+        $existing_download = $this->em()->getRepository('AppBundle:Download')
+          ->findOneBy(
+              array('timetable' => $timetable),
+              array('id' => 'DESC')
+          );
+
         if(!$tableformats){
-            $this->addFlash('error', 'Please setup the timetable order of events!');            
-            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            
+            $this->addFlash('error', 'Please setup the timetable order of events!');
+            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);
         }
         $lesson_series = $this->get_lesson_series($tableformats, $timetable);
         $teachers_list = $this->teachers_list($teachers);
@@ -147,10 +156,12 @@ class TimetableController extends Controller
         $timetablers = $this->em()->getRepository('AppBundle:Timetabler')
             ->findByTimetable($timetable);
 
+        $data['download'] = $existing_download;
         $data['timetablers'] = $timetablers;
         $data['classes'] = $classes;
         $data['timetable'] = $timetable;
         $data['tableformats'] = $tableformats;
+        $data['lesson_tableformats'] = $lesson_tableformats;
         $data['lesson_series'] = $lesson_series;
         $data['actual_lessons'] = $lessons;
         $data['items'] = $items;
@@ -163,8 +174,9 @@ class TimetableController extends Controller
      */
     public function classAction(Request $request, $classId)
     {
+        ini_set('memory_limit', '-1');
         $data = [];
-        
+
         $user = $this->find_user();
         $tableId = $request->query->get('tbl');
         $timetable = $this->find_timetable($tableId);
@@ -174,8 +186,8 @@ class TimetableController extends Controller
         $teachers = $this->find_teachers($timetable);
 
         if(!$tableformats){
-            $this->addFlash('error', 'Please setup the timetable order of events!');            
-            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            
+            $this->addFlash('error', 'Please setup the timetable order of events!');
+            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);
         }
         $lesson_series = $this->get_lesson_series($tableformats, $timetable);
         $teachers_list = $this->teachers_list($teachers);
@@ -200,8 +212,9 @@ class TimetableController extends Controller
      */
     public function teacherAction(Request $request, $teacherId)
     {
+        ini_set('memory_limit', '-1');
         $data = [];
-        
+
         $user = $this->find_user();
         $tableId = $request->query->get('tbl');
         $timetable = $this->find_timetable($tableId);
@@ -211,8 +224,8 @@ class TimetableController extends Controller
         $teacher = $this->find_teacher($teacherId);
 
         if(!$tableformats){
-            $this->addFlash('error', 'Please setup the timetable order of events!');            
-            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            
+            $this->addFlash('error', 'Please setup the timetable order of events!');
+            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);
         }
         $lesson_series = $this->get_lesson_series($tableformats, $timetable);
         list($items, $dups) = $this->add_items_single_teacher($lessons, $teacher);
@@ -234,12 +247,13 @@ class TimetableController extends Controller
     }
 
     /**
-     * @Route("/timetable/pdf/{teacherId}/{format}", name="pdf_timetable_single")
+     * @Route("/timetable/pdf/{teacherId}/{format}", name="download_teacher")
      */
     public function pdfSingleAction(Request $request, $teacherId, $format)
     {
+        ini_set('memory_limit', '-1');
         $data = [];
-        
+
         $user = $this->find_user();
         $tableId = $request->query->get('tbl');
         $timetable = $this->find_timetable($tableId);
@@ -250,8 +264,8 @@ class TimetableController extends Controller
         $teacherName = $teacher->getFullName();
 
         if(!$tableformats){
-            $this->addFlash('error', 'Please setup the timetable order of events!');            
-            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            
+            $this->addFlash('error', 'Please setup the timetable order of events!');
+            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);
         }
         $lesson_series = $this->get_lesson_series($tableformats, $timetable);
         list($items, $dups) = $this->add_items_single_teacher($lessons, $teacher);
@@ -304,12 +318,13 @@ class TimetableController extends Controller
     }
 
     /**
-     * @Route("/timetable/class/pdf/{classId}/{format}", name="pdf_timetable_class")
+     * @Route("/timetable/class/pdf/{classId}/{format}", name="download_class")
      */
     public function pdfClassAction(Request $request, $classId, $format)
     {
+        ini_set('memory_limit', '-1');
         $data = [];
-        
+
         $user = $this->find_user();
         $tableId = $request->query->get('tbl');
         $timetable = $this->find_timetable($tableId);
@@ -320,8 +335,8 @@ class TimetableController extends Controller
         $className  = $class->getCTitle();
 
         if(!$tableformats){
-            $this->addFlash('error', 'Please setup the timetable order of events!');            
-            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);            
+            $this->addFlash('error', 'Please setup the timetable order of events!');
+            return $this->redirectToRoute('add_table_format', ['tbl' => $timetable->getId()]);
         }
         $lesson_series = $this->get_lesson_series($tableformats, $timetable);
         $teachers_list = $this->teachers_list($teachers);
@@ -374,12 +389,13 @@ class TimetableController extends Controller
     }
 
     /**
-     * @Route("/timetable/pdf", name="pdf_timetable")
+     * @Route("/timetable/pdf", name="download_master_pdf")
      */
     public function pdfAction(Request $request)
     {
+        ini_set('memory_limit', '-1');
         $data = [];
-        
+
         $user = $this->find_user();
         $tableId = $request->query->get('tbl');
         $timetable = $this->find_timetable($tableId);
@@ -417,12 +433,13 @@ class TimetableController extends Controller
     }
 
     /**
-     * @Route("/timetable/image", name="image_timetable")
+     * @Route("/timetable/image", name="download_master_img")
      */
     public function imageAction(Request $request)
     {
+        ini_set('memory_limit', '-1');
         $data = [];
-        
+
         $user = $this->find_user();
         $tableId = $request->query->get('tbl');
         $timetable = $this->find_timetable($tableId);
@@ -480,7 +497,7 @@ class TimetableController extends Controller
 
     private function find_user(){
         $user = $this->container->get('security.token_storage')->getToken()->getUser();
-        return $user;        
+        return $user;
     }
 
     private function em(){
@@ -529,14 +546,14 @@ class TimetableController extends Controller
 
     private function find_table_formats($timetable){
         $tableformats = $this->em()->getRepository('AppBundle:TableFormat')
-            ->findByTimetable($timetable);  
-        return $tableformats;      
+            ->findByTimetable($timetable);
+        return $tableformats;
     }
 
     private function find_lessons($timetable){
         $lessons = $this->em()->getRepository('AppBundle:Timetabler')
-            ->findByTimetable($timetable);   
-        return $lessons;     
+            ->findByTimetable($timetable);
+        return $lessons;
     }
 
     private function find_teachers($timetable){
@@ -575,12 +592,12 @@ class TimetableController extends Controller
             if($teacherEntity == $teacher){
                 $key = $lesson->getTableFormatColumn().".".$lesson->getDay();
                 if(array_key_exists($key, $items)){
-                    $dups[][$key] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teacher->getId()."|".$lesson->getClass();    
+                    $dups[][$key] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teacher->getId()."|".$lesson->getClass();
                 } else {
-                    $items[$key] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teacher->getId()."|".$lesson->getClass();    
+                    $items[$key] = $subjectEntity->getSTitle()."|".$teacherEntity->getColor()."|".$teacher->getId()."|".$lesson->getClass();
                 }
             }
-            
+
         }
         return [$items, $dups];
     }

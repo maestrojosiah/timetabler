@@ -19,6 +19,100 @@ use AppBundle\Entity\TableFormat;
 class AjaxController extends Controller
 {
 
+  /**
+   * @Route("/timetabler/save/entity", name="save_entity")
+   */
+  public function saveAction(Request $request)
+  {
+
+      $user = $this->find_user();
+      $entity = $request->request->get('entity');
+      $return = $request->request->get('return');
+      $fields = $request->request->get('fields');
+      $timetable_id = $request->request->get('timetable');
+      $values = $request->request->get('values');
+      $timetable = $this->find('Timetable', $timetable_id);
+
+      $fields_with_values = array_combine($fields, $values);
+
+      switch ($entity) {
+        case 'Classs':
+          $this_entity = new Classs();
+          break;
+        case 'Teacher':
+          $this_entity = new Teacher();
+          break;
+        case 'Subject':
+          $this_entity = new Subject();
+          break;
+        case 'TableFormat':
+          $this_entity = new TableFormat();
+          break;
+        case 'ClassSubject':
+          $this_entity = new ClassSubject();
+          $subj = $this->find('Subject', $fields_with_values['subject_id']);
+          $classs = $this->find('Classs', $fields_with_values['class_id']);
+          $teacher = $this->find('Teacher', $fields_with_values['teacher_id']);
+          $this_entity->setCClass($classs);
+          $this_entity->setTeacher($teacher);
+          $this_entity->setSubject($subj);
+          $to_return = $this_entity->getSubject()->getSTitle()." - [ Class ".$this_entity->getCClass()->getCTitle() ." ]";
+          $isAlreadyCreated = $this->em()->getRepository('AppBundle:ClassSubject')
+              ->isAlreadyCreated($subj, $classs);
+
+          if($isAlreadyCreated){
+              $to_return = "That subject is taken.";
+              goto end;
+          }
+
+          break;
+      }
+
+
+      $this_entity->setUser($this->find_user());
+      $this_entity->setTimetable($timetable);
+
+      foreach ($fields_with_values as $key => $value) {
+        if (strpos($key, '_id') == false) {
+          $str = "set$key";
+          $this_entity->$str($value);
+        }
+      }
+
+      $this->save($this_entity);
+      if($entity != 'ClassSubject'){
+        $to_return = $this_entity->$return();
+      }
+      end:
+      return new JsonResponse($to_return);
+  }
+
+  /**
+   * @Route("/timetabler/edit/entity", name="edit_entity")
+   */
+  public function editAction(Request $request)
+  {
+
+      $user = $this->find_user();
+      $entity = $request->request->get('entity');
+      $id = $request->request->get('id');
+      $fields = $request->request->get('fields');
+      $values = $request->request->get('values');
+
+      $fields_with_values = array_combine($fields, $values);
+      $this_entity = $this->find($entity, $id);
+
+      $this_entity->setUser($this->find_user());
+      foreach ($fields_with_values as $key => $value) {
+        if (strpos($key, '_id') == false) {
+          $str = "set$key";
+          $this_entity->$str($value);
+        }
+      }
+      $this->save($this_entity);
+      return new JsonResponse("true");
+  }
+
     /**
      * @Route("/save/table/entry", name="save_timetable_entry")
      */
@@ -50,13 +144,13 @@ class AjaxController extends Controller
     public function fixEntryAction(Request $request)
     {
         $fullId = explode('|',$request->request->get('info'));
-        
+
 
         $classSubj = $request->request->get('classSubj');
         $subj =  $request->request->get('subject');
         $teacherId =  $request->request->get('teacher');
         $forced =  $request->request->get('forced');
-        $time =  explode("_", $fullId[4])[1]; 
+        $time =  explode("_", $fullId[4])[1];
         $t_table =  $request->request->get('timetable');
         $day =  explode("_", $fullId[2])[1];
         $tableFormatColumn =  explode("_", $fullId[3])[1];
@@ -83,7 +177,7 @@ class AjaxController extends Controller
         $fullId = $request->request->get('info');
         $subject_id = $request->request->get('subject_id');
         $table_id =  $request->request->get('timetable');
-        
+
         $timetable = $this->find_timetable($table_id);
 
         $subject = $this->em()->getRepository('AppBundle:Subject')->find($subject_id);
@@ -96,7 +190,7 @@ class AjaxController extends Controller
             $this->em()->flush();
             $message = "Deleted Successfully";
         }
-        
+
         return new JsonResponse($message);
 
     }
@@ -107,7 +201,7 @@ class AjaxController extends Controller
     public function removeEntryAction(Request $request)
     {
         $fullId = explode('|',$request->request->get('info'));
-        
+
 
         $day = explode("_", $fullId[0])[1];
         $class =  explode("_", $fullId[1])[1];
@@ -123,7 +217,7 @@ class AjaxController extends Controller
         $id = 'class-'.$timetablerEntry->getClass()->getCTitle().'_day-'.$day.'_tblfmt-'.$timetablerEntry->getTableFormatColumn();
 
         $arrData = ['message' => $message, 'id' => $id];
-        
+
         $this->em()->remove($timetablerEntry);
         $this->em()->flush();
 
@@ -141,10 +235,10 @@ class AjaxController extends Controller
         $entity = $request->request->get('entity');
         $user = $this->find_user();
 
-        
+
 
         $this_timetable = $this->find_timetable($this_timetableId);
-        
+
         $other_timetable = $this->find_timetable($other_timetableId);
         if($entity == 'Classs'){
             $entities = $other_timetable->getClasses();
@@ -157,7 +251,7 @@ class AjaxController extends Controller
 
                 $this->save($class);
 
-                $url = $this->generateUrl('homepage');                
+                $url = $this->generateUrl('homepage');
             }
         } else if ($entity == 'Teacher'){
             $entities = $other_timetable->getTeachers();
@@ -173,7 +267,7 @@ class AjaxController extends Controller
 
                 $this->save($teacher);
 
-                $url = $this->generateUrl('homepage');                
+                $url = $this->generateUrl('homepage');
             }
         } else if ($entity == 'Subject'){
             $entities = $other_timetable->getSubjects();
@@ -186,8 +280,8 @@ class AjaxController extends Controller
 
                 $this->save($subject);
 
-                $url = $this->generateUrl('homepage');                
-            }            
+                $url = $this->generateUrl('homepage');
+            }
         } else if ($entity == 'TableFormat'){
             $entities = $other_timetable->getTableFormats();
             foreach($entities as $anEntity){
@@ -201,8 +295,8 @@ class AjaxController extends Controller
 
                 $this->save($tableFormat);
 
-                $url = $this->generateUrl('homepage');                
-            }            
+                $url = $this->generateUrl('homepage');
+            }
         } else if ($entity == 'ClassSubject'){
             $entities = $other_timetable->getClassSubjects();
             foreach($entities as $anEntity){
@@ -233,10 +327,10 @@ class AjaxController extends Controller
 
                 $this->save($classSubject);
 
-                $url = $this->generateUrl('homepage');                
-            }            
+                $url = $this->generateUrl('homepage');
+            }
         }
-        
+
         $output = ['url' => $url];
         return new JsonResponse($output);
 
@@ -250,7 +344,7 @@ class AjaxController extends Controller
         $user = $this->container->get('security.token_storage')->getToken()->getUser();
         $fullId = explode('_',$request->request->get('info'));
         $timetableId = $request->request->get('timetable');
-        
+
         $timetable = $this->find_timetable($timetableId);
 
 
@@ -293,22 +387,22 @@ class AjaxController extends Controller
         $availableClassSubjects = [];
         foreach($classSubjects as $classSubject){
             if($classSubject->getCClass()->getCTitle() == $className){
-                $availableClassSubjects[] = $classSubject->getSubject()->getSTitle().'|'.$classSubject->getTeacher().'|'.$classSubject->getTeacher()->getColor();                
+                $availableClassSubjects[] = $classSubject->getSubject()->getSTitle().'|'.$classSubject->getTeacher().'|'.$classSubject->getTeacher()->getColor();
             }
-            
+
         }
 
         $difference = array_diff($availableClassSubjects, $classSubjectsInPlace);
-        
+
         $available = '<h4>Hints:</h4>';
-        foreach($difference as $item){ 
+        foreach($difference as $item){
             $color = explode("|", $item)[2];
             $teacher = explode("|", $item)[1];
             $subject = explode("|", $item)[0];
             if(!in_array(explode("|", $item)[1], $classSubjectTeachers)){
                 $available .= '<span class="" style="background-color:'.$color.';">'.$subject.' ['.$teacher.']</span><br />';
             }
-            
+
         }
         if($available == ""){
             $available = "No Hints";
@@ -324,7 +418,7 @@ class AjaxController extends Controller
     public function getTeacherDetails(Request $request)
     {
         $fullId = explode('-',$request->request->get('info'));
-        
+
 
         $id = $fullId[2];
         $teacher = $this->em()->getRepository('AppBundle:Teacher')
@@ -380,7 +474,7 @@ class AjaxController extends Controller
     public function saveSettingsAction(Request $request)
     {
         $user = $this->container->get('security.token_storage')->getToken()->getUser();
-        
+
 
         $schoolTitle = $request->request->get('schoolTitle');
         $schoolAddress = $request->request->get('schoolAddress');
@@ -395,7 +489,7 @@ class AjaxController extends Controller
         if(!$config){
            $config = new Config();
         }
-        
+
         $config->setUser($user);
         $config->setSchoolTitle($schoolTitle);
         $config->setSchoolAddress($schoolAddress);
@@ -407,7 +501,7 @@ class AjaxController extends Controller
         $config->setSplitDays($split_days);
 
         $this->save($config);
-        
+
         return new JsonResponse("success");
 
     }
@@ -418,7 +512,7 @@ class AjaxController extends Controller
     public function clearAction(Request $request)
     {
         $user = $this->container->get('security.token_storage')->getToken()->getUser();
-        
+
 
         $timetableId = $request->request->get('timetable');
         $timetable = $this->find_timetable($timetableId);
@@ -426,12 +520,12 @@ class AjaxController extends Controller
         $timetablers = $this->em()->getRepository('AppBundle:Timetabler')
             ->findByTimetable($timetable);
 
-        
+
         foreach($timetablers as $timetabler){
             $this->em()->remove($timetabler);
         }
-        
-        
+
+
         $this->em()->flush();
 
         return new JsonResponse("success");
@@ -461,11 +555,11 @@ class AjaxController extends Controller
             $classes = $this->em()->getRepository('AppBundle:Classs')->findBy(
                 array('user' => $user, 'timetable' => $timetable),
                 array('id' => 'ASC')
-            );     
-            $reload = 'true';       
+            );
+            $reload = 'true';
         } else {
-            $classes = [$this->em()->getRepository('AppBundle:Classs')->find($classId)];     
-            $reload = 'true';       
+            $classes = [$this->em()->getRepository('AppBundle:Classs')->find($classId)];
+            $reload = 'true';
         }
         $countClasses = count($classes);
         $countDays = count($days);
@@ -520,14 +614,14 @@ class AjaxController extends Controller
                         $int += 2;
                         if($int > $countCopyShuffledTblFmt){
                             $int = 0;
-                        } 
+                        }
                         break 1;
 
                     } else {
                         retry:
                         $teacher = $classSubject->getTeacher();
                         $random_table_format = array_rand($copyShuffledTblFmtKeys);
-                        list($message, $arrData) = $this->attempt_to_save_timetabler($day, $copyShuffledTblFmt[$random_table_format], $teacher, $classSubject, $classSubject->getSubject(), $class, $timetable, $subject, 'auto', $forced, "new"); 
+                        list($message, $arrData) = $this->attempt_to_save_timetabler($day, $copyShuffledTblFmt[$random_table_format], $teacher, $classSubject, $classSubject->getSubject(), $class, $timetable, $subject, 'auto', $forced, "new");
                         $test = "test";
                         if( empty($arrData['output']) ){
                             list($int, $subjectCount) = $this->cursor($days, $subjectCount, $int, $countCopyShuffledTblFmt, $countTableFormats);
@@ -541,7 +635,7 @@ class AjaxController extends Controller
                                 $this->addFlash('error', 'Out of '. $tries .' slots. Please reshuffle your entries!');
                                 continue;
                             }
-                            
+
                         } else {
                             $message[] = "found one... Going to next day...";
                             list($int, $subjectCount) = $this->cursor($days, $subjectCount, $int, $countCopyShuffledTblFmt, $countTableFormats);
@@ -553,7 +647,7 @@ class AjaxController extends Controller
 
                 }
             }
-            
+
 
         }
 
@@ -572,9 +666,9 @@ class AjaxController extends Controller
         } else {
             $int += 1;
         }
-        
+
         return [$int, $subjectCount];
-            
+
     }
 
     public function randomAssignAction($lesson, $quantity, $class){
@@ -584,7 +678,7 @@ class AjaxController extends Controller
     public function generateRandomDays($quantity){
         $addedDays = [];
         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-        for ($i=0; $i < $quantity; $i++) { 
+        for ($i=0; $i < $quantity; $i++) {
             shuffle($days);
             $addedDays[] = array_pop($days);
         }
@@ -597,12 +691,17 @@ class AjaxController extends Controller
 
     private function find_user(){
         $user = $this->container->get('security.token_storage')->getToken()->getUser();
-        return $user;        
+        return $user;
     }
 
     private function em(){
         $em = $this->getDoctrine()->getManager();
         return $em;
+    }
+
+    private function find($entity, $id){
+        $entity = $this->em()->getRepository("AppBundle:$entity")->find($id);
+        return $entity;
     }
 
     private function find_timetable($timetableId){
@@ -622,8 +721,8 @@ class AjaxController extends Controller
             ->findBy(
                 array('subject' => $subject, 'class' => $class, 'timetable' => $timetable),
                 array('id' => $order)
-            );    
-        return $timetablers;    
+            );
+        return $timetablers;
     }
 
     private function find_timetablers_subj_class_day($subject, $class, $day){
@@ -634,12 +733,12 @@ class AjaxController extends Controller
 
     private function get_config($user){
         $config = $this->em()->getRepository('AppBundle:Config')
-            ->findOneByUser($user); 
-        return $config;       
+            ->findOneByUser($user);
+        return $config;
     }
 
     private function get_or_create_timetabler($day, $class, $tableFormatColumn, $status){
-        
+
         $recorded = $this->em()->getRepository('AppBundle:Timetabler')
             ->isAlreadyRecordedFormat($day, $class, $tableFormatColumn);
 
@@ -653,19 +752,19 @@ class AjaxController extends Controller
         } else {
             $timetabler = new TimeTabler();
         }
-        
+
         return $timetabler;
     }
 
     private function save($entity){
         $this->em()->persist($entity);
-        $this->em()->flush();        
+        $this->em()->flush();
     }
 
     private function is_clashing($day, $tableFormatColumn, $teacher){
         $record = $this->em()->getRepository('AppBundle:Timetabler')
             ->isClashingFormat($day, $tableFormatColumn, $teacher);
-        return $record;        
+        return $record;
     }
 
     private function set_timetabler_values($timetabler, $classSubject, $user, $timetable, $time, $day, $classSubjectTeacher, $subject, $classSubjectClass, $tableFormatColumn){
@@ -677,8 +776,8 @@ class AjaxController extends Controller
         $timetabler->setTeacher($classSubjectTeacher);
         $timetabler->setSubject($subject);
         $timetabler->setClass($classSubjectClass);
-        $timetabler->setTableFormatColumn($tableFormatColumn);     
-        return $timetabler;   
+        $timetabler->setTableFormatColumn($tableFormatColumn);
+        return $timetabler;
     }
 
     private function attempt_to_save_timetabler($day, $tableFormatColumn, $teacher, $classSubject, $subject, $class, $timetable, $subj, $time, $forced, $status="update"){
@@ -699,16 +798,16 @@ class AjaxController extends Controller
             $maxAllowedOccurances = $config->getMaxLessonOccurances()-1;
             $subjectOccurancesToday = $this->find_timetablers_subj_class_day($subject, $class, $day);
             $numberOfOccurances = count($subjectOccurancesToday);
-            
+
             if($numberOfOccurances > $maxAllowedOccurances){
                 $message[] = 'Maximum Lessons for '. $subject->getSTitle() . ' reached!';
                 $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
             } else {
                 $timetabler = $this->get_or_create_timetabler($day, $class, $tableFormatColumn, $status);
-                if($timetabler == NULL){ 
+                if($timetabler == NULL){
                     $message[] = 'Maximum Lessons for '. $subject->getSTitle() . ' reached!';
                     $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
-                    return [$message, $arrData]; 
+                    return [$message, $arrData];
                 }
                 $timetabler = $this->set_timetabler_values($timetabler, $classSubject, $user, $timetable, $time, $day, $teacher, $subject, $class, $tableFormatColumn);
                 $this->save($timetabler);
@@ -722,10 +821,10 @@ class AjaxController extends Controller
                 $subject = $sbj->getSTitle();
 
                 $string = 'class-'.$class.'_day-'.$day.'_tblfmt-'.$format;
-                $info = ['string'=>$string, 'color'=>$color, 'subject'=>$subject, 'occurances'=>$numberOfOccurances];                
+                $info = ['string'=>$string, 'color'=>$color, 'subject'=>$subject, 'occurances'=>$numberOfOccurances];
                 $arrData = ['output' => $info, 'theme' => 'dark', 'message' => $message, 'forced' => $forced ];
             }
-         
+
         }
 
         return [$message, $arrData];
@@ -748,11 +847,11 @@ class AjaxController extends Controller
             $less = (int)$quantity;
             $difference = count($days) - $quantity;
             shuffle($days_assigned);
-            for ($i=0; $i < $difference; $i++) { 
+            for ($i=0; $i < $difference; $i++) {
                 array_pop($days_assigned);
             }
         }
-        return $days_assigned;        
+        return $days_assigned;
     }
 
     private function get_assigned_tblfmts($tableFormats, $slot="freestyle"){
@@ -767,7 +866,7 @@ class AjaxController extends Controller
             if($tableFormat->getActivity() == "lesson"){
                 $tblfmt_assigned[] = $tableFormat->getId();
             }
-            
+
         }
 
         // shuffle($tblfmt_assigned)
@@ -777,7 +876,7 @@ class AjaxController extends Controller
                 ->find($tblfmt);
         }
 
-        return $shuffledTblFmt;        
+        return $shuffledTblFmt;
     }
 
     private function choose_slot_before($tableFormats, $slot){

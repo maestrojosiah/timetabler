@@ -10,7 +10,7 @@
  	th, td {
     	border: 1px solid black;
      	border-collapse: collapse;
-   	} 
+   	}
    	td, th{
    		padding:0px;
    		text-align: center;
@@ -38,7 +38,7 @@
 	         margin-right: -10em;
 	}
 	.full_width tr td {
-		display:block; 
+		display:block;
      	width:100%;
      	clear:both;
 
@@ -48,10 +48,10 @@
 <div class="panel panel-default">
     <div class="panel-heading">
        	{% set counter = 0 %}
-       	{% if tableformats|first %}
+       	{# {% if tableformats|first %}
        	| <a href="{{path('pdf_timetable_single', {'teacherId': teacher.id, 'tbl':tableformats[0].timetable.id, 'format': 'pdf' } ) }}" class="btn btn-primary"> Download PDF </a>
        	| <a href="{{path('pdf_timetable_single', {'teacherId': teacher.id, 'tbl':tableformats[0].timetable.id, 'format': 'img' } ) }}" class="btn btn-primary">Download as Image </a>
-       	{% endif %}
+      {% endif %} #}
        	| <a href="{{path('homepage')}}" class="btn btn-default">Home Page</a>
     </div>
     <!-- /.panel-heading -->

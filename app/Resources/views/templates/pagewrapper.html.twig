@@ -5,10 +5,10 @@
 {% block title %}
     {% if show_sth is defined and show_sth == "show_auto_button" %}
         <button type="button" data-toggle="modal" data-target="#auto_modal" class="btn btn-success btn-xl pull-right" style="margin-left:5px; margin-right:5px;">Automate</button>
-        {% if tableformats|first %}
+        {# {% if tableformats|first %}
         <a href="{{path('pdf_timetable', {'tbl':tableformats[0].timetable.id })}}" class="btn btn-primary pull-right" style="margin-left:5px; margin-right:5px;"> Download PDF </a>
         <a href="{{path('image_timetable', {'tbl':tableformats[0].timetable.id})}}" class="btn btn-primary pull-right" style="margin-left:5px; margin-right:5px;">Download as Image </a>
-        {% endif %}
+      {% endif %} #}
     {% endif %}
   <h1>
     {{ action_title }}
@@ -19,7 +19,7 @@
     {% elseif data.timetable is defined %}
          For {{data.timetable.title }}
     {% endif %}
-  </h1>  
+  </h1>
 {% endblock %}
 </section>
 <!-- Main content -->

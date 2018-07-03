@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 {% block pagewrapper %}
-    {% set action_title = "Edit Class" %}
+    {% set action_title = "Add Classes" %}
     {% embed "templates/pagewrapper.html.twig" %}
         {% block toplinks %}
         {% endblock %}
@@ -8,27 +8,32 @@
         {% endblock %}
             {% block otherstuff_lg12 %}
               {# {{ dump(data) }} #}
+      <div class="col-md-6">
+          <!-- general form elements -->
+          <div class="box box-primary">
+            <div class="box-header with-border">
+              <h3 class="box-title">Edit Class</h3>
+            </div>
+            <!-- /.box-header -->
+            <!-- form start -->
+              <div class="box-body">
 
-            {{ form_start(form, {'method': 'post', 'attr': {'class': '' }} ) }}
+            <a href="{{path('list_teachers',{'tbl': data.timetable.id })}}" class="btn btn-info">Teachers List</a>
+            <a href="{{path('list_classes',{'tbl': data.timetable.id })}}" class="btn btn-info">Classes List</a>
+
+            <form id="form">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="panel panel-default">
-                    {% if not form.vars.valid %}
-                      <div class="alert alert-warning">
-                      {{ form_errors(form) }}
-                      </div>        
-                    {% endif %}
                         <div class="panel-body">
                             <div class="row">
                                 <div class="col-lg-6">
                                  <div class="form-group">
-                                    <label>Table Title</label>
-                                      {{ form_widget(form.c_title, {'attr': {'class': 'form-control', 'placeholder': 'Class Title', 'id': 'subjecttitle' }} ) }}
+                                    <label>Class Title</label>
+                                      <input class="form-control" type="text" id="cTitle" value="{{data.classs.cTitle}}" placeholder="Class Title" />
                                     </div>
-                                  {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary' }} ) }}
-                                  {{ form_widget(form.saveAndAdd, {'attr': {'class': 'btn btn-info' }} ) }}                               
                                     <!-- /.col-lg-6 (nested) -->
-                  `             {{ form_end(form) }}
+
                             </div>
                             <!-- /.row (nested) -->
                         </div>
@@ -39,7 +44,77 @@
                 <!-- /.col-lg-12 -->
             </div>
             </div>
+              </div>
+              <!-- /.box-body -->
 
+              <div class="box-footer">
+                  <button class="btn btn-primary" type="button" id="save">Save</button>
+                  <a href="{{path('homepage')}}" class="btn btn-danger pull-right">Cancel</a>
+              </div>
+          </div>
+        </form>
+          <!-- /.box -->
+        </div>
         {% endblock %}
     {% endembed %}
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript">
+    $(function() {
+      $("#cTitle").focus().select();
+    });
+  </script>
+	<script>
+	  $(document).on('click', '#save', function(){
+
+			var c_title = $('#cTitle').val();
+			var timetable = "{{data.timetable.id}}";
+			var id = "{{data.classs.id}}";
+
+			$('#form').checkFields();
+			$('#save').html('Wait...');
+			$.ajax({
+	        url:'{{ (path('edit_entity')) }}',
+	        type: "POST",
+	        dataType: "json",
+	        data: {
+						"return": 'getCTitle',
+						"entity": 'Classs',
+						"id": id,
+						"timetable": timetable,
+						"fields": ['cTitle'],
+						"values": [c_title],
+	        },
+	        async: true,
+	        success: function (data)
+	        {
+						console.log(data);
+						$("#cTitle").focus().select();
+						$("#added_classes").append('<li> Class '+data+'</li>');
+						$('#save').html('SAVED').removeClass('btn-primary').addClass('btn-success');
+	        },
+		      error: function (xhr, status, error) {
+						console.log('error');
+		      }
+	    });
+
+	  });
+	</script>
+	<!-- <script>
+	$(document).on('keyup', '#cTitle',function (e){
+			$('#save').html('Save').removeClass('btn-success').addClass('btn-primary');
+	});
+	</script> -->
+	<script>
+		$(document).on('keypress', '#cTitle', function(e){
+			 var key = e.which;
+			 if(key == 13){
+					$("#save").click();
+					e.preventDefault();
+				} else {
+					$('#save').html('Save').removeClass('btn-success').addClass('btn-primary');
+				}
+		});
+
+</script>
 {% endblock %}

@@ -17,110 +17,34 @@ class ClassSubjectController extends Controller
     public function createAction(Request $request)
     {
     	$data = [];
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $user = $this->user();
         $data['user'] = $user;
-        $data['form'] = [];
-
-        $em = $this->getDoctrine()->getManager();
-        $classSubject = new ClassSubject();
-        $classSubject->setUser($user);
-
         $teacherId = $request->query->get('teacherId');
-        $teacher = $em->getRepository('AppBundle:Teacher')
-            ->find($teacherId);
+        $teacher = $this->find('Teacher', $teacherId);
         if(!$teacher){
             return $this->redirectToRoute('homepage');
         }
-        $timetable = $em->getRepository('AppBundle:timetable')
-            ->find($teacher->getTimetable()->getId());
-
-        $classsubjects = $em->getRepository('AppBundle:ClassSubject')
-            ->findBy(
-                array('user'=>$user, 'timetable'=>$timetable),
-                array('id' => 'ASC')
-            );
-
-        $subjects = $em->getRepository('AppBundle:Subject')
-            ->findBy(
-                array('user'=>$user, 'timetable'=>$timetable),
-                array('id' => 'ASC')
-            );
-
-        $teachers = $em->getRepository('AppBundle:Teacher')
-            ->findBy(
-                array('user'=>$user, 'timetable'=>$timetable),
-                array('id' => 'ASC')
-            );
-
-
+        $timetable = $this->find('Timetable', $teacher->getTimetable()->getId());
+        $subjects = $this->findby('Subject', 'user', $user);
         $data['teacher'] = $teacher;
         $data['timetable'] = $timetable;
-        $data['subjects'] = $subjects;
-        $data['teachers'] = $teachers;
-
-        $classes = $em->getRepository('AppBundle:Classs')
-            ->findBy(
-                array('user'=>$user, 'timetable'=>$timetable),
-                array('id' => 'ASC')
-            );
-        $data['classes'] = $classes;
-
-        $data['classsubjects'] = $classsubjects;
-
-        $form = $this->createFormBuilder()
-            ->add('subject')
-            ->add('class')
-            ->getForm();
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted()) {
-
-            $em = $this->getDoctrine()->getManager();
-            $form_data = $form->getData();
-            $data['form'] = [];
-            $data['form'] = $form_data;
-            $subj = $em->getRepository('AppBundle:Subject')
-                ->find($form_data['subject']);
-
-            $classs = $em->getRepository('AppBundle:Classs')
-                ->find($form_data['class']);
-
-            $tr = $em->getRepository('AppBundle:Teacher')
-                ->find($teacherId);
-
-            $isAlreadyCreated = $em->getRepository('AppBundle:ClassSubject')
-                ->isAlreadyCreated($subj, $classs);
-
-            if($isAlreadyCreated){
-                $this->addFlash(
-                    'error',
-                    'That Subject Is Already Taken!'
-                );
-
-                return $this->redirectToRoute('assign_subjects', ['teacherId' => $teacherId]);
-
-            }
-            $classSubject->setSubject($subj);
-            $classSubject->setCClass($classs);
-            $classSubject->setTimetable($tr->getTimetable());
-            $classSubject->setTeacher($tr);
-            $em->persist($classSubject);
-            $em->flush();
-
-        	$this->addFlash(
-	            'success',
-	            'ClassSubject created successfully!'
-        	);
-
-            return $this->redirectToRoute('assign_subjects', ['teacherId' => $teacherId]);
-		} else {
-            $data['form'] = $form;
-        }
-
-	
         return $this->render('classSubject/create.html.twig', $data );
 
 
+    }
+
+    /**
+     * @Route("/classSubject/summary", name="summary_class_subjects")
+     */
+    public function summaryAction(Request $request)
+    {
+    	$data = [];
+        $user = $this->user();
+        $data['user'] = $user;
+        $tbl = $request->query->get('tbl');
+        $timetable = $this->find('Timetable', $tbl);
+        $data['timetable'] = $timetable;
+        return $this->render('classSubject/summary.html.twig', $data );
     }
 
     /**
@@ -129,25 +53,19 @@ class ClassSubjectController extends Controller
     public function listAction(Request $request)
     {
         $data = [];
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $user = $this->user();
         $data['user'] = $user;
-
-        $em = $this->getDoctrine()->getManager();
         $tbl = $request->query->get('tbl');
-        $timetable = $em->getRepository('AppBundle:timetable')
+        $timetable = $this->em()->getRepository('AppBundle:timetable')
             ->find($tbl);
-
-        $classSubjects = $em->getRepository('AppBundle:ClassSubject')
+        $classSubjects = $this->em()->getRepository('AppBundle:ClassSubject')
             ->findBy(
                 array('user' => $user, 'timetable' => $timetable),
                 array('id' => 'ASC')
             );
-
         $data['classSubjects'] = $classSubjects;
         $data['timetable'] = $timetable;
-
         return $this->render('classSubject/list.html.twig', $data );
-
     }
 
     /**
@@ -214,11 +132,10 @@ class ClassSubjectController extends Controller
             $data['form'] = $form;
         }
 
-    
+
         return $this->render('classSubject/edit.html.twig', $data );
 
     }
-
 
     /**
      * @Route("/classSubject/delete/{classSubjectId}", name="delete_classSubject")
@@ -226,20 +143,45 @@ class ClassSubjectController extends Controller
     public function deleteAction(Request $request, $classSubjectId)
     {
         $data = [];
-        $em = $this->getDoctrine()->getManager();
         $tbl = $request->query->get('tbl');
-        $timetable = $em->getRepository('AppBundle:timetable')
-            ->find($tbl);
-
-        $classSubject = $em->getRepository('AppBundle:ClassSubject')
-            ->find($classSubjectId);
-
-        $em->remove($classSubject);
-        $em->flush();
-
+        $timetable = $this->find('Timetable', $tbl);
+        $classSubject = $this->find('ClassSubject', $classSubjectId);
+        $this->delete($classSubject);
         return $this->redirectToRoute('list_classSubjects', ['tbl' => $tbl]);
-
     }
+
+        private function em(){
+            $em = $this->getDoctrine()->getManager();
+            return $em;
+        }
+
+        private function find($entity, $id){
+            $entity = $this->em()->getRepository("AppBundle:$entity")->find($id);
+            return $entity;
+        }
+
+        private function findby($entity, $by, $actual){
+            $query_string = "findBy$by";
+            $entity = $this->em()->getRepository("AppBundle:$entity")->$query_string($actual);
+            return $entity;
+        }
+
+        private function save($entity){
+            $this->em()->persist($entity);
+            $this->em()->flush();
+            return true;
+        }
+
+        private function delete($entity){
+            $this->em()->remove($entity);
+            $this->em()->flush();
+            return true;
+        }
+
+        private function user(){
+            $user = $this->container->get('security.token_storage')->getToken()->getUser();
+            return $user;
+        }
 
 
 }

@@ -74,7 +74,7 @@ class User implements AdvancedUserInterface, \Serializable
      * @ORM\Column(name="active", type="string", length=255)
      */
     private $active;
-    
+
 	/**
 	 * @ORM\OneToMany(targetEntity="ClassSubject", mappedBy="user")
 	 */
@@ -94,49 +94,54 @@ class User implements AdvancedUserInterface, \Serializable
 	 * @ORM\OneToMany(targetEntity="TableFormat", mappedBy="user")
 	 */
 	private $tableFormats;
-	
+
 	/**
 	 * @ORM\OneToMany(targetEntity="Timetabler", mappedBy="user")
 	 */
 	private $timetablers;
-		
+
     /**
      * @ORM\OneToMany(targetEntity="Teacher", mappedBy="user")
      */
     private $teachers;
-    
+
 	/**
 	 * @ORM\OneToMany(targetEntity="Classs", mappedBy="user")
 	 */
 	private $classes;
-	
+
     /**
      * @ORM\OneToMany(targetEntity="Timetable", mappedBy="user")
      */
-    private $timetables;    
-    
+    private $timetables;
+
 	/**
 	 * @ORM\OneToMany(targetEntity="Config", mappedBy="user")
 	 */
-	private $configs;	
-	
+	private $configs;
+
+	/**
+	 * @ORM\OneToMany(targetEntity="Download", mappedBy="user")
+	 */
+	private $downloads;
+
     public function __construct()
     {
-        $this->active = true;
+      $this->active = true;
    		$this->classSubjects = new ArrayCollection();
    		$this->schoolDays = new ArrayCollection();
    		$this->students = new ArrayCollection();
    		$this->subjects = new ArrayCollection();
    		$this->teachers = new ArrayCollection();
-   		$this->tableFormats = new ArrayCollection();   	
-        $this->timetablers = new ArrayCollection();         
-   		$this->classes = new ArrayCollection();   		
+   		$this->tableFormats = new ArrayCollection();
+      $this->timetablers = new ArrayCollection();
+   		$this->classes = new ArrayCollection();
     }
-    
+
     public function __toString() {
         return $this->fName;
     }
-    
+
     /**
      * Get id
      *
@@ -225,7 +230,7 @@ class User implements AdvancedUserInterface, \Serializable
 
         return $this;
     }
-    
+
     public function getPlainPassword()
     {
         return $this->plainPassword;
@@ -360,7 +365,7 @@ class User implements AdvancedUserInterface, \Serializable
     public function isEnabled()
     {
         return $this->active;
-    }    
+    }
 
     /**
      * Add classSubject
@@ -666,5 +671,39 @@ class User implements AdvancedUserInterface, \Serializable
     public function getConfigs()
     {
         return $this->configs;
+    }
+
+    /**
+     * Add download
+     *
+     * @param \AppBundle\Entity\Download $download
+     *
+     * @return User
+     */
+    public function addDownload(\AppBundle\Entity\Download $download)
+    {
+        $this->downloads[] = $download;
+
+        return $this;
+    }
+
+    /**
+     * Remove download
+     *
+     * @param \AppBundle\Entity\Download $download
+     */
+    public function removeDownload(\AppBundle\Entity\Download $download)
+    {
+        $this->downloads->removeElement($download);
+    }
+
+    /**
+     * Get downloads
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getDownloads()
+    {
+        return $this->downloads;
     }
 }

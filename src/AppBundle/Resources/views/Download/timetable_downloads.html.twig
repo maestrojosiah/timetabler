@@ -1,0 +1,75 @@
+{% extends 'base_collapse.html.twig' %}
+{% block stylesheets %}
+
+    <!-- DataTables CSS -->
+    <link href="{{ asset('vendor/datatables-plugins/dataTables.bootstrap.css') }}" rel="stylesheet">
+
+    <!-- DataTables Responsive CSS -->
+    <link href="{{ asset('vendor/datatables-responsive/dataTables.responsive.css') }}" rel="stylesheet">
+
+{% endblock %}
+{% block pagewrapper %}
+	  {% set action_title = "Downloads page" %}
+    {% embed "templates/pagewrapper.html.twig" %}
+    {% block toplinks %}
+    {% endblock %}
+    {% block charts %}
+		<div class="col-sm-12">
+		  <section class="panel">
+		      <header class="panel-heading">
+		         Timetable:  <b>{{download.description}}</b> | Remaining Downloads: <b>{{download.times}}</b> | Status: <b>{{ download.status ? 'Active':'Inactive' }}</b>
+		      </header>
+		      {% if download.times > 0 %}
+          <span id="notify"></span>
+          <h3>Master Timetable</h3>
+            <div class="btn-group" role="group" aria-label="...">
+              <a href="{{path('download', {'what': 'master_pdf', 'a': download.id, 'b': download.timetable.id})}}" class="btn btn-default">Download PDF</a>
+              <a href="{{path('download', {'what': 'master_img', 'a': download.id, 'b': download.timetable.id})}}" class="btn btn-default">Download Image</a>
+            </div>
+          <h3>Class Timetables</h3>
+          <div class="btn-group" role="group" aria-label="...">
+            <table class="table">
+            {% for class in download.timetable.classes %}
+            <tr>
+              <td>Class {{class.cTitle}}</td>
+              <td><a href="{{path('download', {'what': 'class', 'a': download.id, 'b': download.timetable.id, 'ci': class.id, 'f': 'pdf'})}}" class="btn btn-default">Download PDF</a></td>
+              <td><a href="{{path('download', {'what': 'class', 'a': download.id, 'b': download.timetable.id, 'ci': class.id, 'f': 'img'})}}" class="btn btn-default">Download Image</a></td>
+            </tr>
+            {% endfor %}
+            </table>
+          </div>
+          <h3>Teachers Timetables</h3>
+          <div class="btn-group" role="group" aria-label="...">
+            <table class="table">
+            {% for teacher in download.timetable.teachers %}
+            <tr>
+              <td><p style="background-color:#{{teacher.color}}!important">{{teacher.fName}} {{teacher.lName}}</p></td>
+              <td><a href="{{path('download', {'what': 'teacher', 'a': download.id, 'b': download.timetable.id, 'ti': teacher.id, 'f': 'pdf'})}}" class="btn btn-default">Download PDF</a></td>
+              <td><a href="{{path('download', {'what': 'teacher', 'a': download.id, 'b': download.timetable.id, 'ti': teacher.id, 'f': 'img'})}}" class="btn btn-default">Download Image</a></td>
+            </tr>
+            {% endfor %}
+          </table>
+          </div>
+          {% else %}
+            <div class="well">
+              <h4>Hmm! You have exhausted all your downloads.</h4>
+            </div>
+          {% endif %}
+	  </section>
+		</div>
+	{% endblock %}
+{% endembed %}
+{% endblock %}
+
+{% block javascripts %}
+    <!-- DataTables JavaScript -->
+    <script src="{{ asset('vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables-plugins/dataTables.bootstrap.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables-responsive/dataTables.responsive.js') }}"></script>
+    <script>
+      $(document).on('click', '[id="trigger_notify"]', function(){
+          $("#notify").html('<p class="alert alert-success">Please wait. It will take a moment to generate the file for download.');
+      });
+     </script>
+
+{% endblock %}

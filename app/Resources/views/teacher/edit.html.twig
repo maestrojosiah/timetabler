@@ -4,7 +4,7 @@
  <link href="{{ asset('spectrum/spectrum.css') }}" rel="stylesheet">
 {% endblock %}
 {% block pagewrapper %}
-    {% set action_title = "Edit Teacher" %}
+    {% set action_title = "Add Teachers" %}
     {% embed "templates/pagewrapper.html.twig" %}
         {% block toplinks %}
         {% endblock %}
@@ -12,52 +12,44 @@
         {% endblock %}
             {% block otherstuff_lg12 %}
               {# {{ dump(data) }} #}
-
-            {{ form_start(form, {'method': 'post', 'attr': {'class': '' }} ) }}
+      <div class="col-md-6">
+          <!-- general form elements -->
+          <div class="box box-primary">
+            <div class="box-header with-border">
+              <h3 class="box-title">Edit Teacher</h3>
+            </div>
+            <!-- /.box-header -->
+            <!-- form start -->
+              <div class="box-body">
+                <a href="{{path('list_teachers',{'tbl': data.timetable.id })}}" class="btn btn-info">Teachers List</a>
+                <a href="{{path('list_classes',{'tbl': data.timetable.id })}}" class="btn btn-info">Classes List</a>
+            <form id="form">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="panel panel-default">
-                    {% if not form.vars.valid %}
-                      <div class="alert alert-warning">
-                      {{ form_errors(form) }}
-                      </div>        
-                    {% endif %}
                         <div class="panel-body">
                             <div class="row">
                                 <div class="col-lg-6">
                                  <div class="form-group">
                                     <label>First Name</label>
-                                      {{ form_widget(form.f_name, {'attr': {'class': 'form-control', 'placeholder': 'First name', 'id': 'first_name' }} ) }}
+                                      <input class="form-control" type="text" id="fName" value="{{data.teacher.fName}}" placeholder="First Name" value="Tr." />
                                     </div>
                                     <div class="form-group">
                                     <label>Last Name</label>
-                                      {{ form_widget(form.l_name, {'attr': {'class': 'form-control', 'placeholder': 'Last name', 'id': 'second_name' }} ) }}
+                                      <input class="form-control" type="text" id="lName" placeholder="Last Name"  value="{{data.teacher.lName}}" />
                                     </div>
                                     <div class="form-group">
                                     <label>Teacher's Code</label>
-                                      {{ form_widget(form.code, {'attr': {'class': 'form-control', 'placeholder': 'Code' }} ) }}
+                                      <input class="form-control" type="text" id="code" placeholder="Teacher's Code"  value="{{data.teacher.code}}" />
                                     </div>
                                     <div class="form-group">
                                     <label>Color</label>
-                                      {{ form_widget(form.color, {'attr': {'class': 'form-control' }} ) }}
+                                      <input class="form-control" type="text" id="teacher_color" placeholder="Color Hex Code" value="{{data.teacher.color}}"/>
                                     </div>
-                              {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary' }} ) }}
-                              {{ form_widget(form.saveAndAdd, {'attr': {'class': 'btn btn-info' }} ) }}                               
                                 <!-- /.col-lg-6 (nested) -->
-              `             {{ form_end(form) }}
+
                             </div>
 
-                            <div class="col-lg-6">
-                              {% for teacher in data.teachers %}                              
-                                <div class="list-group">
-                                    <a href="#" class="list-group-item">
-                                        <i class="fa fa-comment fa-fw"></i> {{teacher.fName}} {{teacher.lName}}
-                                        <span style="background-color:{{teacher.color}}" class="pull-right text-muted small"><em>{{teacher.color}}</em>
-                                        </span>
-                                    </a>
-                                </div>
-                              {% endfor %}
-                            </div>
 
                         </div>
                         <!-- /.panel-body -->
@@ -67,7 +59,17 @@
                 <!-- /.col-lg-12 -->
             </div>
             </div>
+              </div>
+              <!-- /.box-body -->
 
+              <div class="box-footer">
+                  <button class="btn btn-primary" type="button" id="save">Save</button>
+                  <a href="{{path('homepage')}}" class="btn btn-danger pull-right">Cancel</a>
+              </div>
+          </div>
+        </form>
+        </div>
+          <!-- /.box -->
         {% endblock %}
     {% endembed %}
 {% endblock %}
@@ -83,5 +85,65 @@ $("#teacher_color").spectrum({
 // Show the original input to demonstrate the value changing when calling `set`
 $("#teacher_color").show();
 </script>
-{% endblock %}
+  <script type="text/javascript">
+    $(function() {
+      $("#lName").focus();
+    });
+  </script>
+  <script>
+	  $(document).on('click', '#save', function(){
 
+			var f_name = $('#fName').val();
+			var l_name = $('#lName').val();
+			var code = $('#code').val();
+			var teacher_color= $('#teacher_color').val();
+			var timetable = "{{data.timetable.id}}";
+			var id = "{{data.teacher.id}}";
+
+			$('#form').checkFields();
+			$('#save').html('Wait...');
+			$.ajax({
+	        url:'{{ (path('edit_entity')) }}',
+	        type: "POST",
+	        dataType: "json",
+	        data: {
+						"return": 'getLName',
+						"entity": 'Teacher',
+						"id": id,
+						"timetable": timetable,
+						"fields": ['fName', 'lName', 'code', 'color'],
+						"values": [f_name, l_name, code, teacher_color],
+	        },
+	        async: true,
+	        success: function (data)
+	        {
+						console.log(data);
+						$("#lName").focus();
+						$('#save').html('SAVED').removeClass('btn-primary').addClass('btn-success');
+	        },
+		      error: function (xhr, status, error) {
+						console.log('error');
+		      }
+	    });
+
+	  });
+	</script>
+	<script>
+	$(document).on('keyup', '#lName',function (e){
+			$('#save').html('Save').removeClass('btn-success').addClass('btn-primary');
+	});
+	</script>
+	<script>
+		$(document).on('keypress', '#code', function(e){
+			 var key = e.which;
+			 if(key == 13){
+					$("#save").click();
+					e.preventDefault();
+				} else {
+					$('#save').html('Save').removeClass('btn-success').addClass('btn-primary');
+				}
+		});
+
+</script>
+
+{% endblock %}

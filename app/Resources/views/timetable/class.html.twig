@@ -15,7 +15,7 @@
     	border: 1px solid black;
      	border-collapse: collapse;
      	white-space: nowrap;
-   	} 
+   	}
    	td, th{
    		padding:0px;
    		text-align: center;
@@ -43,7 +43,7 @@
 	         margin-right: -10em;
 	}
 	.full_width tr td {
-		display:block; 
+		display:block;
      	width:100%;
      	clear:both;
 
@@ -53,10 +53,10 @@
 <div class="panel panel-default">
     <!-- /.panel-heading -->
     <div class="panel-heading">
-        {% if tableformats|first %}
+        {# {% if tableformats|first %}
         <a href="{{path('pdf_timetable_class', {'classId': class.id, 'format': 'pdf', 'tbl':tableformats[0].timetable.id })}}" class="btn btn-primary"> Download PDF </a>
         <a href="{{path('pdf_timetable_class', {'classId': class.id, 'format': 'img', 'tbl':tableformats[0].timetable.id})}}" class="btn btn-primary">Download as Image </a>
-        {% endif %}
+        {% endif %} #}
     </div>
     <!-- /.panel-heading -->
     <div class="panel-body">
@@ -95,7 +95,7 @@
 		                        					{% set teacher = '' %}
 		                        					{% set position = '' %}
 		                        				{% endif %}
-		                        				
+
 		                        			<td class="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" style="padding:2px; cursor:pointer; font-size:15px; font-weight:bold;">
 	                                            	{{teacher}}<br />
 	                                            	<h3>{{subject}}</h3>
@@ -116,7 +116,7 @@
                     </tr>
                 </tbody>
               {% endfor %}
-            </table> 
+            </table>
         </div>
         <!-- /.table-responsive -->
     </div>

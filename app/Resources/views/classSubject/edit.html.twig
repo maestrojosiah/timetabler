@@ -12,12 +12,12 @@
 			    <label for="class" class="col-sm-2 control-label">Subject</label>
 			    <div class="col-sm-10">
 					<select name="form[subject]" id="class_subject_subject" class="form-control">
-						{% for subject in app.user.subjects %}
+						{% for subject in timetable.subjects %}
 							{% if subject.timetable.id == timetable.id %}
 					    		<option value="{{subject.id}}" {% if subj == subject.sTitle %} selected {% endif %} >{{subject}}</option>
 							{% endif %}
 						{% endfor %}
-					</select>	
+					</select>
 			    </div>
 			  </div>
 			  <div class="form-group">
@@ -27,7 +27,7 @@
 						{% for class in classes %}
 					    	<option value="{{class.id}}"{% if cls == class %} selected {% endif %} >{{class}}</option>
 						{% endfor %}
-					</select>	
+					</select>
 		    	</div>
 			  </div>
 			  <div class="form-group">

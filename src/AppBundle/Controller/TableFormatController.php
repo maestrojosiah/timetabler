@@ -17,79 +17,19 @@ class TableFormatController extends Controller
     public function createAction(Request $request)
     {
     	$data = [];
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $user = $this->user();
         $data['user'] = $user;
-        $data['form'] = [];
-
-        $em = $this->getDoctrine()->getManager();
-
-        $tableFormat = new TableFormat();
-        $tableFormat->setUser($user);
 
         $tbl = $request->query->get('tbl');
-        $teacher = $em->getRepository('AppBundle:Teacher')
-            ->find($tbl);
-
-        $timetable = $em->getRepository('AppBundle:timetable')
-            ->find($tbl);
-
-        $data['teacher'] = $teacher;
+        $timetable = $this->find('Timetable', $tbl);
         $data['timetable'] = $timetable;
-
-        $classes = $em->getRepository('AppBundle:Classs')
-            ->findBy(
-                array('user'=>$user, 'timetable'=>$timetable),
-                array('id' => 'ASC')
-            );
-        $data['classes'] = $classes;
-        $tableFormats = $em->getRepository('AppBundle:TableFormat')
+        $tableFormats = $this->em()->getRepository('AppBundle:TableFormat')
             ->findBy(
                 array('user' => $user, 'timetable' => $timetable),
                 array('id' => 'ASC')
             );
-
         $data['tableFormats'] = $tableFormats;
-
-        $form = $this->createFormBuilder()
-            ->add('title', null, array(
-                'required' => false,
-                'empty_data' => '...'
-            ))
-            ->add('activity')
-            ->add('duration')
-            ->getForm();
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted()) {
-
-            $em = $this->getDoctrine()->getManager();
-            $form_data = $form->getData();
-            $data['form'] = [];
-            $data['form'] = $form_data;
-
-            $tableFormat->setTitle($form_data['title']);
-            $tableFormat->setDuration($form_data['duration']);
-            $tableFormat->setActivity($form_data['activity']);
-            $tableFormat->setTimetable($timetable);
-
-            $em->persist($tableFormat);
-            $em->flush();
-
-        	$this->addFlash(
-	            'success',
-	            'TableFormat created successfully!'
-        	);
-
-            return $this->redirectToRoute('add_table_format', ['tbl' => $tbl]);
-		} else {
-            $data['form'] = $form;
-        }
-
-	
-        // replace this example code with whatever you need
         return $this->render('tableFormat/create.html.twig', $data );
-
-
     }
 
     /**
@@ -97,12 +37,8 @@ class TableFormatController extends Controller
      */
     public function chooseAction(Request $request)
     {
-
         return $this->render('tableFormat/choose.html.twig');
-
     }
-
-
 
     /**
      * @Route("/tableFormat/list", name="list_tableFormats")
@@ -110,26 +46,18 @@ class TableFormatController extends Controller
     public function listAction(Request $request)
     {
         $data = [];
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        $user = $this->user();
         $data['user'] = $user;
-        $em = $this->getDoctrine()->getManager();
-
         $tbl = $request->query->get('tbl');
-        $timetable = $em->getRepository('AppBundle:timetable')
-            ->find($tbl);
-
-
-        $tableFormats = $em->getRepository('AppBundle:TableFormat')
+        $timetable = $this->find('Timetable', $tbl);
+        $tableFormats = $this->em()->getRepository('AppBundle:TableFormat')
             ->findBy(
                 array('user' => $user, 'timetable' => $timetable),
                 array('id' => 'ASC')
             );
-
         $data['tableFormats'] = $tableFormats;
         $data['timetable'] = $timetable;
-
         return $this->render('tableFormat/list.html.twig', $data );
-
     }
 
     /**
@@ -138,70 +66,13 @@ class TableFormatController extends Controller
     public function editAction(Request $request, $tableFormatId)
     {
         $data = [];
-        $user = $this->container->get('security.token_storage')->getToken()->getUser();
-        $data['user'] = $user;
-        $data['form'] = [];
-
-        $em = $this->getDoctrine()->getManager();
-
-        $tableFormat = $em->getRepository('AppBundle:TableFormat')
-            ->find($tableFormatId);
-
+        $tableFormat = $this->find('TableFormat', $tableFormatId);
         $tbl = $request->query->get('tbl');
-
-        $timetable = $em->getRepository('AppBundle:Timetable')
-            ->find($tbl);
-
-        $classes = $em->getRepository('AppBundle:Classs')
-            ->findBy(
-                array('user'=>$user, 'timetable'=>$timetable),
-                array('id' => 'ASC')
-            );
-        $data['classes'] = $classes;
-
-        $form = $this->createFormBuilder()
-            ->add('title')
-            ->add('activity')
-            ->add('duration')
-            ->getForm();
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted()) {
-
-            $em = $this->getDoctrine()->getManager();
-            $form_data = $form->getData();
-            $data['form'] = [];
-            $data['form'] = $form_data;
-
-            $tableFormat->setTitle($form_data['title']);
-            $tableFormat->setDuration($form_data['duration']);
-            $tableFormat->setActivity($form_data['activity']);
-            $tableFormat->setTimetable($timetable);
-
-            $em->persist($tableFormat);
-            $em->flush();
-
-            $this->addFlash(
-                'success',
-                'TableFormat created successfully!'
-            );
-
-            return $this->redirectToRoute('list_tableFormats', ['tbl' => $tbl]);
-        } else {
-            
-            $table_data['title'] = $tableFormat->getTitle();
-            $table_data['activity'] = $tableFormat->getActivity();
-            $table_data['duration'] = $tableFormat->getDuration();
-
-            $data['form'] = $table_data;
-        }
-
-    
-        // replace this example code with whatever you need
+        $timetable = $this->find('Timetable', $tbl);
+        $data['timetable'] = $timetable;
+        $data['tableformat'] = $tableFormat;
         return $this->render('tableFormat/edit.html.twig', $data );
-
     }
-
 
     /**
      * @Route("/tableFormat/delete/{tableFormatId}", name="delete_tableFormat")
@@ -209,17 +80,54 @@ class TableFormatController extends Controller
     public function deleteAction(Request $request, $tableFormatId)
     {
         $data = [];
-        $em = $this->getDoctrine()->getManager();
         $tbl = $request->query->get('tbl');
-
-        $tableFormat = $em->getRepository('AppBundle:TableFormat')
-            ->find($tableFormatId);
-
-        $em->remove($tableFormat);
-        $em->flush();
-
+        $tableFormat = $this->find('TableFormat', $tableFormatId);
+        $this->delete($tableFormat);
         return $this->redirectToRoute('list_tableFormats', ['tbl' => $tbl]);
 
+    }
+
+    private function em(){
+        $em = $this->getDoctrine()->getManager();
+        return $em;
+    }
+
+    private function find($entity, $id){
+        $entity = $this->em()->getRepository("AppBundle:$entity")->find($id);
+        return $entity;
+    }
+
+    private function findby($entity, $by, $actual){
+        $query_string = "findBy$by";
+        $entity = $this->em()->getRepository("AppBundle:$entity")->$query_string($actual);
+        return $entity;
+    }
+
+    private function findandlimit($entity, $by, $actual, $limit, $order){
+        $entity = $this->em()->getRepository("AppBundle:$entity")
+            ->findBy(
+                array($by => $actual),
+                array('id' => $order),
+                $limit
+            );
+        return $entity;
+    }
+
+    private function save($entity){
+        $this->em()->persist($entity);
+        $this->em()->flush();
+        return true;
+    }
+
+    private function delete($entity){
+        $this->em()->remove($entity);
+        $this->em()->flush();
+        return true;
+    }
+
+    private function user(){
+        $user = $this->container->get('security.token_storage')->getToken()->getUser();
+        return $user;
     }
 
 

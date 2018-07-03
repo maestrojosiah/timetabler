@@ -7,12 +7,15 @@
 	    <meta name="description" content="">
 	    <meta name="author" content="">
         <title>{% block title %}TimeTabler{% endblock %}</title>
-        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
-	    <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon.png') }}">
+        <link rel="manifest" href="/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">	    <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
 
 	    <!-- MetisMenu CSS -->
 	    <link href="{{ asset('vendor/metisMenu/metisMenu.min.css') }}" rel="stylesheet">
-    
+
 	    <!-- notiny CSS -->
 	    <link href="{{ asset('notiny/notiny.min.css') }}" rel="stylesheet">
 
@@ -61,7 +64,6 @@
 
     </div>
     <!-- /#wrapper -->
-
         	    <!-- jQuery -->
 	    <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
 
@@ -91,10 +93,28 @@
 	    <script src="{{ asset('dist/js/sb-admin-2.js') }}"></script>
  #}
         {% block javascripts %}{% endblock %}
+        <script>
+        (function( $ ) {
+
+          $.fn.checkFields = function() {
+
+              return this.find('input').each(function() {
+                if($(this).val() == "")
+          			{
+          				$(this).attr('placeholder', 'This Field is Required');
+          				die();
+          			}
+              });
+
+          };
+
+        }( jQuery ));
+        </script>
+
 	    {% for message in app.flashes('success') %}
 	        <script type="text/javascript">
-	            $.notiny({ 
-	            	text: '{{ message }}',  
+	            $.notiny({
+	            	text: '{{ message }}',
 	            	position: 'right-top',
 	            	delay: 5000,
 	            	theme: 'dark'
@@ -104,13 +124,13 @@
 
 	    {% for message in app.flashes('error') %}
 	        <script type="text/javascript">
-	            $.notiny({ 
-	            	text: '{{ message }}',  
+	            $.notiny({
+	            	text: '{{ message }}',
 	            	position: 'right-top',
 	            	delay: 5000,
 	            	theme: 'light'
 	            });
 	        </script>
-	    {% endfor %}        	
+	    {% endfor %}
     </body>
 </html>

@@ -21,7 +21,7 @@
           <!-- small box -->
           <div class="small-box bg-green">
             <div class="inner">
-              <h3>{{ countTeachers }}</h3>
+              <h3>{{ app.user.teachers|length }}</h3>
 
               <p>Teachers</p>
             </div>
@@ -38,7 +38,7 @@
           <!-- small box -->
           <div class="small-box bg-yellow">
             <div class="inner">
-              <h3>{{ countClasses }}</h3>
+              <h3>{{ app.user.classes|length }}</h3>
 
               <p>Classes</p>
             </div>
@@ -55,7 +55,7 @@
           <!-- small box -->
           <div class="small-box bg-red">
             <div class="inner">
-              <h3>{{ countSubjects }}</h3>
+              <h3>{{ app.user.subjects|length }}</h3>
 
               <p>Subjects</p>
             </div>
@@ -73,10 +73,9 @@
       <!-- Main row -->
       <div class="row">
         <!-- Left col -->
-        <section class="col-lg-7 connectedSortable">
-{# {{dump(allTimetables[0])}} #}
+        {% for tTable in allTimetables %}
+        <section class="col-lg-6">
           <!-- Timetables box -->
-          {% for tTable in allTimetables %}
           <div class="box box-solid">
             <div class="box-header with-border">
               <h3 class="box-title">{{tTable.title}}</h3>
@@ -108,16 +107,7 @@
                 <a href="{{path('add_table_format', {'tbl': tTable.id})}}">Create the order of events</a> |
              {% endif %}
 
-              {% set lessons = 0 %}
-                {% for format in tTable.tableFormats %}
-                  {% if format.activity == "lesson" %}
-                    {% set lessons = lessons + 1 %}
-                  {% endif %}
-                {% endfor %}
-              {% set classes = tTable.classes|length %}
-              {% set daysOfWeek = 5 %}
-
-              {% set possibleEntries = lessons * classes * daysOfWeek %}
+              {% set possibleEntries = tTable.classes|length * lesson_tableformats * 5 %}
 
               {% if tTable.timetablers|length >= possibleEntries %}
                 {% set progress = progress + 20 %}
@@ -138,71 +128,20 @@
               <p><span class="label bg-green">{{tTable.subjects|length}}</span> <a href="{{path('list_subjects', {'tbl': tTable.id })}}">Subjects</a> </p>
               <p><span class="label bg-green">{{tTable.classes|length}}</span> <a href="{{path('list_classes', {'tbl': tTable.id })}}">Classes</a> </p>
               <p><span class="label bg-green">{{tTable.classSubjects|length}}</span> <a href="{{path('list_teachers', {'tbl': tTable.id })}}">Teacher - Class - Lesson Assignments</a> </p>
+              <p><span class="label bg-green">{{tTable.classSubjects|length}}</span> <a href="{{ path('summary_class_subjects', {'tbl': tTable.id }) }}">Teacher - Class - Lesson Summary</a> </p>
               <p><span class="label bg-green">{{tTable.tableFormats|length}}</span> <a href="{{path('add_table_format', {'tbl': tTable.id })}}">Activities per day</a> </p>
               <p><span class="label bg-green">{{tTable.timetablers|length}}/{{possibleEntries}}</span> <a href="{{path('view_timetable', {'tbl': tTable.id })}}">Entries on the timetable</a> </p>
             </div>
             <!-- /.box-body -->
           </div>
           <!-- /.box -->
-          {% endfor %}
           <!-- /.box (chat box) -->
 
         </section>
-        <!-- /.Left col -->
-        <!-- right col (We are only adding the ID to make the widgets sortable)-->
-        <section class="col-lg-5 connectedSortable">
-        {% for timetable in allTimetables %}
-
-          <!-- Map box -->
-          <div class="box box-solid bg-light-blue-gradient">
-            <div class="box-header">
-              <i class="fa fa-tasks"></i> 
-
-              <h3 class="box-title">
-                {{timetable.title}} - Lessons
-              </h3>
-            </div>
-        
-            {% for class in timetable.classes %}
-
-              <div class="box-body">
-                Class {{ class }}
-                  <div class="progress-group">|
-                  {% for classsubject in class.classSubjects %}
-                    <span class="progress-text" style="background-color:{{classsubject.teacher.color}};">{{classsubject.subject.sTitle}}</span> |
-                  {% endfor %}
-                  </div>
-                  <span class="progress-number"><b>{{class.classSubjects|length}}</b>/{{class.timetable.subjects|length}}</span>
-                  {% set percentage = class.classSubjects|length / class.timetable.subjects|length * 100 %}
-                  <div class="progress sm">
-                    <div class="progress-bar progress-bar-aqua" style="width: {{percentage}}%"></div>
-                  </div>
-              </div>
-                
-
-            {% endfor %}
-
-            <!-- /.box-body-->
-            <div class="box-footer">
-              <div class="row">
-                <a class="btn btn-primary" href="{{path('list_teachers', {'tbl':timetable.id})}}" class="">Edit Teacher Lesson Assignments</a>              
-              </div>
-              <!-- /.row -->
-            </div>
-          </div>
-          <!-- /.box -->
         {% endfor %}
-
-        </section>
-        <!-- right col -->
+        <!-- /.Left col -->
       </div>
       <!-- /.row (main row) -->
-
-
-
-
-
-
 
 
 
@@ -296,4 +235,3 @@
   </div>
   <!-- /.modal-dialog -->
 </div>
-

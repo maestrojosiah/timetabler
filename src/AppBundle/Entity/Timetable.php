@@ -35,13 +35,13 @@ class Timetable
      *
      * @ORM\Column(name="title", type="string", length=255)
      */
-    private $title;    
+    private $title;
 
 	/**
 	 * @ORM\OneToMany(targetEntity="ClassSubject", mappedBy="timetable")
 	 */
 	private $classSubjects;
-	
+
 	/**
 	 * @ORM\OneToMany(targetEntity="SchoolDays", mappedBy="timetable")
 	 */
@@ -51,45 +51,49 @@ class Timetable
 	 * @ORM\OneToMany(targetEntity="Subject", mappedBy="timetable")
 	 */
 	private $subjects;
-	
+
 	/**
 	 * @ORM\OneToMany(targetEntity="TableFormat", mappedBy="timetable")
 	 */
 	private $tableFormats;
-	
+
 	/**
 	 * @ORM\OneToMany(targetEntity="Timetabler", mappedBy="timetable")
 	 */
 	private $timetablers;
-		
+
 	/**
 	 * @ORM\OneToMany(targetEntity="Teacher", mappedBy="timetable")
 	 */
 	private $teachers;
-	
+
     /**
      * @ORM\OneToMany(targetEntity="Classs", mappedBy="timetable")
      */
     private $classes;
-    
+    /**
+     * @ORM\OneToMany(targetEntity="Download", mappedBy="timetable")
+     */
+    private $downloads;
+
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="timetables")
      * @ORM\JoinColumn(name="table_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $user;
-	
+
     public function __construct()
     {
-   		$this->classSubjects = new ArrayCollection(); 
+   		$this->classSubjects = new ArrayCollection();
    		$this->schoolDays = new ArrayCollection();
    		$this->students = new ArrayCollection();
    		$this->subjects = new ArrayCollection();
    		$this->teachers = new ArrayCollection();
    		$this->tableFormats = new ArrayCollection();
-        $this->timetablers = new ArrayCollection();         
-   		$this->classes = new ArrayCollection();   		
+        $this->timetablers = new ArrayCollection();
+   		$this->classes = new ArrayCollection();
     }
-    
+
     /**
      * Get id
      *
@@ -434,5 +438,39 @@ class Timetable
     public function getClasses()
     {
         return $this->classes;
+    }
+
+    /**
+     * Add download
+     *
+     * @param \AppBundle\Entity\Download $download
+     *
+     * @return Timetable
+     */
+    public function addDownload(\AppBundle\Entity\Download $download)
+    {
+        $this->downloads[] = $download;
+
+        return $this;
+    }
+
+    /**
+     * Remove download
+     *
+     * @param \AppBundle\Entity\Download $download
+     */
+    public function removeDownload(\AppBundle\Entity\Download $download)
+    {
+        $this->downloads->removeElement($download);
+    }
+
+    /**
+     * Get downloads
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getDownloads()
+    {
+        return $this->downloads;
     }
 }

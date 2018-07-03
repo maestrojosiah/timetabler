@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 {% block pagewrapper %}
-    {% set action_title = "Edit Subject" %}
+    {% set action_title = "Add Subjects" %}
     {% embed "templates/pagewrapper.html.twig" %}
         {% block toplinks %}
         {% endblock %}
@@ -8,27 +8,32 @@
         {% endblock %}
             {% block otherstuff_lg12 %}
               {# {{ dump(data) }} #}
+      <div class="col-md-6">
+          <!-- general form elements -->
+          <div class="box box-primary">
+            <div class="box-header with-border">
+              <h3 class="box-title">Add Subjects</h3>
+            </div>
+            <!-- /.box-header -->
+            <!-- form start -->
+              <div class="box-body">
 
-            {{ form_start(form, {'method': 'post', 'attr': {'class': '' }} ) }}
+            <a href="{{path('list_teachers',{'tbl': data.timetable.id })}}" class="btn btn-info">Teachers List</a>
+            <a href="{{path('list_subjects',{'tbl': data.timetable.id })}}" class="btn btn-info">Subjects List</a>
+
+            <form id="form">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="panel panel-default">
-                    {% if not form.vars.valid %}
-                      <div class="alert alert-warning">
-                      {{ form_errors(form) }}
-                      </div>        
-                    {% endif %}
                         <div class="panel-body">
                             <div class="row">
                                 <div class="col-lg-6">
                                  <div class="form-group">
-                                    <label>Table Title</label>
-                                      {{ form_widget(form.s_title, {'attr': {'class': 'form-control', 'placeholder': 'Subject Title', 'id': 'subjecttitle' }} ) }}
+                                    <label>Subject Title</label>
+                                      <input class="form-control" type="text" id="sTitle" value="{{data.subject.sTitle}}" placeholder="Subject Title" />
                                     </div>
-                                  {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary' }} ) }}
-                                  {{ form_widget(form.saveAndAdd, {'attr': {'class': 'btn btn-info' }} ) }}                               
                                     <!-- /.col-lg-6 (nested) -->
-                  `             {{ form_end(form) }}
+
                             </div>
                             <!-- /.row (nested) -->
                         </div>
@@ -39,7 +44,71 @@
                 <!-- /.col-lg-12 -->
             </div>
             </div>
+              </div>
+              <!-- /.box-body -->
 
+              <div class="box-footer">
+                  <button class="btn btn-primary" type="button" id="save">Save</button>
+                  <a href="{{path('homepage')}}" class="btn btn-danger pull-right">NEXT >></a>
+              </div>
+          </div>
+        </form>
+        </div>
         {% endblock %}
     {% endembed %}
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript">
+    $(function() {
+      $("#sTitle").focus();
+    });
+  </script>
+  <script>
+	  $(document).on('click', '#save', function(){
+
+			var s_title = $('#sTitle').val();
+			var timetable = "{{data.timetable.id}}";
+			var id = "{{data.subject.id}}";
+
+			$('#form').checkFields();
+			$('#save').html('Wait...');
+			$.ajax({
+	        url:'{{ (path('edit_entity')) }}',
+	        type: "POST",
+	        dataType: "json",
+	        data: {
+						"return": 'getsTitle',
+						"entity": 'Subject',
+						"timetable": timetable,
+						"id": id,
+						"fields": ['sTitle'],
+						"values": [s_title],
+	        },
+	        async: true,
+	        success: function (data)
+	        {
+						console.log(data);
+						$("#sTitle").focus();
+						$('#save').html('SAVED').removeClass('btn-primary').addClass('btn-success');
+	        },
+		      error: function (xhr, status, error) {
+						console.log('error');
+		      }
+	    });
+
+	  });
+	</script>
+	<script>
+		$(document).on('keypress', '#sTitle', function(e){
+			 var key = e.which;
+			 if(key == 13){
+					$("#save").click();
+					e.preventDefault();
+				} else {
+					$('#save').html('Save').removeClass('btn-success').addClass('btn-primary');
+				}
+		});
+
+</script>
+
 {% endblock %}

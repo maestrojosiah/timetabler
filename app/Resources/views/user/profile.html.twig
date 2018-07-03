@@ -142,7 +142,7 @@
                   <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
                       <button type="button" id="save_settings" class="btn btn-success">SAVE</button>
-                      <a href="{{path('homepage')}}" class="btn btn-danger">DONE</a>
+                      <a href="{{path('homepage')}}" class="btn btn-danger pull-right">QUIT</a>
                     </div>
                   </div>
                 </form>
@@ -191,13 +191,13 @@
 	          	success: function (data)
 	          	{
 
-                  $.notiny({ 
-                    text: "Settings Saved",  
+                  $.notiny({
+                    text: "Settings Saved",
                     position: 'left-top',
                     delay: 5000,
                     theme: 'dark'
                   });
-	          	},	
+	          	},
 	         	error: function () {
 	              	$("#warning").html("<b>something's wrong</b>");
 	       	 	}

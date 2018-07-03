@@ -15,8 +15,8 @@
                     {% set postn = position + 1 %}
                     <tr class="odd gradeX">
                         <td><a href="{{ path('assign_subjects', { teacherId: teacher.id } ) }}">{{ teacher.fName }} {{ teacher.lName }}[{{teacher.code}}]</a></td>
-                        <td style="background-color:{{teacher.color}}">{{ teacher.color }}</td>
-                        <td><a href="{{ path('assign_subjects', { teacherId: teacher.id } ) }}" class="btn btn-info">Assign Subjects</a></td>
+                        <td><span style="width:30px; height:30px; border:1px solid black; background-color:{{teacher.color}}; display:block;"></span></td>
+                        <td><a href="{{ path('assign_subjects', { teacherId: teacher.id } ) }}" class="btn btn-info">View/Assign Subjects</a></td>
                         <td><a href="{{path('view_timetable_single_teacher', {'teacherId': teacher.id, 'tbl': timetable.id} ) }}" class="btn btn-info">View Timetable</a></td>
                         <td class="center">
                             <a class="btn btn-primary" href="{{ path('edit_teacher', { 'teacherId': teacher.id, 'tbl': timetable.id } ) }}">Edit</a>

@@ -2,6 +2,7 @@ imports:
     - { resource: parameters.yml }
     - { resource: security.yml }
     - { resource: services.yml }
+    - { resource: my_settings.php }
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
@@ -41,7 +42,7 @@ twig:
 # Doctrine Configuration
 doctrine:
     dbal:
-        driver: pdo_mysql
+        driver:   pdo_mysql
         host: '%database_host%'
         port: '%database_port%'
         dbname: '%database_name%'
@@ -71,9 +72,11 @@ swiftmailer:
 knp_snappy:
     pdf:
        enabled:    true
-       binary:     /usr/bin/xvfb-run /usr/bin/wkhtmltopdf
-       options:    []   
+       # binary:     /usr/bin/xvfb-run /usr/bin/wkhtmltopdf
+       binary:     %kernel.root_dir%/../vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64
+       options:    []
     image:
        enabled:    true
-       binary:     /usr/bin/xvfb-run /usr/bin/wkhtmltoimage
+       # binary:     /usr/bin/xvfb-run /usr/bin/wkhtmltoimage
+       binary:     %kernel.root_dir%/../vendor/h4cc/wkhtmltoimage-amd64/bin/wkhtmltoimage-amd64
        options:    []

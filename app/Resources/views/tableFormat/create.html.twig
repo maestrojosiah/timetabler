@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 {% block pagewrapper %}
-    {% set action_title = "Add Timetable Activity" %}
+    {% set action_title = "Add Time Plan" %}
     {% embed "templates/pagewrapper.html.twig" %}
         {% block toplinks %}
         {% endblock %}
@@ -8,47 +8,44 @@
         {% endblock %}
         {% block otherstuff_lg12 %}
 	      <div class="col-md-6">
-	          <!-- general form elements -->
+          <form action="" method="post">
 	          <div class="box box-primary">
 	            <div class="box-header with-border">
-	              <h3 class="box-title">Order of Activities For Timetable</h3>
+	              <h3 class="box-title">Time Plan</h3>
 	            </div>
-	            <!-- /.box-header -->
-	            <!-- form start -->
-	              <div class="box-body">
-			        <form action="" method="post">
+	           <div class="box-body">
 						  <div class="form-group">
-						    <label>Title (Only for Non Lesson Activities)</label><br />
+						    <label class=" control-label">Title (Only for Non Lesson Activities)</label><br />
 						    <div class="col-sm-10">
-						    	<input type="text" name="form[title]" class="form-control" placeholder="eg. Break, Lunch or Games"> 
+						    	<input type="text" name="form[title]" id="title" class="form-control" placeholder="eg. Break, Lunch or Games">
 						    </div>
 						  </div>
 						  <div class="form-group">
-						    <label for="class_subject_class" class=" control-label">Activity Type</label>
+						    <label for="activity" class=" control-label">Activity Type [lesson / activity]</label>
 						    <div class="col-sm-10">
-								<select name="form[activity]" id="class_subject_class" class="form-control">
+								<select name="form[activity]" id="activity" class="form-control">
 								    <option value="lesson">Lesson</option>
-								    <option value="break">Break/Lunch/Games</option>
-								</select>	
+								    <option value="break">Non-Lesson/Activity</option>
+								</select>
 					    	</div>
 						  </div>
 						  <div class="form-group">
-						    <label for="form-control" id="duration_in_minutes" class="control-label">Duration (Minutes)</label>
+						    <label for="duration" class="control-label">Duration (Minutes)</label>
 						    <div class="col-sm-10">
-						    	<input type="text" name="form[duration]" class="form-control" placeholder="e.g 45"> 
+						    	<input type="text" name="form[duration]" id="duration" class="form-control" placeholder="e.g 45">
 						    </div>
 						  </div><br /><br/>
-						
-		              </div>
+
+		         </div>
 		              <!-- /.box-body -->
 
-		              <div class="box-footer">
-						  	<input type="submit" class="btn btn-primary" value="SAVE">
-						  	<a href="{{ path('list_tableFormats', {'tbl': timetable.id }) }}" class="btn btn-success" >PREVIEW ORDER</a>
-						  	<a href="{{ path('homepage') }}" class="btn btn-danger" >EXIT</a>
-		              </div>
+		           <div class="box-footer">
+						  	<button class="btn btn-primary" type="button" id="save">Save</button>
+						  	<a href="{{ path('list_tableFormats', {'tbl': timetable.id }) }}" class="btn btn-success" >PREVIEW</a>
+						  	<a href="{{ path('homepage') }}" class="btn btn-danger" >DONE</a>
+		           </div>
 		          </div>
-		              </form>
+		         </form>
 		          <!-- /.box -->
 		      </div>
         {% if app.user.timetables|length > 1 %}
@@ -71,13 +68,13 @@
 		                    <option value="{{timetbl.id}}">{{timetbl.title}}</option>
 		                  {% endif %}
 		                {% endfor %}
-		              </select>               
+		              </select>
 		            </div>
 		            <div class="col-md-3">
 		              <button id="choose_from_this_timetable" class="btn btn-info"> NEXT </button>
 		            </div>
 		            <!-- /.progress-group -->
-		          </div> 
+		          </div>
 		        </div>
           </div>
           <!-- /.box -->
@@ -93,7 +90,7 @@
 		            <!-- /.box-header -->
 		            <!-- form start -->
 		              <div class="box-body">
-		                <ol>
+		                <ol id="added_formats">
 		                	{% for tableFormat in tableFormats %}
 		                    	<li>{{tableFormat.title}} - {{tableFormat.activity}} - {{tableFormat.duration}}</li>
 		                  	{% endfor %}
@@ -114,8 +111,8 @@
 {% block javascripts %}
   <script type="text/javascript">
     $(function() {
-      $("#duration_in_minutes").focus();
-    });    
+      $("#duration").focus();
+    });
   </script>
   <script>
       $(document).on('click', '#choose_from_this_timetable', function(){
@@ -135,7 +132,7 @@
             success: function (data)
             {
                location.href = data.url
-            },  
+            },
           error: function () {
                 $("#info").html("<b>something's wrong</b>");
           }
@@ -143,5 +140,63 @@
 
     });
   </script>
+  <script>
+	  $(document).on('click', '#save', function(){
+
+			var title = $('#title').val();
+			var activity = $('#activity').val();
+			var duration = $('#duration').val();
+			var timetable = "{{timetable.id}}";
+
+			$('#form').checkFields();
+			$('#save').html('Wait...');
+			$.ajax({
+	        url:'{{ (path('save_entity')) }}',
+	        type: "POST",
+	        dataType: "json",
+	        data: {
+						"return": 'getDuration',
+						"entity": 'TableFormat',
+						"timetable": timetable,
+						"fields": ['title', 'activity', 'duration'],
+						"values": [title, activity, duration],
+	        },
+	        async: true,
+	        success: function (data)
+	        {
+						console.log(data);
+						$("#title").val('');
+            $("#activity").val('lesson');
+            $("#duration").select();
+						$("#added_formats").append('<li>'+data+'</li>');
+						$('#save').html('SAVED').removeClass('btn-primary').addClass('btn-success');
+	        },
+		      error: function (xhr, status, error) {
+						console.log('error');
+		      }
+	    });
+
+	  });
+	</script>
+	<script>
+	$(document).on('keyup', '#title',function (e){
+			$('#save').html('Save').removeClass('btn-success').addClass('btn-primary');
+	});
+	$(document).on('change', '#activity',function (e){
+			$('#save').html('Save').removeClass('btn-success').addClass('btn-primary');
+	});
+	</script>
+	<script>
+		$(document).on('keypress', '#duration', function(e){
+			 var key = e.which;
+			 if(key == 13){
+					$("#save").click();
+					e.preventDefault();
+				} else {
+					$('#save').html('Save').removeClass('btn-success').addClass('btn-primary');
+				}
+		});
+
+</script>
 
 {% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+{% block pagewrapper %}
+    {% set action_title = "Summary" %}
+    {% embed "templates/pagewrapper.html.twig" %}
+        {% block toplinks %}
+        {% endblock %}
+        {% block charts %}
+        {% endblock %}
+        {% block otherstuff_lg12 %}
+            <div class="col-md-6">
+              <div class="box box-primary">
+                <div class="box-header with-border">
+                </div>
+                <!-- /.box-header -->
+                <!-- form start -->
+                  <div class="box-body">
+                    <p class="text-center">
+                      <strong>Classes</strong>
+                    </p>
+                    {% for class in timetable.classes %}
+                      Class {{ class }}
+                        <div class="progress-group">|
+                        {% for classsubject in class.classSubjects %}
+                          <span class="progress-text" style="background-color:{{classsubject.teacher.color}};">{{classsubject.subject.sTitle}}</span> |
+                        {% endfor %}
+                        </div>
+                        <span class="progress-number"><b>{{class.classSubjects|length}}</b>/{{timetable.subjects|length}}</span>
+                        {% set percentage = class.classSubjects|length / timetable.subjects|length * 100 %}
+                        <div class="progress sm">
+                          <div class="progress-bar progress-bar-aqua" style="width: {{percentage}}%"></div>
+                        </div>
+                        {% endfor %}
+              <!-- /.progress-group -->
+                      </div>
+                    </div>
+                  </div>
+
+            <div class="col-md-6">
+                <!-- general form elements -->
+                <div class="box box-primary">
+                  <div class="box-header with-border">
+                    <h3 class="box-title">Added Class-Subject Relations</h3>
+                  </div>
+                  <!-- /.box-header -->
+                  <!-- form start -->
+                    <div class="box-body">
+                      <ol>
+                        {% for classsubject in timetable.classsubjects %}
+                          <li>{{classsubject.subject}} - Class {{classsubject.cClass}} - {{classsubject.teacher.fName}} {{classsubject.teacher.lName}}</li>
+                        {% endfor %}
+                      </ol>
+                    </div>
+                    <!-- /.box-body -->
+
+                    <div class="box-footer bg-teal">
+                        <ol>
+                      {% for teacher in timetable.teachers %}
+                        <li>{{ teacher }} - {{ teacher.classSubjects|length }} Lessons </li>
+                      {% endfor %}
+                        </ol>
+                    </div>
+                </div>
+              </div>
+        {% endblock %}
+    	{% endembed %}
+    {% endblock %}

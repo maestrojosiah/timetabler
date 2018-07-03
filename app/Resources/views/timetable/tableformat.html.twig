@@ -4,24 +4,17 @@
 {% endblock %}
 
 {% block pagewrapper %}
-	{# {{dump(lesson_series)}} #}
-{# 	{{dump(items)}}
-	{{dump(tableformats)}}
-	{{dump(lesson_series)}}
- #}	{% set action_title = "Full timetable" %}
+	  {% set action_title = "Full timetable" %}
     {% embed "templates/pagewrapper.html.twig" %}
         {% block toplinks %}
         {% endblock %}
-
         {% block charts %}
-{# grade 1 - Rhoda 2 - Esther 3 - Moses PP1 - Lilian PP2 - Mercy #}
-
 <style>
  	th, td {
     	border: 1px solid black;
      	border-collapse: collapse;
      	white-space: nowrap;
-   	} 
+   	}
    	td, th{
    		padding:0px;
    		text-align: center;
@@ -49,12 +42,15 @@
 	         margin-right: -10em;
 	}
 	.full_width tr td {
-		display:block; 
+		display:block;
      	width:100%;
      	clear:both;
 
 	}
 </style>
+{% set total_possible_entries = timetable.classes|length * lesson_tableformats * 5 %}
+{% set percentage_so_far = (timetable.timetablers|length / total_possible_entries) * 100 %}
+
 {# table starts here #}
 <div class="panel panel-default">
     <div class="panel-heading">
@@ -90,8 +86,12 @@
                         {% endfor %}
                     </tr>
                 </thead>
-			{% endif %}
-        		{% for day in days_per_week %}
+						{% endif %}
+						{% set break = false %}
+        		{% for day in days_per_week if not break %}
+						{% if percentage_so_far >= 1 and (download == null and loop.index == 2) or (download and download.times <= 1 and loop.index == 2) %}
+							{% set break = true %}
+						{% endif %}
                 {% if app.user.configs|first.splitDays == "by_days" %}
                 <table style="width:100%;">
 	                <thead>
@@ -135,12 +135,12 @@
 			                        					{% set color = items[key]|split("|")[1] %}
 			                        					{% set position = "[" ~ items[key]|split("|")[2] ~ "]" %}
 			                        				{% else %}
-			                        					{% set subject = 'No Subject' %}
-			                        					{% set subj = 'No Subject' %}
+			                        					{% set subject = '___' %}
+			                        					{% set subj = '___' %}
 			                        					{% set color = '' %}
 			                        					{% set position = '' %}
 			                        				{% endif %}
-			                        				
+
 			                        			<td class="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" style="padding:2px; cursor:pointer; background-color:{{color}}; font-size:15px; font-weight:bold;">
                                                     {% if app.user.configs|first.teacherNumbers == "visible" %}
                                                     	{{subj}} {{position}}
@@ -162,9 +162,9 @@
 													                	{% for classSubj in tableformat.timetable.classSubjects %}
 													                		{# {{dump(classSubj)}} #}
 													                		{% if classSubj.cClass == class %}
-													                			<a href="#" id="classSubj_{{classSubj.id}}|subj_{{classSubj.subject.id}}|time_{{lesson_series[counterz]|split('|')[0]}}|tbl_{{timetable.id}}|day_{{day}}|frmtcol_{{tableformat.id}}" 
-													                				style="background-color:{{classSubj.teacher.color}}" 
-													                				class="list-group-item list-group-item-action" 
+													                			<a href="#" id="classSubj_{{classSubj.id}}|subj_{{classSubj.subject.id}}|time_{{lesson_series[counterz]|split('|')[0]}}|tbl_{{timetable.id}}|day_{{day}}|frmtcol_{{tableformat.id}}"
+													                				style="background-color:{{classSubj.teacher.color}}"
+													                				class="list-group-item list-group-item-action"
 													                				data-dismiss="modal">
 													                				<span style="text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; font-weight:bold;">{{classSubj.subject.sTitle}} ({{classSubj.teacher.fName}}{{classSubj.teacher.lName}}) </span>
 													                			</a>
@@ -228,12 +228,34 @@
                         {% endfor %}
                     </tr>
                 </tbody>
-			   {% if app.user.configs|first.splitDays == "by_days" %} </table> {% endif %}
+			   			{% if app.user.configs|first.splitDays == "by_days" %} </table> {% endif %}
               {% endfor %}
 
             {% if app.user.configs|first.splitDays == "dont" %}  </table> {% endif %}
         </div>
         <!-- /.table-responsive -->
+				{% if percentage_so_far >= 1 and (download == null) or (download and download.times <= 1) %}
+				<div class="col-lg-12 text-center" style="background-color:white; font-size:15px;">
+					<h2>Congratulations!</h2>
+					<p><strong>You're now 20% done. Please take a moment to appreciate me.</strong></p>
+					<p><strong>Buy me a cake - Ksh 300/=</strong></p>
+					<p><strong>Send through MPESA to: 0716339886, receive 3 codes within 15 seconds.</strong></p>
+					<p><strong>Submit the Codes Below seperated by comma</strong></p>
+					<p><strong>Complete your job and download Your Stuff.</strong></p>
+					<form class="form-inline">
+						<div class="form-group">
+							<label class="sr-only" for="exampleInputAmount">Amount (in Kshs)</label>
+							<div class="input-group">
+								<div class="input-group-addon">Code</div>
+								<input type="text" class="form-control" id="code_input" placeholder="XXX-XXX,XXX-XXX,XXX-XXX">
+							</div>
+						</div>
+						<button type="button" id="check_code" class="btn btn-warning">Submit Code!</button>
+					</form>
+					<p class="text-danger" id="error"></p>
+					<p class="text-success" id="success"></p>
+				</div>
+				{% endif %}
     </div>
     <!-- /.panel-body -->
 </div>
@@ -248,7 +270,7 @@
         <h4 class="modal-title">{{teacher}}</h4>
       </div>
       <div class="modal-body-{{teacher.id}}">
-		
+
       </div>
       <div class="modal-footer" style="background-color:{{teacher.color}}!important">
         <button type="button" class="btn btn-danger pull-right" data-dismiss="modal">Close</button>
@@ -330,7 +352,7 @@
                 {% endfor %}
             </select>
         </div>
-        
+
 
       </div>
       <div class="modal-footer">
@@ -374,16 +396,18 @@
 
 			</tr>
 			{% endfor %}
-		</table>      	
+		</table>
 
       </div>
       <div class="modal-footer">
+				<button id="refresher" class="btn btn-info btn-lg"> Refresh to see updated summary </button>
       </div>
     </div>
     <!-- /.modal-content -->
   </div>
   <!-- /.modal-dialog -->
 </div>
+
  <input id="teacherFixed" type="hidden" />
 <input id="subjectFixed" type="hidden" />
 <input id="deleteSubjectFixed" type="hidden" />
@@ -391,7 +415,6 @@
     {% endembed %}
 {% endblock %}
 {% block javascripts %}
-
     <script>
     $(document).ready(function() {
         $('#dataTables-example').DataTable({
@@ -400,6 +423,11 @@
     });
     </script>
 
+  	<script>
+  	    $(document).on('click', '[id="refresher"]', function(){
+					location.reload();
+				});
+		</script>
   	<script>
   	    $(document).on('click', '[id^="classSubj_"]', function(){
   	    	var id = jQuery(this).attr("id");
@@ -431,13 +459,13 @@
 	              			"border" : "1px solid fff"
 	              		}).text(data.output['subject']);
 	              	// $("#info").html(data.message);
-	              	$.notiny({ 
-		            	text: data.message[data.message.length -1],  
+	              	$.notiny({
+		            	text: data.message[data.message.length -1],
 		            	position: 'right-top',
 		            	delay: 5000,
 		            	theme: data.theme
 		            });
-	          	},	
+	          	},
 	         	error: function () {
 	              	$("#info").html("<b>something's wrong</b>");
 	       	 	}
@@ -459,14 +487,14 @@
 	          	async: true,
 	          	success: function (data)
 	          	{
-	              	$.notiny({ 
-		            	text: data.message[data.message.length -1],  
+	              	$.notiny({
+		            	text: data.message[data.message.length -1],
 		            	position: 'right-top',
 		            	delay: 5000,
 		            	theme: 'dark'
 		            });
-		            $("."+data.id).html('<td style="padding:2px; cursor:pointer; background-color:#ffffff; font-size:15px; font-weight:bold;">NO SUBJECT</td>');
-	          	},	
+		            $("."+data.id).html('<td style="padding:2px; cursor:pointer; background-color:#ffffff; font-size:15px; font-weight:bold;">___</td>');
+	          	},
 	         	error: function () {
 	              	$("#info").html("<b>something's wrong</b>");
 	       	 	}
@@ -490,8 +518,8 @@
 	          	success: function (data)
 	          	{
 	          		if ($('#showHints').is(':checked')) {
-				        $.notiny({ 
-			            	text: data,  
+				        $.notiny({
+			            	text: data,
 			            	position: 'left-top',
 			            	delay: 5000,
 			            	theme: 'dark'
@@ -500,7 +528,7 @@
 				        //do nothing
 				    }
 			        console.log(data);
-	          	},	
+	          	},
 	         	error: function () {
 	              	$("#info").html("<b>something's wrong</b>");
 	       	 	}
@@ -518,7 +546,7 @@
 			        var forced = 'false';
 			        $('#warn').remove();
 			    }
-			    
+
 
 			})
 		});
@@ -539,8 +567,8 @@
 	              	$(".modal-body-"+data[0]).html(
 	              		data[1]
 	              	);
-	              	
-	          	},	
+
+	          	},
 	         	error: function () {
 	              	$("#info").html("<b>something's wrong</b>");
 	       	 	}
@@ -561,15 +589,15 @@
 	          	async: true,
 	          	success: function (data)
 	          	{
-	              	$.notiny({ 
-		            	text: 'Successfully deleted all entries',  
+	              	$.notiny({
+		            	text: 'Successfully deleted all entries',
 		            	position: 'right-top',
 		            	delay: 5000,
 		            	theme: data.theme
 		            });
 					location.reload();
 
-	          	},	
+	          	},
 	         	error: function () {
 	              	$("#info").html("<b>something's wrong</b>");
 	       	 	}
@@ -608,15 +636,15 @@
 					if(data.reload == 'true'){
 						location.reload();
 					} else {
-		              	$.notiny({ 
-			            	text: data.message[data.message.length -1],  
+		              	$.notiny({
+			            	text: data.message[data.message.length -1],
 			            	position: 'right-top',
 			            	delay: 5000,
 			            	theme: data.theme
 			            });
 					}
-											          	
-				},	
+
+				},
 	         	error: function () {
 	              	$("#info").html("<b>something's wrong</b>");
 	       	 	}
@@ -662,13 +690,13 @@
 	              			"border" : "1px solid fff"
 	              		}).text(data.output['subject']);
 	              	// $("#info").html(data.message);
-	              	$.notiny({ 
-		            	text: data.message[data.message.length -1],  
+	              	$.notiny({
+		            	text: data.message[data.message.length -1],
 		            	position: 'right-top',
 		            	delay: 5000,
 		            	theme: data.theme
 		            });
-	          	},	
+	          	},
 	         	error: function () {
 	              	$("#info").html("<b>something's wrong</b>");
 	       	 	}
@@ -695,15 +723,15 @@
 	          	async: true,
 	          	success: function (data)
 	          	{
-	              	$.notiny({ 
-		            	text: data,  
+	              	$.notiny({
+		            	text: data,
 		            	position: 'right-top',
 		            	delay: 5000,
 		            	theme: data.theme
 		            });
 
 					location.reload();
-	          	},	
+	          	},
 	         	error: function () {
 	              	console.log("No deletions occured");
 	       	 	}
@@ -728,6 +756,58 @@
 		});
 
 	</script>
+  <script>
+  	$(document).on('keypress', '#code_input', function(e){
+  		 var key = e.which;
+  		 if(key == 13){
+  				$("#check_code").click();
+  				e.preventDefault();
+  			} else {
+  				$('#check_code').html('Submit Code(s)').removeClass('btn-success').addClass('btn-warning');
+  			}
+  	});
+
+  </script>
+	<script>
+	  $(document).on('click', '[id="check_code"]', function(){
+
+	      var code = $("#code_input").val();
+	      var timetable_id = "{{timetable.id}}";
+
+				$('#check_code').html('Please Wait... ');
+	      $.ajax({
+	          url:'{{ (path('check_code_validity')) }}',
+	          type: "POST",
+	          dataType: "json",
+	          data: {
+	              "code": code,
+								"timetable_id": timetable_id,
+	          },
+	          async: true,
+	          success: function (data)
+	          {
+	            if(data.success == true){
+	              $("#error").text("");
+	              $("#success").html(data.message);
+	              $("#code_input").val("");
+	              window.location.href = data.address;
+								$('#check_code').html('Nice!');
+	            } else {
+	              $("#success").text("");
+	              $("#error").html(data.message);
+								$('#check_code').html('Oops!');
+	            }
+	            console.log(data);
+	          },
+	         error: function () {
+	            $("#success").text("");
+	            $("#error").text("something went wrong. Please call 0705285959 for assistance");
+	          }
+	      });
+
+	  });
+	</script>
+
 {% endblock %}
 
 {# purchase / 0.55 = reporting price //what I heard
@@ -741,7 +821,7 @@ tithe = 6000 X .045 (270)
 5% = 6000 X .05 (300)
 tax = 6000 X .16 (960)
 
-kimomi 
+kimomi
 
 6000 X .755 = purchasing price  no savings (4530)
 6000 X .805 = purchasing price with savings (4830) #}

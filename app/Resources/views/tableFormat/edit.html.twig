@@ -1,42 +1,121 @@
 {% extends 'base.html.twig' %}
 {% block pagewrapper %}
-    {% set action_title = "Edit Timetable Format" %}
+    {% set action_title = "Edit Time Plan" %}
     {% embed "templates/pagewrapper.html.twig" %}
         {% block toplinks %}
         {% endblock %}
         {% block charts %}
         {% endblock %}
-        {% block otherstuff_lg8 %}
-        <form action="" method="post">
-			  <div class="form-group">
-			    <label for="class" class=" control-label">Title</label>
-			    <div class="col-sm-10">
-			    	<input type="text" name="form[title]" class="form-control" value="{{form.title}}" placeholder="e.g First"> 
-			    </div>
-			  </div>
-			  <div class="form-group">
-			    <label for="class_subject_class" class=" control-label">Activity Type</label>
-			    <div class="col-sm-10">
-					<select name="form[activity]" id="class_subject_class" class="form-control">
-					    <option value="lesson" {% if form.activity == 'lesson' %} selected {% endif %}>Lesson</option>
-					    <option value="break" {% if form.activity == 'break' %} selected {% endif %}>Break/Lunch/Games</option>
-					</select>	
-		    	</div>
-			  </div>
-			  <div class="form-group">
-			    <label for="form-control" class=" control-label">Duration (Minutes)</label>
-			    <div class="col-sm-10">
-			    	<input type="text" name="form[duration]" class="form-control" value="{{form.duration}}" placeholder="e.g 45"> 
-			    </div>
-			  </div>
-			  <div class="form-group">
-			    <div class="col-sm-10">
-				  	<input type="submit" class="btn btn-primary" value="SAVE">
-				  	<a href="{{ path('list_tableFormats') }}" class="btn btn-success" >LIST</a>
-				  	<a href="{{ path('homepage') }}" class="btn btn-danger" >EXIT</a>
-			    </div>
-			  </div>
-			</form>
+        {% block otherstuff_lg12 %}
+	      <div class="col-md-6">
+          <form action="" method="post">
+	          <div class="box box-primary">
+	            <div class="box-header with-border">
+	              <h3 class="box-title">Time Plan</h3>
+	            </div>
+	           <div class="box-body">
+						  <div class="form-group">
+						    <label class=" control-label">Title (Only for Non Lesson Activities)</label><br />
+						    <div class="col-sm-10">
+						    	<input type="text" value="{{tableformat.title}}" id="title" class="form-control" placeholder="eg. Break, Lunch or Games">
+						    </div>
+						  </div>
+						  <div class="form-group">
+						    <label for="activity" class=" control-label">Activity Type [lesson / activity]</label>
+						    <div class="col-sm-10">
+								<select name="form[activity]" id="activity" class="form-control">
+								    <option value="lesson" {% if tableformat.activity == 'lesson' %} selected {% endif %}>Lesson</option>
+								    <option value="break" {% if tableformat.activity == 'break' %} selected {% endif %}> Non-Lesson/Activity</option>
+								</select>
+					    	</div>
+						  </div>
+						  <div class="form-group">
+						    <label for="duration" class="control-label">Duration (Minutes)</label>
+						    <div class="col-sm-10">
+						    	<input type="text" value="{{tableformat.duration}}" id="duration" class="form-control" placeholder="e.g 45">
+						    </div>
+						  </div><br /><br/>
+
+		         </div>
+		              <!-- /.box-body -->
+
+		           <div class="box-footer">
+						  	<button class="btn btn-primary" type="button" id="save">Save</button>
+						  	<a href="{{ path('list_tableFormats', {'tbl': timetable.id }) }}" class="btn btn-success" >PREVIEW</a>
+						  	<a href="{{ path('homepage') }}" class="btn btn-danger" >DONE</a>
+		           </div>
+		          </div>
+		         </form>
+		          <!-- /.box -->
+		      </div>
 		{% endblock %}
 	{% endembed %}
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript">
+    $(function() {
+      $("#duration").focus();
+    });
+  </script>
+  <script>
+	  $(document).on('click', '#save', function(){
+
+			var title = $('#title').val();
+			var activity = $('#activity').val();
+			var duration = $('#duration').val();
+			var timetable = "{{timetable.id}}";
+			var id = "{{tableformat.id}}";
+
+			$('#form').checkFields();
+			$('#save').html('Wait...');
+			$.ajax({
+	        url:'{{ (path('edit_entity')) }}',
+	        type: "POST",
+	        dataType: "json",
+	        data: {
+						"return": 'getDuration',
+						"entity": 'TableFormat',
+						"timetable": timetable,
+						"id": id,
+						"fields": ['title', 'activity', 'duration'],
+						"values": [title, activity, duration],
+	        },
+	        async: true,
+	        success: function (data)
+	        {
+						console.log(data);
+						$("#title").val('');
+            $("#activity").val('lesson');
+            $("#duration").select();
+						$("#added_formats").append('<li>'+data+'</li>');
+						$('#save').html('SAVED').removeClass('btn-primary').addClass('btn-success');
+	        },
+		      error: function (xhr, status, error) {
+						console.log('error');
+		      }
+	    });
+
+	  });
+	</script>
+	<script>
+	$(document).on('keyup', '#title',function (e){
+			$('#save').html('Save').removeClass('btn-success').addClass('btn-primary');
+	});
+	$(document).on('change', '#activity',function (e){
+			$('#save').html('Save').removeClass('btn-success').addClass('btn-primary');
+	});
+	</script>
+	<script>
+		$(document).on('keypress', '#duration', function(e){
+			 var key = e.which;
+			 if(key == 13){
+					$("#save").click();
+					e.preventDefault();
+				} else {
+					$('#save').html('Save').removeClass('btn-success').addClass('btn-primary');
+				}
+		});
+
+</script>
+
 {% endblock %}
