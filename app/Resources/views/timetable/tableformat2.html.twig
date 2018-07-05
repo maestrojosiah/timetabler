@@ -1,0 +1,96 @@
+{% extends 'base_collapse.html.twig' %}
+{% block stylesheets %}
+
+{% endblock %}
+
+{% block pagewrapper %}
+	  {% set action_title = "Full timetable" %}
+    {% embed "templates/pagewrapper.html.twig" %}
+        {% block toplinks %}
+        {% endblock %}
+        {% block charts %}
+<style>
+ 	th, td {
+    	border: 1px solid black;
+     	border-collapse: collapse;
+     	white-space: nowrap;
+   	}
+   	td, th{
+   		padding:0px;
+   		text-align: center;
+   		text-transform: uppercase;
+   	}
+
+   	#page-wrapper{
+   		margin:0px;
+   	}
+
+	.rotate {
+	  text-align: center;
+	  white-space: nowrap;
+	  vertical-align: middle;
+	  width: 1.5em;
+	}
+
+	.rotate div {
+	     -moz-transform: rotate(-90.0deg);  /* FF3.5+ */
+	       -o-transform: rotate(-90.0deg);  /* Opera 10.5 */
+	  -webkit-transform: rotate(-90.0deg);  /* Saf3.1+, Chrome */
+	             filter:  progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);  /* IE6,IE7 */
+	         -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)"; /* IE8 */
+	         margin-left: -10em;
+	         margin-right: -10em;
+	}
+	.full_width tr td {
+		display:block;
+     	width:100%;
+     	clear:both;
+
+	}
+</style>
+{% set total_possible_entries = timetable.classes|length * lesson_tableformats * 5 %}
+{% set percentage_so_far = (timetable.timetablers|length / total_possible_entries) * 100 %}
+
+{# table starts here #}
+<div class="panel panel-default">
+	<style>
+	#div1, #div2 {
+	    float: left;
+	    width: 100px;
+	    height: 35px;
+	    margin: 10px;
+	    padding: 10px;
+	    border: 1px solid black;
+	}
+	</style>
+	<h2>Drag and Drop</h2>
+	<p>Drag the image back and forth between the two div elements.</p>
+
+	<div id="div1" ondrop="drop(event)" ondragover="allowDrop(event)">
+	  <p draggable="true" ondragstart="drag(event)" id="drag1">Some Text</p>
+	</div>
+
+	<div id="div2" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+</div>
+{# table ends here #}
+
+       {% endblock %}
+    {% endembed %}
+{% endblock %}
+{% block javascripts %}
+<script>
+function allowDrop(ev) {
+		ev.preventDefault();
+}
+
+function drag(ev) {
+		ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function drop(ev) {
+		ev.preventDefault();
+		var data = ev.dataTransfer.getData("text");
+		ev.target.appendChild(document.getElementById(data));
+}
+</script>
+{% endblock %}

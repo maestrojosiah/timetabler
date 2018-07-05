@@ -150,67 +150,6 @@
 			                        			</td>
 			                        			{# Modal for every tr #}
 
-													<div class="modal fade" id="timetableModal_{{class}}_{{day}}_{{tableformat.id}}" tabindex="-1" role="dialog" aria-labelledby="timetableModalLabel" aria-hidden="true" style="display: none;">
-													    <div class="modal-dialog">
-													        <div class="modal-content">
-													            <div class="modal-header">
-													                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-													                <h4 class="modal-title" id="timetableModalLabel">Place Subject</h4>
-													            </div>
-													            <div class="modal-body text-center">
-													                <div class="list-group">
-													                	{% for classSubj in tableformat.timetable.classSubjects %}
-													                		{# {{dump(classSubj)}} #}
-													                		{% if classSubj.cClass == class %}
-													                			<a href="#" id="classSubj_{{classSubj.id}}|subj_{{classSubj.subject.id}}|time_{{lesson_series[counterz]|split('|')[0]}}|tbl_{{timetable.id}}|day_{{day}}|frmtcol_{{tableformat.id}}"
-													                				style="background-color:{{classSubj.teacher.color}}"
-													                				class="list-group-item list-group-item-action"
-													                				data-dismiss="modal">
-													                				<span style="text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; font-weight:bold;">{{classSubj.subject.sTitle}} ({{classSubj.teacher.fName}}{{classSubj.teacher.lName}}) </span>
-													                			</a>
-													                		{% endif %}
-													                	{% endfor %}
-													                	<hr />
-																		<div class="row">
-																			<h3>Fix a Quick Lesson</h3>
-																		    <div class="col-sm-4">
-																		        <div class="form-group">
-																		            <select class="form-control fixSubject">
-																		            	<option value="">Select Subject</option>
-																		            	{% for subject in tableformat.timetable.subjects %}
-																		                	<option value="{{subject.id}}">{{subject.sTitle}}</option>
-																		                {% endfor %}
-																		            </select>
-																		        </div>
-																		    </div>
-																		    <div class="col-sm-4">
-																		        <div class="form-group">
-																		            <select class="form-control fixTeacher">
-																		            	<option value="">Select Teacher</option>
-																		            	{% for teacher in tableformat.timetable.teachers %}
-																		                	<option value="{{teacher.id}}">{{teacher}}</option>
-																		                {% endfor %}
-																		            </select>
-																		        </div>
-																		    </div>
-																		    <div class="col-sm-4">
-																		        <div class="form-group">
-																					<button id="fixLesson_{{tableformat.id}}|class_{{class.id}}|day_{{day}}|tblfmt_{{tableformat.id}}|time_{{lesson_series[counterz]|split('|')[0]}}|cls_{{class}}" type="button" data-dismiss="modal" class="btn btn-primary">Place Lesson</button>
-																		        </div>
-																		    </div>
-																		</div>
-																	  <a href="#" class="list-group-item list-group-item-action" id="removeDay_{{day}}|class_{{class.id}}|time_{{lesson_series[counterz]|split('|')[0]}}|tblfmt_{{tableformat.id}}" data-dismiss="modal">Remove Lesson</a>
-													                  <a href="{{ path('list_teachers', {'tbl':timetable.id }) }}" class="list-group-item list-group-item-action">Add Lessons for Timetable</a>
-													                </div>
-													            </div>
-													            <div class="modal-footer">
-													                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-													            </div>
-													        </div>
-													        <!-- /.modal-content -->
-													    </div>
-													    <!-- /.modal-dialog -->
-													</div>
 
 			                        		</tr>
 		                        			{% set counter = counter + 1 %}
@@ -234,10 +173,10 @@
             {% if app.user.configs|first.splitDays == "dont" %}  </table> {% endif %}
         </div>
         <!-- /.table-responsive -->
-				{% if percentage_so_far >= 1 and (download == null) or (download and download.times <= 1) %}
+				{% if percentage_so_far >= 30 and (download == null) or (download and download.times <= 1) %}
 				<div class="col-lg-12 text-center" style="background-color:white; font-size:15px;">
 					<h2>Congratulations!</h2>
-					<p><strong>You're now 20% done. Please take a moment to appreciate me.</strong></p>
+					<p><strong>You're now 30% done. Please take a moment to appreciate me.</strong></p>
 					<p><strong>Buy me a cake - Ksh 300/=</strong></p>
 					<p><strong>Send through MPESA to: 0716339886, receive 3 codes within 15 seconds.</strong></p>
 					<p><strong>Submit the Codes Below seperated by comma</strong></p>
@@ -365,6 +304,7 @@
   </div>
   <!-- /.modal-dialog -->
 </div>
+
 <div class="modal fade" id="showSummary">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -407,6 +347,85 @@
   </div>
   <!-- /.modal-dialog -->
 </div>
+
+{% for day in days_per_week if not break %}
+{% if percentage_so_far >= 1 and (download == null and loop.index == 2) or (download and download.times <= 1 and loop.index == 2) %}
+	{% set break = true %}
+{% endif %}
+	{% for class in classes %}
+	{% set counterz = 0 %}
+
+		{% for tableformat in tableformats %}
+		<div class="modal fade" id="timetableModal_{{class}}_{{day}}_{{tableformat.id}}" tabindex="-1" role="dialog" aria-labelledby="timetableModalLabel" aria-hidden="true" style="display: none;">
+				<div class="modal-dialog">
+						<div class="modal-content">
+								<div class="modal-header">
+										<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+										<h4 class="modal-title" id="timetableModalLabel">Place Subject</h4>
+								</div>
+								<div class="modal-body text-center">
+										<div class="list-group">
+											{% for classSubj in tableformat.timetable.classSubjects %}
+												{# {{dump(classSubj)}} #}
+												{% if classSubj.cClass == class %}
+													<a href="#" id="classSubj_{{classSubj.id}}|subj_{{classSubj.subject.id}}|time_{{lesson_series[counterz]|split('|')[0]}}|tbl_{{timetable.id}}|day_{{day}}|frmtcol_{{tableformat.id}}"
+														style="background-color:{{classSubj.teacher.color}}"
+														class="list-group-item list-group-item-action"
+														data-dismiss="modal">
+														<span style="text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; font-weight:bold;">{{classSubj.subject.sTitle}} ({{classSubj.teacher.fName}}{{classSubj.teacher.lName}}) </span>
+													</a>
+												{% endif %}
+											{% endfor %}
+											<hr />
+							<div class="row">
+								<h3>Fix a Quick Lesson</h3>
+									<div class="col-sm-4">
+											<div class="form-group">
+													<select class="form-control fixSubject">
+														<option value="">Select Subject</option>
+														{% for subject in tableformat.timetable.subjects %}
+																<option value="{{subject.id}}">{{subject.sTitle}}</option>
+															{% endfor %}
+													</select>
+											</div>
+									</div>
+									<div class="col-sm-4">
+											<div class="form-group">
+													<select class="form-control fixTeacher">
+														<option value="">Select Teacher</option>
+														{% for teacher in tableformat.timetable.teachers %}
+																<option value="{{teacher.id}}">{{teacher}}</option>
+															{% endfor %}
+													</select>
+											</div>
+									</div>
+									<div class="col-sm-4">
+											<div class="form-group">
+										<button id="fixLesson_{{tableformat.id}}|class_{{class.id}}|day_{{day}}|tblfmt_{{tableformat.id}}|time_{{lesson_series[counterz]|split('|')[0]}}|cls_{{class}}" type="button" data-dismiss="modal" class="btn btn-primary">Place Lesson</button>
+											</div>
+									</div>
+							</div>
+							<a href="#" class="list-group-item list-group-item-action" id="removeDay_{{day}}|class_{{class.id}}|time_{{lesson_series[counterz]|split('|')[0]}}|tblfmt_{{tableformat.id}}" data-dismiss="modal">Remove Lesson</a>
+											<a href="{{ path('list_teachers', {'tbl':timetable.id }) }}" class="list-group-item list-group-item-action">Add Lessons for Timetable</a>
+										</div>
+								</div>
+								<div class="modal-footer">
+										<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+								</div>
+						</div>
+						<!-- /.modal-content -->
+				</div>
+				<!-- /.modal-dialog -->
+		</div>
+		{% if counterz <= lesson_series|length %}
+			{% set counterz = counterz + 1 %}
+		{% endif %}
+
+		{% endfor %}
+
+	{% endfor %}
+
+{% endfor %}
 
  <input id="teacherFixed" type="hidden" />
 <input id="subjectFixed" type="hidden" />

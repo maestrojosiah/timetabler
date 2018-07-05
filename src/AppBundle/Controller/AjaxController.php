@@ -400,7 +400,7 @@ class AjaxController extends Controller
             $teacher = explode("|", $item)[1];
             $subject = explode("|", $item)[0];
             if(!in_array(explode("|", $item)[1], $classSubjectTeachers)){
-                $available .= '<span class="" style="background-color:'.$color.';">'.$subject.' ['.$teacher.']</span><br />';
+                $available .= '<span class="" style="background-color:'.$color.'; color:black!important;">'.$subject.' ['.$teacher.']</span><br />';
             }
 
         }

@@ -4,8 +4,8 @@
         <meta charset="UTF-8" />
 	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 	    <meta name="viewport" content="width=device-width, initial-scale=1">
-	    <meta name="description" content="">
-	    <meta name="author" content="">
+	    <meta name="description" content="Turn timetabling from being a headache to being a fun thing to do! Automate lesson placement and visualize everything.">
+	    <meta name="author" content="Myle-post Solutions LTD">
         <title>{% block title %}TimeTabler{% endblock %}</title>
         <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon.png') }}">
         <link rel="manifest" href="/manifest.json">
@@ -19,9 +19,6 @@
 	    <!-- notiny CSS -->
 	    <link href="{{ asset('notiny/notiny.min.css') }}" rel="stylesheet">
 
-{# 	    <!-- Custom CSS -->
-	    <link href="{{ asset('dist/css/sb-admin-2.css') }}" rel="stylesheet">
- #}
 	    <!-- Custom Fonts -->
 	    <link href="{{ asset('vendor/font-awesome/css/font-awesome.css') }}" rel="stylesheet" type="text/css">
 	    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -51,7 +48,7 @@
     	{% set sidebar = "" %}
     	{% set entriesPerPage = 10 %}
     {% endif %}
-	<body class="hold-transition skin-blue sidebar-mini sidebar-{{sidebar}}" {% if app.request.attributes.get('_route') == 'login' %}  style="background:url({{asset('images/school_image.jpg')}}) no-repeat center center fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover;" {% endif %}>
+	<body class="hold-transition skin-blue sidebar-mini sidebar-{{sidebar}}" {% if app.request.attributes.get('_route') == 'login' %}  style="background:url({{asset('images/screenshot.png')}}) no-repeat center center fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover;" {% elseif app.request.attributes.get('_route') == 'user_registration' %}  style="background:url({{asset('images/screenshot2.png')}}) no-repeat center center fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover;" {% endif %}>
     <div id="wrapper">
 
         {% block navigation %}
