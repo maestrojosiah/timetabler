@@ -65,7 +65,7 @@
        	{% if tableformats|first %}
        	{% for position, teacher in tableformats[0].timetable.teachers %}
        		{% set postn = position + 1 %}
-       		<a type="button" id="teacher-details-{{teacher.id}}" class="btn btn-success btn-xs" data-toggle="modal" data-target="#teacherModal_{{teacher.id}}" style="background-color:{{teacher.color}}">{{teacher.fName}} {{teacher.lName}}[{{teacher.code}}]</a>
+       		<a type="button" id="teacher-details-{{teacher.id}}" class="btn btn-xs" data-toggle="modal" data-target="#teacherModal_{{teacher.id}}" style="background-color:{{teacher.color}}">{{teacher.fName}} {{teacher.lName}}[{{teacher.code}}]</a>
        	{% endfor %}
        	{% endif %}
     </div>
@@ -89,7 +89,7 @@
 						{% endif %}
 						{% set break = false %}
         		{% for day in days_per_week if not break %}
-						{% if percentage_so_far >= 1 and (download == null and loop.index == 2) or (download and download.times <= 1 and loop.index == 2) %}
+						{% if percentage_so_far >= 40 and (download == null and loop.index == 2) or (download and download.times <= 1 and loop.index == 2) %}
 							{% set break = true %}
 						{% endif %}
                 {% if app.user.configs|first.splitDays == "by_days" %}
@@ -173,10 +173,10 @@
             {% if app.user.configs|first.splitDays == "dont" %}  </table> {% endif %}
         </div>
         <!-- /.table-responsive -->
-				{% if percentage_so_far >= 30 and (download == null) or (download and download.times <= 1) %}
+				{% if percentage_so_far >= 40 and (download == null) or (download and download.times <= 1) %}
 				<div class="col-lg-12 text-center" style="background-color:white; font-size:15px;">
 					<h2>Congratulations!</h2>
-					<p><strong>You're now 30% done. Please take a moment to appreciate me.</strong></p>
+					<p><strong>You're now 40% done. Please take a moment to appreciate me.</strong></p>
 					<p><strong>Buy me a cake - Ksh 300/=</strong></p>
 					<p><strong>Send through MPESA to: 0716339886, receive 3 codes within 15 seconds.</strong></p>
 					<p><strong>Submit the Codes Below seperated by comma</strong></p>
@@ -349,7 +349,7 @@
 </div>
 
 {% for day in days_per_week if not break %}
-{% if percentage_so_far >= 1 and (download == null and loop.index == 2) or (download and download.times <= 1 and loop.index == 2) %}
+{% if percentage_so_far >= 40 and (download == null and loop.index == 2) or (download and download.times <= 1 and loop.index == 2) %}
 	{% set break = true %}
 {% endif %}
 	{% for class in classes %}

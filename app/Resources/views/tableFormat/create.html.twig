@@ -99,8 +99,8 @@
 		              <!-- /.box-body -->
 
 		              <div class="box-footer">
-                    Refresh / Reload page to see all details.
-		                *************************
+                    *************************<br />
+                    <span id="refresh_notify"></span>
 		              </div>
 		          </div>
 		          <!-- /.box -->
@@ -171,6 +171,7 @@
             $("#duration").select();
 						$("#added_formats").append('<li>'+data+'</li>');
 						$('#save').html('SAVED').removeClass('btn-primary').addClass('btn-success');
+            $('#refresh_notify').text("Refresh / Reload page to see all details.");
 	        },
 		      error: function (xhr, status, error) {
 						console.log('error');

@@ -17,6 +17,7 @@
               <a href="../../index2.html"><b>Time</b>Tabler</a>
             </div>
             <p style="text-align:center;"><b>Testing:</b>'testuser@gmail.com' 'secretPWD'</p>
+            <button data-toggle="modal" data-target="#video" class="btn btn-primary btn-block btn-flat">Watch Video</button>
             <p class="login-box-msg">Log in</p>
 
             <form action="{{ path('login') }}" method="post">
@@ -51,4 +52,26 @@
           <!-- /.login-box-body -->
         </div>
 <!-- /.login-box -->
+
+<div class="modal modal-info fade" id="video" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="list-group">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/QeNuYRxUUKE?rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline pull-right" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+
 {% endblock %}
