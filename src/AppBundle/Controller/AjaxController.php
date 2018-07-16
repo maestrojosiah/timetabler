@@ -132,7 +132,7 @@ class AjaxController extends Controller
         $class = $classSubject->getCClass();
         $teacher = $classSubject->getTeacher();
 
-        list($message, $arrData) = $this->attempt_to_save_timetabler($day, $tableFormatColumn, $teacher, $classSubject, $classSubject->getSubject(), $class, $timetable, $subj, $time, $forced);
+        list($message, $arrData) = $this->attempt_to_save_timetabler($day, $tableFormatColumn, $teacher, $classSubject, $classSubject->getSubject(), $class, $timetable, $subj, $time, $forced, "update", false);
 
         return new JsonResponse($arrData);
 
@@ -163,7 +163,7 @@ class AjaxController extends Controller
         $subject = $this->em()->getRepository('AppBundle:Subject') ->find($subj);
         $classSubject = $this->find_class_subject($classSubj);
 
-        list($message, $arrData) = $this->attempt_to_save_timetabler($day, $tableFormatColumn, $teacher, $classSubject, $subject, $class, $timetable, $subj, $time, $forced);
+        list($message, $arrData) = $this->attempt_to_save_timetabler($day, $tableFormatColumn, $teacher, $classSubject, $subject, $class, $timetable, $subj, $time, $forced, "update", false);
 
         return new JsonResponse($arrData);
 
@@ -208,18 +208,19 @@ class AjaxController extends Controller
         $time =  explode("_", $fullId[2])[1];
         $tableFormat =  explode("_", $fullId[3])[1];
 
-        $timetablerEntry = $this->em()->getRepository('AppBundle:Timetabler')
-            ->findOneBy(
+        $timetablerEntries = $this->em()->getRepository('AppBundle:Timetabler')
+            ->findBy(
                 array('day' => $day, 'class' => $class, 'tableFormatColumn' => $tableFormat),
                 array('id' => 'DESC')
             );
-        $message = $timetablerEntry->getSubject()->getSTitle(). ' has been removed';
-        $id = 'class-'.$timetablerEntry->getClass()->getCTitle().'_day-'.$day.'_tblfmt-'.$timetablerEntry->getTableFormatColumn();
+        foreach($timetablerEntries as $timetablerEntry){
+          $message = "Successfully remove subject(s)";
+          $id = 'class-'.$timetablerEntry->getClass()->getCTitle().'_day-'.$day.'_tblfmt-'.$timetablerEntry->getTableFormatColumn();
+          $this->em()->remove($timetablerEntry);
+          $this->em()->flush();
+        }
 
         $arrData = ['message' => $message, 'id' => $id];
-
-        $this->em()->remove($timetablerEntry);
-        $this->em()->flush();
 
         return new JsonResponse($arrData);
 
@@ -621,7 +622,7 @@ class AjaxController extends Controller
                         retry:
                         $teacher = $classSubject->getTeacher();
                         $random_table_format = array_rand($copyShuffledTblFmtKeys);
-                        list($message, $arrData) = $this->attempt_to_save_timetabler($day, $copyShuffledTblFmt[$random_table_format], $teacher, $classSubject, $classSubject->getSubject(), $class, $timetable, $subject, 'auto', $forced, "new");
+                        list($message, $arrData) = $this->attempt_to_save_timetabler($day, $copyShuffledTblFmt[$random_table_format], $teacher, $classSubject, $classSubject->getSubject(), $class, $timetable, $subject, 'auto', $forced, "new", true);
                         $test = "test";
                         if( empty($arrData['output']) ){
                             list($int, $subjectCount) = $this->cursor($days, $subjectCount, $int, $countCopyShuffledTblFmt, $countTableFormats);
@@ -737,12 +738,17 @@ class AjaxController extends Controller
         return $config;
     }
 
-    private function get_or_create_timetabler($day, $class, $tableFormatColumn, $status){
+    private function get_or_create_timetabler($day, $class, $tableFormatColumn, $subject, $status, $auto=false){
 
         $recorded = $this->em()->getRepository('AppBundle:Timetabler')
-            ->isAlreadyRecordedFormat($day, $class, $tableFormatColumn);
+            ->isAlreadyRecordedFormat($day, $class, $tableFormatColumn, $subject);
+        $recorded_minimum = $this->em()->getRepository('AppBundle:Timetabler')
+            ->isAlreadyRecordedFormatMin($day, $class, $tableFormatColumn);
 
-        if($recorded){
+        if($recorded_minimum && $auto == true){
+          return NULL;
+        } elseif($recorded) {
+
             if($status == "new"){
                 return NULL;
             } else {
@@ -780,7 +786,7 @@ class AjaxController extends Controller
         return $timetabler;
     }
 
-    private function attempt_to_save_timetabler($day, $tableFormatColumn, $teacher, $classSubject, $subject, $class, $timetable, $subj, $time, $forced, $status="update"){
+    private function attempt_to_save_timetabler($day, $tableFormatColumn, $teacher, $classSubject, $subject, $class, $timetable, $subj, $time, $forced, $status="update", $auto){
         $message = [];
         $message[] = "Attempting to save entry...";
         $isClashing = $this->is_clashing($day, $tableFormatColumn, $teacher);
@@ -803,7 +809,7 @@ class AjaxController extends Controller
                 $message[] = 'Maximum Lessons for '. $subject->getSTitle() . ' reached!';
                 $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
             } else {
-                $timetabler = $this->get_or_create_timetabler($day, $class, $tableFormatColumn, $status);
+                $timetabler = $this->get_or_create_timetabler($day, $class, $tableFormatColumn, $subject, $status, $auto);
                 if($timetabler == NULL){
                     $message[] = 'Maximum Lessons for '. $subject->getSTitle() . ' reached!';
                     $arrData = ['output' => [], 'theme' => 'light', 'message' => $message ];
@@ -818,7 +824,16 @@ class AjaxController extends Controller
                 $color = $teacher->getColor();
                 $sbj = $this->em()->getRepository('AppBundle:Subject')
                     ->find($subj);
-                $subject = $sbj->getSTitle();
+
+                $config = $this->get_config($user);
+                $show_code = $config->getTeacherNumbers();
+                if($show_code == "visible"){
+                  $subject = substr($sbj->getSTitle(), 0, 3).".[".$teacher->getCode()."]";
+                } else {
+                  $subject = $sbj->getSTitle();
+                }
+
+
 
                 $string = 'class-'.$class.'_day-'.$day.'_tblfmt-'.$format;
                 $info = ['string'=>$string, 'color'=>$color, 'subject'=>$subject, 'occurances'=>$numberOfOccurances];

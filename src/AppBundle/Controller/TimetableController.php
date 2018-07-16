@@ -152,7 +152,7 @@ class TimetableController extends Controller
         }
         $lesson_series = $this->get_lesson_series($tableformats, $timetable);
         $teachers_list = $this->teachers_list($teachers);
-        $items = $this->add_items($lessons, $teachers_list);
+        list($items, $keys_string) = $this->add_items($lessons, $teachers_list);
         $timetablers = $this->em()->getRepository('AppBundle:Timetabler')
             ->findByTimetable($timetable);
 
@@ -165,6 +165,7 @@ class TimetableController extends Controller
         $data['lesson_series'] = $lesson_series;
         $data['actual_lessons'] = $lessons;
         $data['items'] = $items;
+        $data['keys_string'] = $keys_string;
 
         return $this->render('timetable/tableformat.html.twig', $data);
 
@@ -191,7 +192,7 @@ class TimetableController extends Controller
         }
         $lesson_series = $this->get_lesson_series($tableformats, $timetable);
         $teachers_list = $this->teachers_list($teachers);
-        $items = $this->add_items($lessons, $teachers_list, "full_name");
+        list($items, $keys_string) = $this->add_items($lessons, $teachers_list, "full_name");
         $timetablers = $this->em()->getRepository('AppBundle:Timetabler')
             ->findByTimetable($timetable);
 
@@ -340,7 +341,7 @@ class TimetableController extends Controller
         }
         $lesson_series = $this->get_lesson_series($tableformats, $timetable);
         $teachers_list = $this->teachers_list($teachers);
-        $items = $this->add_items($lessons, $teachers_list, "full_name");
+        list($items, $keys_string) = $this->add_items($lessons, $teachers_list, "full_name");
         $timetablers = $this->em()->getRepository('AppBundle:Timetabler')
             ->findByTimetable($timetable);
 
@@ -405,7 +406,7 @@ class TimetableController extends Controller
         $lesson_series = $this->get_lesson_series($tableformats, $timetable);
         $teachers = $this->find_teachers($timetable);
         $teachers_list = $this->teachers_list($teachers);
-        $items = $this->add_items($lessons, $teachers_list);
+        list($items, $keys_string) = $this->add_items($lessons, $teachers_list);
         $timetableName = $timetable->getTitle();
 
         $data['classes'] = $classes;
@@ -449,7 +450,7 @@ class TimetableController extends Controller
         $lesson_series = $this->get_lesson_series($tableformats, $timetable);
         $teachers = $this->find_teachers($timetable);
         $teachers_list = $this->teachers_list($teachers);
-        $items = $this->add_items($lessons, $teachers_list);
+        list($items, $keys_string) = $this->add_items($lessons, $teachers_list);
         $timetableName = $timetable->getTitle();
 
         $data['classes'] = $classes;
@@ -570,6 +571,7 @@ class TimetableController extends Controller
 
     private function add_items($lessons, $teachers_list, $what = "color"){
         $items = [];
+        $keys_string = "";
         foreach($lessons as $lesson){
             $subjectEntity = $lesson->getSubject();
             $teacherEntity = $lesson->getTeacher();
@@ -578,9 +580,10 @@ class TimetableController extends Controller
             } else {
                 $asked_for = $teacherEntity->getFName() ." ". $teacherEntity->getLName();
             }
-            $items[$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$asked_for."|".$teachers_list[$teacherEntity->getId()];
+            $items[][$lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay()] = $subjectEntity->getSTitle()."|".$asked_for."|".$teachers_list[$teacherEntity->getId()];
+            $keys_string .= $lesson->getTableFormatColumn().".".$lesson->getClass().".".$lesson->getDay().":";
         }
-        return $items;
+        return [$items, $keys_string];
     }
 
     private function add_items_single_teacher($lessons, $teacher){

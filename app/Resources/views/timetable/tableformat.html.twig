@@ -47,6 +47,20 @@
      	clear:both;
 
 	}
+
+	.loading {
+	    background: url("{{ asset('images/loading.gif') }}") no-repeat scroll center center rgba(255,255,255,.3);
+	    position: absolute;
+			position:fixed;
+	    padding:0;
+	    margin:0;
+
+	    top:0;
+	    left:0;
+
+	    width: 100%;
+	    height: 100%;
+	}
 </style>
 {% set total_possible_entries = timetable.classes|length * lesson_tableformats * 5 %}
 {% set percentage_so_far = (timetable.timetablers|length / total_possible_entries) * 100 %}
@@ -72,7 +86,6 @@
     <!-- /.panel-heading -->
     <div class="panel-body">
         <div class="">
-
         	{% set days_per_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
 			{% if app.user.configs|first.splitDays == "dont" %}
             <table  style="width:100%;">
@@ -129,24 +142,33 @@
 		                        		{% for class in classes %}
 			                        		<tr style=" " id="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" data-toggle="modal" data-target="#timetableModal_{{class}}_{{day}}_{{tableformat.id}}">
 			                        				{% set key = tableformat.id ~ "." ~ class ~ "." ~ day %}
-			                        				{% if items[key] is defined %}
-			                        					{% set subject = items[key]|split("|")[0] %}
-			                        					{% set subj = items[key]|split("|")[0]|slice(0,3) %}
-			                        					{% set color = items[key]|split("|")[1] %}
-			                        					{% set position = "[" ~ items[key]|split("|")[2] ~ "]" %}
-			                        				{% else %}
-			                        					{% set subject = '___' %}
-			                        					{% set subj = '___' %}
-			                        					{% set color = '' %}
-			                        					{% set position = '' %}
-			                        				{% endif %}
+																			{% set subject = "" %}
+																			{% set subj = "" %}
+																			{% set color = "" %}
+																			{% set position = "" %}
+			                        				{% if key  in keys_string %}
+																				{% for an_item in items %}
+																					{% if an_item[key] is defined %}
+																					{% if subj != "" or subject != "" %} {% set subj = subj ~ "|" %} {% set subject = subject ~ "|" %} {% endif %}
+					                        					{% set subject = subject ~  an_item[key]|split("|")[0] %}
+					                        					{% set subj = subj ~ an_item[key]|split("|")[0]|slice(0,3) %}
+					                        					{% set color = color ~ an_item[key]|split("|")[1] %}
+					                        					{% set position = position ~ "[" ~ an_item[key]|split("|")[2] ~ "]" %}
+					                        				{% endif %}
+																				{% endfor %}
+																			{% else %}
+																					{% set subject = subject ~ '___' %}
+																					{% set subj = subj ~ '___' %}
+																					{% set color = color ~ '' %}
+																					{% set position = position ~ '' %}
+																			{% endif %}
 
 			                        			<td class="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" style="padding:2px; cursor:pointer; background-color:{{color}}; font-size:15px; font-weight:bold;">
-                                                    {% if app.user.configs|first.teacherNumbers == "visible" %}
-                                                    	{{subj}} {{position}}
-                                                    {% else %}
-                                                    	{{subject}}
-                                                    {% endif %}
+                                      {% if app.user.configs|first.teacherNumbers == "visible" %}
+                                      	{{subj}} {{position}}
+                                      {% else %}
+                                      	{{subject}}
+                                      {% endif %}
 			                        			</td>
 			                        			{# Modal for every tr #}
 
@@ -426,7 +448,7 @@
 	{% endfor %}
 
 {% endfor %}
-
+<div class="loading" style="display:none; text-align:center; padding:100px;">Working...</div>
  <input id="teacherFixed" type="hidden" />
 <input id="subjectFixed" type="hidden" />
 <input id="deleteSubjectFixed" type="hidden" />
@@ -456,7 +478,7 @@
 			    } else {
 			        var forced = 'false';
 			    }
-
+					$(".loading").show();
 			    $.ajax({
 	          	url:'{{ (path('save_timetable_entry')) }}',
 	          	type: "POST",
@@ -468,6 +490,9 @@
 	          	async: true,
 	          	success: function (data)
 	          	{
+								if($("."+data.output['string']).text().trim() == "___"){
+									$("."+data.output['string']).text("");
+								}
 	              	console.log(data.output['string']);
 	              	$("."+data.output['string']).css(
 	              		{
@@ -476,8 +501,9 @@
 	              			"font-weight" : "bold",
 	              			"padding" : "2px",
 	              			"border" : "1px solid fff"
-	              		}).text(data.output['subject']);
+	              		}).append(data.output['subject']);
 	              	// $("#info").html(data.message);
+									$(".loading").hide();
 	              	$.notiny({
 		            	text: data.message[data.message.length -1],
 		            	position: 'right-top',
@@ -492,7 +518,6 @@
 
 	  	});
   	</script>
-
   	<script>
   	    $(document).on('click', '[id^="removeDay_"]', function(){
   	    	var id = jQuery(this).attr("id");
@@ -507,7 +532,7 @@
 	          	success: function (data)
 	          	{
 	              	$.notiny({
-		            	text: data.message[data.message.length -1],
+		            	text: data.message,
 		            	position: 'right-top',
 		            	delay: 5000,
 		            	theme: 'dark'
@@ -636,6 +661,7 @@
 		    } else {
 		        var forced = 'false';
 		    }
+				$(".loading").show();
 	      	$.ajax({
 	          	url:'{{ (path('save_entries_auto')) }}',
 	          	type: "POST",
@@ -662,7 +688,7 @@
 			            	theme: data.theme
 			            });
 					}
-
+					$(".loading").hide();
 				},
 	         	error: function () {
 	              	$("#info").html("<b>something's wrong</b>");

@@ -26,7 +26,25 @@ class TimetablerRepository extends \Doctrine\ORM\EntityRepository
             ->getOneOrNullResult();
     }
 
-    public function isAlreadyRecordedFormat($day, $class, $tableFormatColumn)
+    public function isAlreadyRecordedFormat($day, $class, $tableFormatColumn, $subject)
+    {
+        return $this->createQueryBuilder('a')
+            ->select('a')
+            ->where('a.day = :day')
+            ->andWhere('a.class = :class')
+            ->andWhere('a.tableFormatColumn = :tableFormatColumn')
+            ->andWhere('a.subject = :subject')
+            ->orderBy('a.id', 'DESC')
+            ->setMaxResults(1)
+            ->setParameter('day', $day)
+            ->setParameter('class', $class)
+            ->setParameter('tableFormatColumn', $tableFormatColumn)
+            ->setParameter('subject', $subject)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function isAlreadyRecordedFormatMin($day, $class, $tableFormatColumn)
     {
         return $this->createQueryBuilder('a')
             ->select('a')
@@ -41,6 +59,7 @@ class TimetablerRepository extends \Doctrine\ORM\EntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
      public function isClashing($day, $time, $teacher)
     {
         return $this->createQueryBuilder('a')
