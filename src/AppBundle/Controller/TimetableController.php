@@ -203,6 +203,7 @@ class TimetableController extends Controller
         $data['lesson_series'] = $lesson_series;
         $data['actual_lessons'] = $lessons;
         $data['items'] = $items;
+        $data['keys_string'] = $keys_string;
 
         return $this->render('timetable/class.html.twig', $data);
 
@@ -352,6 +353,7 @@ class TimetableController extends Controller
         $data['lesson_series'] = $lesson_series;
         $data['actual_lessons'] = $lessons;
         $data['items'] = $items;
+        $data['keys_string'] = $keys_string;
 
         if($format == 'pdf'){
            // return $this->render('timetable/tableformat.html.twig', $data);
@@ -415,6 +417,7 @@ class TimetableController extends Controller
         $data['lesson_series'] = $lesson_series;
         $data['actual_lessons'] = $lessons;
         $data['items'] = $items;
+        $data['keys_string'] = $keys_string;
 
         // return $this->render('timetable/tableformat.html.twig', $data);
         $appPath = $this->container->getParameter('kernel.root_dir');
@@ -459,6 +462,7 @@ class TimetableController extends Controller
         $data['lesson_series'] = $lesson_series;
         $data['actual_lessons'] = $lessons;
         $data['items'] = $items;
+        $data['keys_string'] = $keys_string;
 
         // return $this->render('timetable/tableformat.html.twig', $data);
         $appPath = $this->container->getParameter('kernel.root_dir');

@@ -84,17 +84,26 @@
 		                        	<table style="margin-bottom:0px;" class="full_width table table-bordered table-hover">
 		                        		<tr style=" " id="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" data-toggle="modal" data-target="#timetableModal_{{class}}_{{day}}_{{tableformat.id}}">
 		                        				{% set key = tableformat.id ~ "." ~ class ~ "." ~ day %}
-		                        				{% if items[key] is defined %}
-		                        					{% set subject = items[key]|split("|")[0] %}
-		                        					{% set subj = items[key]|split("|")[0]|slice(0,3) %}
-		                        					{% set teacher = items[key]|split("|")[1] %}
-		                        					{% set position = "[" ~ items[key]|split("|")[2] ~ "]" %}
-		                        				{% else %}
-		                        					{% set subject = 'No Subject' %}
-		                        					{% set subj = 'No Subject' %}
-		                        					{% set teacher = '' %}
-		                        					{% set position = '' %}
-		                        				{% endif %}
+                                    {% set subject = "" %}
+                                    {% set subj = "" %}
+                                    {% set teacher = '' %}
+                                    {% set position = "" %}
+                                    {% if key  in keys_string %}
+                                      {% for an_item in items %}
+                                        {% if an_item[key] is defined %}
+                                        {% if subj != "" or subject != "" %} {% set subj = subj ~ "|" %} {% set subject = subject ~ "|" %} {% set teacher = teacher ~ "|" %} {% endif %}
+                                          {% set subject = subject ~  an_item[key]|split("|")[0] %}
+                                          {% set subj = subj ~ an_item[key]|split("|")[0]|slice(0,3) %}
+                                          {% set teacher = teacher ~ an_item[key]|split("|")[1] %}
+                                          {% set position = position ~ "[" ~ an_item[key]|split("|")[2] ~ "]" %}
+                                        {% endif %}
+                                      {% endfor %}
+                                    {% else %}
+                                        {% set subject = subject ~ '___' %}
+                                        {% set subj = subj ~ '___' %}
+                                        {% set teacher = teacher ~ '' %}
+                                        {% set position = position ~ '' %}
+                                    {% endif %}
 
 		                        			<td class="class-{{class}}_day-{{day}}_tblfmt-{{tableformat.id}}" style="padding:2px; cursor:pointer; font-size:15px; font-weight:bold;">
 	                                            	{{teacher}}<br />

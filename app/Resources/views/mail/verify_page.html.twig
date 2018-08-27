@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+{% block pagewrapper %}
+    {% set action_title = "Add Classes" %}
+    {% embed "templates/pagewrapper.html.twig" %}
+        {% block toplinks %}
+        {% endblock %}
+        {% block charts %}
+        {% endblock %}
+            {% block otherstuff_lg12 %}
+      <div class="col-md-6">
+          <!-- general form elements -->
+          <div class="box box-primary">
+            <div class="box-header with-border">
+              <h3 class="box-title"> {{verification_title}}</h3>
+            </div>
+            <!-- /.box-header -->
+              <div class="box-body">
+		      	<p>{{verification_message}}
+		      		You can now <a href="{{path('login')}}">Login</a>
+		      	</p>
+
+              </div>
+              <!-- /.box-body -->
+          </div>
+	</div>
+
+
+{% endblock %}
+{% endembed %}
+{% endblock %}
+

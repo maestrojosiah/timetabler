@@ -127,14 +127,14 @@ class User implements AdvancedUserInterface, \Serializable
 
     public function __construct()
     {
-      $this->active = true;
+        $this->active = false;
    		$this->classSubjects = new ArrayCollection();
    		$this->schoolDays = new ArrayCollection();
    		$this->students = new ArrayCollection();
    		$this->subjects = new ArrayCollection();
    		$this->teachers = new ArrayCollection();
    		$this->tableFormats = new ArrayCollection();
-      $this->timetablers = new ArrayCollection();
+        $this->timetablers = new ArrayCollection();
    		$this->classes = new ArrayCollection();
     }
 

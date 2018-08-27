@@ -18,7 +18,7 @@
 
       <div class="navbar-custom-menu">
         <ul class="nav navbar-nav">
-
+        {% if app.user %}
           <!-- User Account: style can be found in dropdown.less -->
           <li class="dropdown user user-menu">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -38,6 +38,7 @@
             </ul>
           </li>
           <!-- Control Sidebar Toggle Button -->
+        {% endif %}
           <li>
             <a href="{{path('view_profile')}}"><i class="fa fa-gears"></i></a>
           </li>
@@ -52,6 +53,7 @@
     <!-- sidebar: style can be found in sidebar.less -->
     <section class="sidebar">
       <!-- sidebar menu: : style can be found in sidebar.less -->
+    {% if app.user %}  
       <ul class="sidebar-menu" data-widget="tree">
         <li class="header">MAIN NAVIGATION</li>
         <li>
@@ -107,6 +109,7 @@
           </ul>
         </li>
       </ul>
+    {% endif %}
     </section>
     <!-- /.sidebar -->
   </aside>
