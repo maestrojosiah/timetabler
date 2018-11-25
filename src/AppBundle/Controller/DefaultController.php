@@ -35,7 +35,7 @@ class DefaultController extends Controller
             );
 
         $lesson_tableformats = $em->getRepository('AppBundle:TableFormat')
-              ->countPossibleLessons($user);
+              ->countPossibleLessons($user, $timetables[0]);
         $data['lesson_tableformats'] = $lesson_tableformats;
 
         $allTimetables = $em->getRepository('AppBundle:Timetable')

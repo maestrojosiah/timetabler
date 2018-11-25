@@ -20,14 +20,16 @@ class TableFormatRepository extends \Doctrine\ORM\EntityRepository
             ->getResult();
     }
 
-    public function countPossibleLessons($user)
+    public function countPossibleLessons($user, $timetable)
     {
         return $this->createQueryBuilder('s')
             ->select('count(s.id)')
             ->where('s.user = :user')
             ->andWhere('s.activity = :lesson')
+            ->andWhere('s.timetable = :timetable')
             ->setParameter('user', $user)
             ->setParameter('lesson', 'lesson')
+            ->setParameter('timetable', $timetable)
             ->getQuery()
             ->getSingleScalarResult();
     }

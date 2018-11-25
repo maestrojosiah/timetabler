@@ -64,7 +64,7 @@
 </style>
 {% set total_possible_entries = timetable.classes|length * lesson_tableformats * 5 %}
 {% set percentage_so_far = (timetable.timetablers|length / total_possible_entries) * 100 %}
-
+resulting number : {{ lesson_tableformats }}
 {# table starts here #}
 <div class="panel panel-default">
 	<div class="loading" style="text-align:center; padding:100px;">Working...</div>

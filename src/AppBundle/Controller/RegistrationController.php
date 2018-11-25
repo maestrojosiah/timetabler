@@ -98,7 +98,7 @@ class RegistrationController extends Controller
             $this->save($user);
             $from = "mylepostsolutions@gmail.com";
             $to = $user->getEmail();
-            $subject = "Welcome to ExamPro App";
+            $subject = "Welcome to Timetabler App";
             $this->successEmailAction($from, $to, $subject, $user->getFName() );
             $data['verification_title'] = "Account Activated!";
             $data['verification_message'] = "Your Account is successfully verified and activated.";

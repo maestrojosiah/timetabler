@@ -136,7 +136,7 @@ class TimetableController extends Controller
         $classes = $this->find_classes($user, $timetable);
         $tableformats = $this->find_table_formats($timetable);
         $lesson_tableformats = $this->em()->getRepository('AppBundle:TableFormat')
-          ->countPossibleLessons($user);
+          ->countPossibleLessons($user, $timetable);
         $lessons = $this->find_lessons($timetable);
         $teachers = $this->find_teachers($timetable);
 
